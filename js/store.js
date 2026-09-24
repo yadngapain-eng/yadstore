@@ -23,35 +23,33 @@ function renderStore(){
   const grid = document.getElementById('storeGrid');
   if (!grid) return;
   let games = ensureGames();
-  const q = (document.getElementById('searchStore')?.value||'').toLowerCase();
-  const genre = document.getElementById('filterGenre')?.value||'';
-  if (q) games = games.filter(g=>g.name.toLowerCase().includes(q));
-  if (genre) games = games.filter(g=>g.genre===genre);
-  if (games.length===0){ grid.innerHTML='<p style="color:var(--text-muted)">Tidak ada hasil.</p>'; return }
-  grid.innerHTML = games.map(g=>'<div class="store-card" onclick="openGame(\''+g.id+'\')">'+
-    '<div class="store-img">'+g.img+'</div><div class="store-info">'+
-    '<span class="store-genre">'+g.genre+'</span><h3>'+g.name+'</h3>'+
+  const q = (document.getElementById('searchStore')?.value || '').toLowerCase();
+  const genre = document.getElementById('filterGenre')?.value || '';
+  if (q) games = games.filter(g => g.name.toLowerCase().includes(q));
+  if (genre) games = games.filter(g => g.genre === genre);
+  if (games.length === 0){ grid.innerHTML = '<p style="color:var(--text-muted)">Tidak ada hasil.</p>'; return }
+  grid.innerHTML = games.map(g => '<div class="store-card" onclick="openGame(\''+g.id+'\')">' +
+    '<div class="store-img">'+g.img+'</div><div class="store-info">' +
+    '<span class="store-genre">'+g.genre+'</span><h3>'+g.name+'</h3>' +
     '<div class="store-price">'+g.price+'</div></div></div>').join('');
 }
 
 function openGame(id){
-  const g = ensureGames().find(x=>x.id===id);
+  const g = ensureGames().find(x => x.id === id);
   if (!g) return;
-  trackView('game',id);
+  trackView('game', id);
   document.getElementById('gameContent').innerHTML =
-    '<div style="text-align:center;font-size:80px;margin-bottom:20px">'+g.img+'</div>'+
-    '<h1>'+g.name+'</h1><span class="store-genre">'+g.genre+'</span>'+
-    '<p style="margin:20px 0;color:var(--text-muted)">'+g.desc+'</p>'+
-    '<div class="store-price" style="font-size:28px;margin-bottom:24px">'+g.price+'</div>'+
+    '<div style="text-align:center;font-size:80px;margin-bottom:20px">'+g.img+'</div>' +
+    '<h1>'+g.name+'</h1><span class="store-genre">'+g.genre+'</span>' +
+    '<p style="margin:20px 0;color:var(--text-muted)">'+g.desc+'</p>' +
+    '<div class="store-price" style="font-size:28px;margin-bottom:24px">'+g.price+'</div>' +
     '<button class="btn btn-primary" onclick="buyGame(\''+g.id+'\')">🛒 Beli Sekarang</button>';
   document.getElementById('gameModal').classList.add('open');
 }
-
 function closeGame(){ document.getElementById('gameModal').classList.remove('open') }
-
 function buyGame(id){
-  const g = ensureGames().find(x=>x.id===id);
-  alert('Terima kasih sudah membeli '+g.name+'!\n\n(Ini demo — pembayaran belum aktif)');
+  const g = ensureGames().find(x => x.id === id);
+  alert('Terima kasih sudah membeli ' + g.name + '!\n\n(Ini demo — pembayaran belum aktif)');
 }
 
 document.addEventListener('DOMContentLoaded', renderStore);
