@@ -28,8 +28,8 @@ function renderLessons(){
   const grid = document.getElementById('lessonGrid');
   if (!grid) return;
   const lessons = ensureLessons();
-  grid.innerHTML = lessons.map(l=>'<div class="lesson-card" onclick="openQuiz(\''+l.id+'\')">'+
-    '<div class="lesson-icon">'+l.icon+'</div><h3>'+l.title+'</h3><p>'+l.desc+'</p>'+
+  grid.innerHTML = lessons.map(l => '<div class="lesson-card" onclick="openQuiz(\''+l.id+'\')">' +
+    '<div class="lesson-icon">'+l.icon+'</div><h3>'+l.title+'</h3><p>'+l.desc+'</p>' +
     '<div class="lesson-meta"><span>📝 '+(l.quiz||[]).length+' soal</span><span>Mulai →</span></div></div>').join('');
 }
 
@@ -37,43 +37,42 @@ let currentLesson=null, currentQ=0, score=0;
 
 function openQuiz(id){
   const lessons = ensureLessons();
-  currentLesson = lessons.find(l=>l.id===id);
+  currentLesson = lessons.find(l => l.id === id);
   if (!currentLesson) return;
-  trackView('lesson',id);
-  currentQ=0; score=0;
+  trackView('lesson', id);
+  currentQ = 0; score = 0;
   document.getElementById('quizModal').classList.add('open');
   renderQuiz();
 }
-
 function closeQuiz(){ document.getElementById('quizModal').classList.remove('open') }
 
 function renderQuiz(){
   const box = document.getElementById('quizContent');
-  const quiz = currentLesson.quiz||[];
+  const quiz = currentLesson.quiz || [];
   if (currentQ >= quiz.length){
-    const pct = Math.round(score/quiz.length*100);
-    const emoji = pct>=80?'🏆':pct>=60?'👍':'📚';
-    box.innerHTML = '<h2>'+emoji+' Selesai!</h2>'+
-      '<p style="font-size:20px;margin:16px 0">Skor: <b>'+score+'/'+quiz.length+'</b> ('+pct+'%)</p>'+
-      '<button class="btn btn-primary" onclick="openQuiz(\''+currentLesson.id+'\')">🔄 Ulangi</button> '+
+    const pct = Math.round(score / quiz.length * 100);
+    const emoji = pct >= 80 ? '🏆' : pct >= 60 ? '👍' : '📚';
+    box.innerHTML = '<h2>'+emoji+' Selesai!</h2>' +
+      '<p style="font-size:22px;margin:16px 0">Skor: <b>'+score+'/'+quiz.length+'</b> ('+pct+'%)</p>' +
+      '<button class="btn btn-primary" onclick="openQuiz(\''+currentLesson.id+'\')">🔄 Ulangi</button> ' +
       '<button class="btn btn-secondary" onclick="closeQuiz()">Tutup</button>';
     return;
   }
   const q = quiz[currentQ];
-  box.innerHTML = '<div class="quiz-progress"><span>Soal '+(currentQ+1)+' dari '+quiz.length+'</span><span>Skor: '+score+'</span></div>'+
-    '<h3 class="quiz-q">'+q.q+'</h3>'+
-    q.o.map((opt,i)=>'<button class="quiz-option" onclick="answerQuiz('+i+')">'+String.fromCharCode(65+i)+'. '+opt+'</button>').join('');
+  box.innerHTML = '<div class="quiz-progress"><span>Soal '+(currentQ+1)+' dari '+quiz.length+'</span><span>Skor: '+score+'</span></div>' +
+    '<h3 class="quiz-q">'+q.q+'</h3>' +
+    q.o.map((opt,i) => '<button class="quiz-option" onclick="answerQuiz('+i+')">'+String.fromCharCode(65+i)+'. '+opt+'</button>').join('');
 }
 
 function answerQuiz(idx){
   const q = currentLesson.quiz[currentQ];
-  document.querySelectorAll('.quiz-option').forEach((el,i)=>{
-    if (i===q.c) el.classList.add('correct');
-    else if (i===idx) el.classList.add('wrong');
+  document.querySelectorAll('.quiz-option').forEach((el,i) => {
+    if (i === q.c) el.classList.add('correct');
+    else if (i === idx) el.classList.add('wrong');
     el.disabled = true;
   });
-  if (idx===q.c) score++;
-  setTimeout(()=>{ currentQ++; renderQuiz(); }, 900);
+  if (idx === q.c) score++;
+  setTimeout(() => { currentQ++; renderQuiz() }, 1000);
 }
 
 document.addEventListener('DOMContentLoaded', renderLessons);
