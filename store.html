@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="id"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Game Store — YadStore</title>
+<link rel="stylesheet" href="css/style.css">
+</head><body>
+<nav class="navbar">
+  <div class="nav-brand"><span class="logo">Y</span><span class="brand-name">YadStore</span></div>
+  <div class="nav-links">
+    <a href="index.html">Home</a><a href="learn.html">Learn</a>
+    <a href="store.html" class="active">Store</a><a href="article.html">Article</a>
+    <a href="credit.html">Credit</a><a href="admin.html" class="btn-admin">Admin</a>
+  </div>
+</nav>
+<section class="page-head"><h1>🎮 Game Store</h1>
+<p>Temukan game dan item favoritmu dari berbagai genre.</p></section>
+<section class="filter-bar">
+  <input type="text" id="searchStore" placeholder="Cari game atau item..." oninput="renderStore()">
+  <select id="filterGenre" onchange="renderStore()">
+    <option value="">Semua Genre</option>
+    <option>Action</option><option>Adventure</option><option>RPG</option>
+    <option>Strategy</option><option>Sports</option><option>Racing</option>
+    <option>Puzzle</option><option>Simulation</option><option>Horror</option>
+    <option>Item</option>
+  </select>
+</section>
+<section class="store-section"><div id="storeGrid" class="store-grid"></div></section>
+<div id="gameModal" class="modal"><div class="modal-content">
+<button class="modal-close" onclick="closeGame()">✕</button>
+<div id="gameContent"></div></div></div>
+<footer><p>© 2026 YadStore. Dibuat dengan ❤️ oleh <a href="credit.html">Ysdev</a></p></footer>
+<script src="js/store.js"></script><script src="js/main.js"></script>
+</body></html>
