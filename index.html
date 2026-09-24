@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>YadStore — Belajar, Main, Baca</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<nav class="navbar">
+  <div class="nav-brand"><span class="logo">Y</span><span class="brand-name">YadStore</span></div>
+  <div class="nav-links">
+    <a href="index.html" class="active">Home</a>
+    <a href="learn.html">Learn</a>
+    <a href="store.html">Store</a>
+    <a href="article.html">Article</a>
+    <a href="credit.html">Credit</a>
+    <a href="admin.html" class="btn-admin">Admin</a>
+  </div>
+  <button class="nav-toggle" onclick="toggleNav()">☰</button>
+</nav>
+
+<section class="hero">
+  <div class="hero-content">
+    <h1 class="hero-title">Selamat Datang di <span class="gradient-text">YadStore</span></h1>
+    <p class="hero-sub">Belajar coding, main game, baca novel — semua di satu tempat.</p>
+    <div class="hero-buttons">
+      <a href="learn.html" class="btn btn-primary">Mulai Belajar</a>
+      <a href="store.html" class="btn btn-secondary">Kunjungi Store</a>
+    </div>
+  </div>
+</section>
+
+<section class="features">
+  <h2 class="section-title">Apa yang Bisa Kamu Lakukan?</h2>
+  <div class="feature-grid">
+    <a href="learn.html" class="feature-card">
+      <div class="feature-icon">📚</div><h3>Learn Code</h3>
+      <p>Puluhan pelajaran coding dari dasar sampai mahir, lengkap dengan quiz interaktif.</p>
+    </a>
+    <a href="store.html" class="feature-card">
+      <div class="feature-icon">🎮</div><h3>Game Store</h3>
+      <p>Koleksi game dan item dari berbagai genre. Temukan game favoritmu di sini.</p>
+    </a>
+    <a href="article.html" class="feature-card">
+      <div class="feature-icon">📖</div><h3>Article & Novel</h3>
+      <p>Baca berita teknologi, tutorial, dan novel seru yang terus di-update.</p>
+    </a>
+  </div>
+</section>
+
+<section class="recommend">
+  <h2 class="section-title">Rekomendasi Untukmu</h2>
+  <div id="recommendBox" class="recommend-grid"></div>
+</section>
+
+<section class="cta">
+  <h2>Siap Mulai Petualanganmu?</h2>
+  <p>Gabung bersama ribuan pelajar lainnya di YadStore.</p>
+  <a href="learn.html" class="btn btn-primary">Mulai Sekarang</a>
+</section>
+
+<footer><p>© 2026 YadStore. Dibuat dengan ❤️ oleh <a href="credit.html">Ysdev</a></p></footer>
+<script src="js/main.js"></script>
+</body>
+</html>
