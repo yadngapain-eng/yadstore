@@ -1,12 +1,11 @@
 <!DOCTYPE html>
 <html lang="id"><head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Admin Panel — YadStore</title>
-<link rel="stylesheet" href="css/style.css">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Admin Panel — YadStore</title><link rel="stylesheet" href="css/style.css">
 </head><body>
+<canvas id="bgCanvas"></canvas>
 <nav class="navbar">
-  <div class="nav-brand"><span class="logo">Y</span><span class="brand-name">YadStore Admin</span></div>
+  <a href="index.html" class="nav-brand"><span class="logo-svg"><svg viewBox="0 0 40 40" width="40" height="40"><defs><linearGradient id="lg" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#00e5ff"/><stop offset="100%" stop-color="#7c4dff"/></linearGradient></defs><rect width="40" height="40" rx="11" fill="url(#lg)"/><text x="20" y="28" font-family="Arial" font-size="22" font-weight="900" fill="#fff" text-anchor="middle">Y</text></svg></span><span class="brand-name">YadStore Admin</span></a>
   <div class="nav-links">
     <a href="index.html">Home</a>
     <a href="#" id="logoutBtn" style="display:none" onclick="adminLogout(event)">Logout</a>
@@ -42,12 +41,11 @@
       <input type="text" id="gameName" placeholder="Nama Game" required>
       <input type="text" id="gameGenre" placeholder="Genre" required>
       <input type="text" id="gamePrice" placeholder="Harga (Rp)" required>
-      <input type="text" id="gameImg" placeholder="Emoji / URL Gambar" required>
+      <input type="text" id="gameImg" placeholder="Emoji" required>
       <textarea id="gameDesc" placeholder="Deskripsi" required></textarea>
       <button type="submit" class="btn btn-primary">Simpan Game</button>
     </form>
-    <h3>Daftar Game</h3>
-    <div id="adminGameList"></div>
+    <h3>Daftar Game</h3><div id="adminGameList"></div>
   </div>
 
   <div id="tabLessons" class="admin-tab-content">
@@ -63,8 +61,7 @@
       </label>
       <button type="submit" class="btn btn-primary">Simpan Pelajaran</button>
     </form>
-    <h3>Daftar Pelajaran</h3>
-    <div id="adminLessonList"></div>
+    <h3>Daftar Pelajaran</h3><div id="adminLessonList"></div>
   </div>
 
   <div id="tabArticles" class="admin-tab-content">
@@ -73,9 +70,7 @@
       <input type="hidden" id="articleId">
       <input type="text" id="articleTitle" placeholder="Judul" required>
       <select id="articleType" required>
-        <option value="article">Article</option>
-        <option value="berita">Berita</option>
-        <option value="novel">Novel</option>
+        <option value="article">Article</option><option value="berita">Berita</option><option value="novel">Novel</option>
       </select>
       <input type="text" id="articleAuthor" placeholder="Penulis" required>
       <textarea id="articleExcerpt" placeholder="Ringkasan" required></textarea>
@@ -85,8 +80,7 @@
       </label>
       <button type="submit" class="btn btn-primary">Simpan Article</button>
     </form>
-    <h3>Daftar Article</h3>
-    <div id="adminArticleList"></div>
+    <h3>Daftar Article</h3><div id="adminArticleList"></div>
   </div>
 
   <div id="tabSettings" class="admin-tab-content">
