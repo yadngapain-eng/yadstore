@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="id"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Article & Novel — YadStore</title>
+<link rel="stylesheet" href="css/style.css">
+</head><body>
+<nav class="navbar">
+  <div class="nav-brand"><span class="logo">Y</span><span class="brand-name">YadStore</span></div>
+  <div class="nav-links">
+    <a href="index.html">Home</a><a href="learn.html">Learn</a>
+    <a href="store.html">Store</a><a href="article.html" class="active">Article</a>
+    <a href="credit.html">Credit</a><a href="admin.html" class="btn-admin">Admin</a>
+  </div>
+</nav>
+<section class="page-head"><h1>📖 Article & Novel</h1>
+<p>Baca berita teknologi, tutorial, dan novel seru.</p></section>
+<section class="filter-bar">
+  <input type="text" id="searchArticle" placeholder="Cari article atau novel..." oninput="renderArticle()">
+  <select id="filterType" onchange="renderArticle()">
+    <option value="">Semua Tipe</option>
+    <option value="article">Article</option>
+    <option value="berita">Berita</option>
+    <option value="novel">Novel</option>
+  </select>
+</section>
+<section class="article-section"><div id="articleGrid" class="article-grid"></div></section>
+<div id="readerModal" class="modal"><div class="modal-content reader-modal">
+<button class="modal-close" onclick="closeReader()">✕</button>
+<div id="readerContent"></div></div></div>
+<footer><p>© 2026 YadStore. Dibuat dengan ❤️ oleh <a href="credit.html">Ysdev</a></p></footer>
+<script src="js/article.js"></script><script src="js/main.js"></script>
+</body></html>
