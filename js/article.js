@@ -16,28 +16,27 @@ function renderArticle(){
   const grid = document.getElementById('articleGrid');
   if (!grid) return;
   let arts = ensureArticles();
-  const q = (document.getElementById('searchArticle')?.value||'').toLowerCase();
-  const type = document.getElementById('filterType')?.value||'';
-  if (q) arts = arts.filter(a=>a.title.toLowerCase().includes(q));
-  if (type) arts = arts.filter(a=>a.type===type);
-  if (arts.length===0){ grid.innerHTML='<p style="color:var(--text-muted)">Tidak ada hasil.</p>'; return }
-  grid.innerHTML = arts.map(a=>'<div class="article-card" onclick="openReader(\''+a.id+'\')">'+
-    '<span class="article-type type-'+a.type+'">'+a.type+'</span>'+
-    '<h3>'+a.title+'</h3><p class="article-excerpt">'+a.excerpt+'</p>'+
+  const q = (document.getElementById('searchArticle')?.value || '').toLowerCase();
+  const type = document.getElementById('filterType')?.value || '';
+  if (q) arts = arts.filter(a => a.title.toLowerCase().includes(q));
+  if (type) arts = arts.filter(a => a.type === type);
+  if (arts.length === 0){ grid.innerHTML = '<p style="color:var(--text-muted)">Tidak ada hasil.</p>'; return }
+  grid.innerHTML = arts.map(a => '<div class="article-card" onclick="openReader(\''+a.id+'\')">' +
+    '<span class="article-type type-'+a.type+'">'+a.type+'</span>' +
+    '<h3>'+a.title+'</h3><p class="article-excerpt">'+a.excerpt+'</p>' +
     '<p class="article-author">✍️ '+a.author+'</p></div>').join('');
 }
 
 function openReader(id){
-  const a = ensureArticles().find(x=>x.id===id);
+  const a = ensureArticles().find(x => x.id === id);
   if (!a) return;
-  trackView('article',id);
+  trackView('article', id);
   document.getElementById('readerContent').innerHTML =
-    '<div class="reader-content"><h1>'+a.title+'</h1>'+
-    '<p class="meta">'+a.type.toUpperCase()+' • '+a.author+'</p>'+
+    '<div class="reader-content"><h1>'+a.title+'</h1>' +
+    '<p class="meta">'+a.type.toUpperCase()+' • '+a.author+'</p>' +
     '<div class="body">'+a.content+'</div></div>';
   document.getElementById('readerModal').classList.add('open');
 }
-
 function closeReader(){ document.getElementById('readerModal').classList.remove('open') }
 
 document.addEventListener('DOMContentLoaded', renderArticle);
