@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="id"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Admin Panel — YadStore</title>
+<link rel="stylesheet" href="css/style.css">
+</head><body>
+<nav class="navbar">
+  <div class="nav-brand"><span class="logo">Y</span><span class="brand-name">YadStore Admin</span></div>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="#" id="logoutBtn" style="display:none" onclick="adminLogout(event)">Logout</a>
+  </div>
+</nav>
+
+<section id="loginScreen" class="admin-login"><div class="login-card">
+  <h1>🔐 Admin Login</h1>
+  <p>Masukkan kredensial admin untuk melanjutkan.</p>
+  <input type="text" id="adminUser" placeholder="Username" autocomplete="off">
+  <input type="password" id="adminPass" placeholder="Password" autocomplete="off">
+  <button class="btn btn-primary" onclick="adminLogin()">Login</button>
+  <p id="loginError" class="error-msg"></p>
+</div></section>
+
+<section id="adminPanel" class="admin-panel" style="display:none">
+  <div class="admin-header">
+    <h1>⚙️ Admin Dashboard</h1>
+    <p>Kelola semua konten YadStore dari sini.</p>
+  </div>
+  <div class="admin-tabs">
+    <button class="tab-btn active" onclick="showTab('tabGames')">🎮 Games</button>
+    <button class="tab-btn" onclick="showTab('tabLessons')">📚 Lessons</button>
+    <button class="tab-btn" onclick="showTab('tabArticles')">📖 Articles</button>
+    <button class="tab-btn" onclick="showTab('tabSettings')">🔧 Settings</button>
+    <button class="tab-btn" onclick="showTab('tabStats')">📊 Stats</button>
+  </div>
+
+  <div id="tabGames" class="admin-tab-content active">
+    <h2>Tambah / Edit Game</h2>
+    <form id="gameForm" onsubmit="saveGame(event)">
+      <input type="hidden" id="gameId">
+      <input type="text" id="gameName" placeholder="Nama Game" required>
+      <input type="text" id="gameGenre" placeholder="Genre" required>
+      <input type="text" id="gamePrice" placeholder="Harga (Rp)" required>
+      <input type="text" id="gameImg" placeholder="Emoji / URL Gambar" required>
+      <textarea id="gameDesc" placeholder="Deskripsi" required></textarea>
+      <button type="submit" class="btn btn-primary">Simpan Game</button>
+    </form>
+    <h3>Daftar Game</h3>
+    <div id="adminGameList"></div>
+  </div>
+
+  <div id="tabLessons" class="admin-tab-content">
+    <h2>Tambah Pelajaran</h2>
+    <form id="lessonForm" onsubmit="saveLesson(event)">
+      <input type="hidden" id="lessonId">
+      <input type="text" id="lessonTitle" placeholder="Judul" required>
+      <input type="text" id="lessonIcon" placeholder="Emoji" required>
+      <textarea id="lessonDesc" placeholder="Deskripsi" required></textarea>
+      <textarea id="lessonContent" placeholder="Materi (HTML)" rows="8" required></textarea>
+      <label class="upload-label">Upload file .txt/.html:
+        <input type="file" id="lessonFile" accept=".txt,.html,.md" onchange="loadFileToTextarea('lessonFile','lessonContent')">
+      </label>
+      <button type="submit" class="btn btn-primary">Simpan Pelajaran</button>
+    </form>
+    <h3>Daftar Pelajaran</h3>
+    <div id="adminLessonList"></div>
+  </div>
+
+  <div id="tabArticles" class="admin-tab-content">
+    <h2>Tambah Article / Berita / Novel</h2>
+    <form id="articleForm" onsubmit="saveArticle(event)">
+      <input type="hidden" id="articleId">
+      <input type="text" id="articleTitle" placeholder="Judul" required>
+      <select id="articleType" required>
+        <option value="article">Article</option>
+        <option value="berita">Berita</option>
+        <option value="novel">Novel</option>
+      </select>
+      <input type="text" id="articleAuthor" placeholder="Penulis" required>
+      <textarea id="articleExcerpt" placeholder="Ringkasan" required></textarea>
+      <textarea id="articleContent" placeholder="Isi lengkap (HTML)" rows="10" required></textarea>
+      <label class="upload-label">Upload file .txt/.html:
+        <input type="file" id="articleFile" accept=".txt,.html,.md" onchange="loadFileToTextarea('articleFile','articleContent')">
+      </label>
+      <button type="submit" class="btn btn-primary">Simpan Article</button>
+    </form>
+    <h3>Daftar Article</h3>
+    <div id="adminArticleList"></div>
+  </div>
+
+  <div id="tabSettings" class="admin-tab-content">
+    <h2>Pengaturan</h2>
+    <label>Nama Situs: <input type="text" id="setSiteName"></label>
+    <label>Tagline: <input type="text" id="setTagline"></label>
+    <label>Warna Tema: <input type="color" id="setThemeColor" value="#00c6ff"></label>
+    <button class="btn btn-primary" onclick="saveSettings()">Simpan</button>
+    <h2>Export / Import</h2>
+    <button class="btn btn-secondary" onclick="exportData()">📥 Export Data</button>
+    <label class="upload-label">📤 Import Data (JSON):
+      <input type="file" id="importFile" accept=".json" onchange="importData(event)">
+    </label>
+    <button class="btn btn-danger" onclick="resetAllData()">🗑️ Reset Semua</button>
+  </div>
+
+  <div id="tabStats" class="admin-tab-content">
+    <h2>📊 Statistik</h2>
+    <div class="stats-grid">
+      <div class="stat-card"><span class="stat-num" id="statGames">0</span><span class="stat-label">Games</span></div>
+      <div class="stat-card"><span class="stat-num" id="statLessons">0</span><span class="stat-label">Lessons</span></div>
+      <div class="stat-card"><span class="stat-num" id="statArticles">0</span><span class="stat-label">Articles</span></div>
+      <div class="stat-card"><span class="stat-num" id="statViews">0</span><span class="stat-label">Views</span></div>
+    </div>
+  </div>
+</section>
+
+<footer><p>© 2026 YadStore. Dibuat dengan ❤️ oleh Ysdev</p></footer>
+<script src="js/admin.js"></script>
+</body></html>
