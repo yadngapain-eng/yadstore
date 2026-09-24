@@ -1,2 +1,1 @@
-# yadstore
-YadStore - Belajar coding, game store, article
+# YadStore\n\nPlatform belajar coding, game store, dan article.\n\n## Admin Login\n- Username: `YADI`\n- Password: `YADIGANTENG2026`\n\n## Deploy\nBuka index.html atau host di static hosting.\n\n© 2026 YadStore — Dibuat dengan ❤️ oleh Ysdev\n
