@@ -1,20 +1,27 @@
 <!DOCTYPE html>
 <html lang="id"><head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Game Store — YadStore</title>
-<link rel="stylesheet" href="css/style.css">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Game Store — YadStore</title><link rel="stylesheet" href="css/style.css">
 </head><body>
+<canvas id="bgCanvas"></canvas>
 <nav class="navbar">
-  <div class="nav-brand"><span class="logo">Y</span><span class="brand-name">YadStore</span></div>
+  <a href="index.html" class="nav-brand"><span class="logo-svg"><svg viewBox="0 0 40 40" width="40" height="40"><defs><linearGradient id="lg" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#00e5ff"/><stop offset="100%" stop-color="#7c4dff"/></linearGradient></defs><rect width="40" height="40" rx="11" fill="url(#lg)"/><text x="20" y="28" font-family="Arial" font-size="22" font-weight="900" fill="#fff" text-anchor="middle">Y</text></svg></span><span class="brand-name">YadStore</span></a>
   <div class="nav-links">
     <a href="index.html">Home</a><a href="learn.html">Learn</a>
     <a href="store.html" class="active">Store</a><a href="article.html">Article</a>
     <a href="credit.html">Credit</a><a href="admin.html" class="btn-admin">Admin</a>
   </div>
+  <button class="nav-toggle" onclick="toggleNav()">☰</button>
 </nav>
-<section class="page-head"><h1>🎮 Game Store</h1>
-<p>Temukan game dan item favoritmu dari berbagai genre.</p></section>
+
+<section class="menu-header">
+  <canvas id="menuCanvas" class="menu-canvas"></canvas>
+  <div class="menu-header-content">
+    <h1>🎮 Game Store</h1>
+    <p>Temukan game dan item favoritmu dari berbagai genre.</p>
+  </div>
+</section>
+
 <section class="filter-bar">
   <input type="text" id="searchStore" placeholder="Cari game atau item..." oninput="renderStore()">
   <select id="filterGenre" onchange="renderStore()">
@@ -25,10 +32,15 @@
     <option>Item</option>
   </select>
 </section>
+
 <section class="store-section"><div id="storeGrid" class="store-grid"></div></section>
+
 <div id="gameModal" class="modal"><div class="modal-content">
-<button class="modal-close" onclick="closeGame()">✕</button>
-<div id="gameContent"></div></div></div>
+  <button class="modal-close" onclick="closeGame()">✕</button>
+  <div id="gameContent"></div>
+</div></div>
+
 <footer><p>© 2026 YadStore. Dibuat dengan ❤️ oleh <a href="credit.html">Ysdev</a></p></footer>
 <script src="js/store.js"></script><script src="js/main.js"></script>
+<script src="js/stickman.js"></script><script src="js/bg.js"></script>
 </body></html>
