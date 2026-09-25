@@ -3,10 +3,5 @@
   "trailingSlash": false,
   "rewrites": [
     { "source": "/", "destination": "/gateway.html" }
-  ],
-  "functions": {
-    "api/*.js": {
-      "maxDuration": 10
-    }
-  }
+  ]
 }
