@@ -1,80 +1,67 @@
 /* ============================================
-   YADSTORE — app.js
+   YADSTORE — MAIN APP
    ============================================ */
 
-// ---------- TOAST ----------
-function showToast(msg, type) {
-  const t = document.getElementById('toast');
-  if (!t) return;
-  t.textContent = msg;
-  t.className = 'toast show' + (type ? ' ' + type : '');
-  clearTimeout(t._timer);
-  t._timer = setTimeout(function() { t.className = 'toast'; }, 3000);
-}
+const App = {
+  currentTab: 'learn',
 
-// ---------- LIVE COUNT ----------
-function initLiveCount() {
-  const el = document.getElementById('liveCount');
-  if (!el) return;
-  let n = Math.floor(Math.random() * 200) + 400;
-  el.textContent = n;
-  setInterval(function() {
-    n += Math.floor(Math.random() * 11) - 5;
-    if (n < 350) n = 350;
-    if (n > 700) n = 700;
-    el.textContent = n;
-  }, 2500);
-}
+  init() {
+    console.log('🎮 YadStore init...');
+    DL.regenHearts();
+    this.renderAll();
+    this.switchTab('learn');
+    DL.updateStreak();
+    DL.checkAchievements({});
+    DuoUI.renderStats();
+    console.log('✅ YadStore ready!');
+  },
 
-// ---------- STAT COUNTER ----------
-function initCounters() {
-  document.querySelectorAll('.stat-num[data-count]').forEach(function(el) {
-    const target = parseInt(el.dataset.count);
-    let cur = 0;
-    const step = Math.max(1, Math.floor(target / 60));
-    const t = setInterval(function() {
-      cur += step;
-      if (cur >= target) { cur = target; clearInterval(t); }
-      el.textContent = cur + (target >= 1000 ? '+' : '');
-    }, 25);
-  });
-}
+  renderAll() {
+    DuoUI.renderStats();
+    DuoUI.renderCategoryTabs();
+    DuoUI.renderLessons();
+    DuoUI.renderAchievements();
+    DuoUI.renderProfile();
+    GamesUI.render();
+  },
 
-// ---------- NAV ACTIVE ----------
-function initNavActive() {
-  const path = window.location.pathname.split('/').pop() || 'index.html';
-  document.querySelectorAll('.nav-links a').forEach(function(a) {
-    const href = a.getAttribute('href');
-    if (href === path) a.classList.add('active');
-    else a.classList.remove('active');
-  });
-}
+  switchTab(tab) {
+    this.currentTab = tab;
+    document.querySelectorAll('.tab-page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
 
-// ---------- ADMIN LOGIN ----------
-function adminLogin() {
-  const u = prompt('Username:');
-  if (u !== 'YADI') { showToast('❌ Username salah', 'error'); return; }
-  const p = prompt('Password:');
-  if (p !== 'YADIGANTENG2026') { showToast('❌ Password salah', 'error'); return; }
-  showToast('✅ Login berhasil!', 'success');
-  sessionStorage.setItem('admin', '1');
-}
+    const page = document.getElementById('page-' + tab);
+    if (page) page.classList.add('active');
 
-// ---------- INIT ----------
-document.addEventListener('DOMContentLoaded', function() {
-  initNavActive();
-  initLiveCount();
-  initCounters();
+    const btn = document.querySelector(`.nav-btn[data-tab="${tab}"]`);
+    if (btn) btn.classList.add('active');
 
-  document.querySelectorAll('.modal').forEach(function(m) {
-    m.addEventListener('click', function(e) {
-      if (e.target === m) m.classList.remove('open');
-    });
-  });
-
-  document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') {
-      document.querySelectorAll('.modal.open').forEach(function(m) { m.classList.remove('open'); });
+    if (tab === 'learn') {
+      DuoUI.renderStats();
+      DuoUI.renderLessons();
+      DuoUI.renderAchievements();
+    } else if (tab === 'topup') {
+      GamesUI.render();
+    } else if (tab === 'profile') {
+      DuoUI.renderProfile();
     }
-  });
-});
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  },
+
+  resetAll() {
+    if (!confirm('⚠️ Yakin reset SEMUA data? XP, streak, gems, dll akan hilang.')) return;
+    DL.reset();
+    alert('✅ Data berhasil direset!');
+    location.reload();
+  },
+};
+
+document.addEventListener('DOMContentLoaded', () => App.init());
+
+// Regen hearts tiap 1 menit
+setInterval(() => {
+  DL.regenHearts();
+  DuoUI.renderStats();
+}, 60 * 1000);
+
+if (typeof window !== 'undefined') window.App = App;
