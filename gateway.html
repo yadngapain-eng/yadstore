@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="YadStore Gateway — Pintu masuk ke semua fitur.">
+<meta name="theme-color" content="#060918">
+<title>🚪 YadStore — Gateway</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚪</text></svg>">
+<link rel="stylesheet" href="css/style.css">
+<style>
+.gate{min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:60px 24px;position:relative;z-index:1}
+.gate-hero{display:flex;flex-direction:column;align-items:center;text-align:center;margin-bottom:40px}
+.gate-logo{width:110px;height:110px;margin-bottom:24px;filter:drop-shadow(0 0 35px rgba(0,229,255,.7));animation:float 3s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(-12px) rotate(3deg)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.gate-title{font-size:clamp(44px,9vw,92px);font-weight:900;line-height:1;margin-bottom:14px;background:linear-gradient(90deg,#00e5ff,#7c4dff,#ff4081,#ffd54f);background-size:300% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:shine 4s linear infinite}
+.gate-sub{font-size:clamp(15px,2vw,18px);color:var(--text-muted);max-width:640px;margin-bottom:28px}
+.status-pill{display:inline-flex;align-items:center;gap:10px;padding:8px 18px;background:rgba(0,255,136,.1);border:1px solid rgba(0,255,136,.3);border-radius:100px;font-size:13px;font-weight:700;color:var(--green);margin-bottom:28px}
+.status-dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 12px var(--green);animation:pulse 1.5s infinite}
+.enter-btn{display:inline-flex;align-items:center;gap:10px;padding:18px 44px;font-size:17px;font-weight:900;background:linear-gradient(135deg,#00e5ff,#0072ff);color:#fff;border:none;border-radius:100px;cursor:pointer;box-shadow:0 8px 40px rgba(0,229,255,.5);transition:all .4s;text-decoration:none;margin-bottom:40px;position:relative;overflow:hidden}
+.enter-btn::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.3),transparent);transform:translateX(-100%);transition:transform .8s}
+.enter-btn:hover::before{transform:translateX(100%)}
+.enter-btn:hover{transform:translateY(-4px) scale(1.05);box-shadow:0 20px 60px rgba(0,229,255,.8)}
+.enter-btn .arrow{transition:transform .3s}
+.enter-btn:hover .arrow{transform:translateX(8px)}
+.gate-stats{display:flex;gap:44px;flex-wrap:wrap;justify-content:center;margin-bottom:40px}
+.gate-stat{text-align:center}
+.gate-stat-num{display:block;font-size:38px;font-weight:900;background:linear-gradient(90deg,#00e5ff,#7c4dff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.gate-stat-label{font-size:12px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;font-weight:600}
+.gate-controls{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;max-width:900px;width:100%;margin-bottom:30px}
+.gate-search{flex:1;min-width:220px;padding:14px 20px;background:var(--card);border:1px solid var(--border);border-radius:100px;color:var(--text);font-family:inherit;font-size:15px;backdrop-filter:blur(20px);transition:all .3s}
+.gate-search:focus{outline:none;border-color:var(--primary);box-shadow:var(--glow)}
+.gate-search::placeholder{color:var(--text-muted)}
+.gate-cats{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:30px}
+.gate-cat{padding:10px 20px;background:var(--card);border:1px solid var(--border);border-radius:100px;color:var(--text-muted);font-family:inherit;font-size:13.5px;font-weight:700;cursor:pointer;transition:all .3s;backdrop-filter:blur(10px)}
+.gate-cat:hover{color:var(--text);border-color:var(--primary);transform:translateY(-2px)}
+.gate-cat.active{background:rgba(0,229,255,.15);color:var(--primary);border-color:var(--primary);box-shadow:var(--glow)}
+.gate-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;max-width:1100px;width:100%;margin-bottom:40px;min-height:200px}
+.gate-card{position:relative;display:flex;flex-direction:column;padding:32px 26px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);backdrop-filter:blur(20px);transition:all .4s cubic-bezier(.4,0,.2,1);overflow:hidden;color:var(--text);animation:fadeUp .5s ease both}
+.gate-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#00e5ff,#7c4dff,#ff4081);transform:scaleX(0);transform-origin:left;transition:transform .5s}
+.gate-card:hover::before{transform:scaleX(1)}
+.gate-card:hover{transform:translateY(-8px) scale(1.02);background:var(--card-hover);border-color:var(--primary);box-shadow:0 20px 60px rgba(0,229,255,.25),var(--glow)}
+.gate-card.is-soon{opacity:.7;cursor:not-allowed}
+.gate-card.is-soon:hover{transform:none;background:var(--card);border-color:var(--border);box-shadow:none}
+.gate-card-icon{font-size:50px;margin-bottom:18px;filter:drop-shadow(0 0 20px rgba(0,229,255,.5));transition:transform .4s}
+.gate-card:hover .gate-card-icon{transform:scale(1.15) rotate(-8deg)}
+.gate-card h3{font-size:22px;font-weight:800;margin-bottom:10px}
+.gate-card p{color:var(--text-muted);font-size:14.5px;margin-bottom:18px;flex-grow:1}
+.gate-card-tags{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.tag{padding:4px 12px;border-radius:100px;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.5px}
+.tag-live{background:rgba(0,255,136,.15);color:#00ff88;border:1px solid rgba(0,255,136,.4)}
+.tag-new{background:rgba(0,229,255,.15);color:#00e5ff;border:1px solid rgba(0,229,255,.4)}
+.tag-beta{background:rgba(124,77,255,.15);color:#7c4dff;border:1px solid rgba(124,77,255,.4)}
+.tag-soon{background:rgba(136,146,176,.15);color:#8892b0;border:1px solid rgba(136,146,176,.4)}
+.tag-pro{background:rgba(255,213,79,.15);color:#ffd54f;border:1px solid rgba(255,213,79,.4)}
+.tag-admin{background:rgba(255,64,129,.15);color:#ff4081;border:1px solid rgba(255,64,129,.4)}
+.gate-card-btn{display:inline-flex;align-items:center;justify-content:space-between;gap:8px;padding:12px 18px;background:linear-gradient(135deg,#00e5ff,#0072ff);color:#fff;border-radius:12px;font-weight:800;font-size:14px;transition:all .3s}
+.gate-card.is-soon .gate-card-btn{background:rgba(136,146,176,.2);color:var(--text-muted);cursor:not-allowed}
+.gate-card:hover:not(.is-soon) .gate-card-btn{box-shadow:0 10px 30px rgba(0,229,255,.5);letter-spacing:.5px}
+.gate-card-btn .arrow{transition:transform .3s}
+.gate-card:hover:not(.is-soon) .gate-card-btn .arrow{transform:translateX(6px)}
+.gate-empty{grid-column:1/-1;text-align:center;padding:60px 20px;color:var(--text-muted)}
+.gate-empty-icon{font-size:72px;margin-bottom:16px;opacity:.5}
+.gate-footer{text-align:center;color:var(--text-muted);font-size:13px;padding-top:24px;border-top:1px solid var(--border);max-width:700px;width:100%;margin-top:20px}
+.gate-footer a{color:var(--primary);font-weight:700}
+@media(max-width:768px){.gate{padding:40px 16px}.gate-grid{grid-template-columns:1fr;gap:14px}.gate-logo{width:80px;height:80px}.gate-stats{gap:24px}.gate-stat-num{font-size:28px}.enter-btn{padding:16px 32px;font-size:15px}.gate-cat{padding:8px 16px;font-size:12.5px}}
+</style>
+</head>
+<body>
+
+<canvas id="bgCanvas"></canvas>
+
+<main class="gate">
+  <header class="gate-hero">
+    <svg class="gate-logo" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="6" y="6" width="88" height="88" rx="22" stroke="url(#g1)" stroke-width="4"/>
+      <path d="M32 36 L20 50 L32 64" stroke="#00e5ff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M68 36 L80 50 L68 64" stroke="#7c4dff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M56 30 L44 70" stroke="#ffd54f" stroke-width="6" stroke-linecap="round"/>
+      <defs>
+        <linearGradient id="g1" x1="0" y1="0" x2="100" y2="100">
+          <stop offset="0%" stop-color="#00e5ff"/>
+          <stop offset="50%" stop-color="#7c4dff"/>
+          <stop offset="100%" stop-color="#ff4081"/>
+        </linearGradient>
+      </defs>
+    </svg>
+
+    <h1 class="gate-title" id="gateTitle">YadStore</h1>
+    <p class="gate-sub" id="gateSub">🚪 Gerbang menuju semua fitur.</p>
+
+    <div class="status-pill">
+      <span class="status-dot"></span>
+      <span>Semua sistem aktif</span>
+    </div>
+
+    <a href="index.html" class="enter-btn">
+      <span>🚀 Masuk ke YadStore</span>
+      <span class="arrow">→</span>
+    </a>
+  </header>
+
+  <div class="gate-stats" id="gateStats"></div>
+
+  <div class="gate-controls">
+    <input type="text" class="gate-search" id="gateSearch" placeholder="🔍 Cari fitur...">
+  </div>
+
+  <div class="gate-cats" id="gateCats"></div>
+  <div class="gate-grid" id="gateGrid"></div>
+
+  <footer class="gate-footer">
+    <p id="gateFooter">Made with 💙 by Ysdev</p>
+    <p style="margin-top:6px" id="gateCopyright">© 2026 YadStore</p>
+  </footer>
+</main>
+
+<script src="js/features.js"></script>
+<script>
+let activeCategory = 'all';
+let searchQuery = '';
+
+function renderHeader() {
+  const site = FEATURE_REGISTRY.site;
+  document.getElementById('gateTitle').textContent = site.name;
+  document.getElementById('gateSub').textContent = '🚪 ' + site.tagline;
+  document.getElementById('gateFooter').textContent = site.footer;
+  document.getElementById('gateCopyright').textContent = '© ' + site.year + ' ' + site.name + ' — Gateway v2.0';
+  document.title = '🚪 ' + site.name + ' — Gateway';
+}
+
+function renderStats() {
+  const stats = [
+    { num: FEATURE_REGISTRY.features.filter(function(f){return f.status.includes('live')}).length, label: 'Fitur Live' },
+    { num: FEATURE_REGISTRY.features.filter(function(f){return f.status.includes('soon')}).length, label: 'Segera' },
+    { num: FEATURE_REGISTRY.features.filter(function(f){return f.category === 'belajar'}).length, label: 'Belajar' },
+    { num: FEATURE_REGISTRY.features.filter(function(f){return f.category === 'game'}).length, label: 'Game' }
+  ];
+  const c = document.getElementById('gateStats');
+  c.innerHTML = stats.map(function(s) {
+    return '<div class="gate-stat"><span class="gate-stat-num" data-count="' + s.num + '">0</span><span class="gate-stat-label">' + s.label + '</span></div>';
+  }).join('');
+  animateCounters();
+}
+
+function renderCategories() {
+  const cats = FEATURE_REGISTRY.categories;
+  const c = document.getElementById('gateCats');
+  c.innerHTML = Object.keys(cats).map(function(key) {
+    const cat = cats[key];
+    return '<button class="gate-cat' + (key === 'all' ? ' active' : '') + '" data-cat="' + key + '">' + cat.icon + ' ' + cat.label + '</button>';
+  }).join('');
+  c.querySelectorAll('.gate-cat').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      c.querySelectorAll('.gate-cat').forEach(function(b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      activeCategory = btn.dataset.cat;
+      renderGrid();
+    });
+  });
+}
+
+function renderGrid() {
+  const features = FEATURE_REGISTRY.features
+    .filter(function(f) {
+      if (activeCategory !== 'all' && f.category !== activeCategory) return false;
+      if (searchQuery) {
+        const q = searchQuery.toLowerCase();
+        return f.title.toLowerCase().indexOf(q) !== -1 || f.desc.toLowerCase().indexOf(q) !== -1;
+      }
+      return true;
+    })
+    .sort(function(a, b) { return (a.order || 99) - (b.order || 99); });
+
+  const grid = document.getElementById('gateGrid');
+  if (features.length === 0) {
+    grid.innerHTML = '<div class="gate-empty"><div class="gate-empty-icon">🔍</div><p>Tidak ada fitur yang cocok.</p></div>';
+    return;
+  }
+  grid.innerHTML = features.map(function(f, i) {
+    const statuses = f.status.map(function(s) {
+      const info = FEATURE_REGISTRY.statuses[s] || FEATURE_REGISTRY.statuses.live;
+      return '<span class="tag ' + info.cls + '">' + info.label + '</span>';
+    }).join('');
+    const isSoon = f.status.includes('soon');
+    const cardCls = 'gate-card' + (isSoon ? ' is-soon' : '');
+    const href = isSoon ? 'javascript:void(0)' : f.href;
+    const btnText = isSoon ? 'Segera Hadir' : 'Masuk';
+    return '<a href="' + href + '" class="' + cardCls + '" style="animation-delay:' + (i * 0.05) + 's">' +
+      '<div class="gate-card-icon">' + f.icon + '</div>' +
+      '<h3>' + f.title + '</h3>' +
+      '<p>' + f.desc + '</p>' +
+      '<div class="gate-card-tags">' + statuses + '</div>' +
+      '<div class="gate-card-btn"><span>' + btnText + '</span><span class="arrow">→</span></div>' +
+    '</a>';
+  }).join('');
+}
+
+function animateCounters() {
+  document.querySelectorAll('.gate-stat-num[data-count]').forEach(function(el) {
+    const target = parseInt(el.dataset.count);
+    if (target === 0) { el.textContent = '0'; return; }
+    let cur = 0;
+    const step = Math.max(1, Math.floor(target / 40));
+    const t = setInterval(function() {
+      cur += step;
+      if (cur >= target) { cur = target; clearInterval(t); }
+      el.textContent = cur;
+    }, 25);
+  });
+}
+
+function initSearch() {
+  const input = document.getElementById('gateSearch');
+  let timer;
+  input.addEventListener('input', function() {
+    clearTimeout(timer);
+    timer = setTimeout(function() {
+      searchQuery = input.value.trim();
+      renderGrid();
+    }, 200);
+  });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  if (typeof FEATURE_REGISTRY === 'undefined') {
+    document.getElementById('gateGrid').innerHTML = '<div class="gate-empty"><div class="gate-empty-icon">⚠️</div><p>js/features.js tidak ditemukan.</p></div>';
+    return;
+  }
+  renderHeader();
+  renderStats();
+  renderCategories();
+  renderGrid();
+  initSearch();
+});
+</script>
+<script src="js/bg.js"></script>
+</body>
+</html>
