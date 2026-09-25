@@ -1,114 +1,74 @@
 <!DOCTYPE html>
-<html lang="id"><head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Admin Panel — YadStore</title><link rel="stylesheet" href="css/style.css">
-</head><body>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — YadStore</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
 <canvas id="bgCanvas"></canvas>
+
 <nav class="navbar">
-  <a href="index.html" class="nav-brand"><span class="logo-svg"><svg viewBox="0 0 40 40" width="40" height="40"><defs><linearGradient id="lg" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#00e5ff"/><stop offset="100%" stop-color="#7c4dff"/></linearGradient></defs><rect width="40" height="40" rx="11" fill="url(#lg)"/><text x="20" y="28" font-family="Arial" font-size="22" font-weight="900" fill="#fff" text-anchor="middle">Y</text></svg></span><span class="brand-name">YadStore Admin</span></a>
-  <div class="nav-links">
-    <a href="index.html">Home</a>
-    <a href="#" id="logoutBtn" style="display:none" onclick="adminLogout(event)">Logout</a>
+  <a href="gateway.html" class="nav-brand">
+    <span class="logo-svg">
+      <svg width="34" height="34" viewBox="0 0 34 34" fill="none">
+        <rect x="2" y="2" width="30" height="30" rx="8" stroke="#00e5ff" stroke-width="2"/>
+        <path d="M10 12 L6 17 L10 22" stroke="#00e5ff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M24 12 L28 17 L24 22" stroke="#7c4dff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M19 9 L15 25" stroke="#ffd54f" stroke-width="2.5" stroke-linecap="round"/>
+      </svg>
+    </span>
+    <span class="brand-name">YadStore</span>
+  </a>
+  <button class="nav-toggle" onclick="document.getElementById('navLinks').classList.toggle('open')">☰</button>
+  <div class="nav-links" id="navLinks">
+    <a href="gateway.html">🚪 Gateway</a>
+    <a href="index.html" >🏠 Home</a>
+    <a href="learn.html" >📚 Belajar</a>
+    <a href="store.html" >🎮 Store</a>
+    <a href="article.html" >📰 Article</a>
+    <a href="credit.html" >💎 Credit</a>
+    <a href="admin.html" class="active">🔐 Admin</a>
   </div>
 </nav>
 
-<section id="loginScreen" class="admin-login"><div class="login-card">
-  <h1>🔐 Admin Login</h1>
-  <p>Masukkan kredensial admin untuk melanjutkan.</p>
-  <input type="text" id="adminUser" placeholder="Username" autocomplete="off">
-  <input type="password" id="adminPass" placeholder="Password" autocomplete="off">
-  <button class="btn btn-primary" onclick="adminLogin()">Login</button>
-  <p id="loginError" class="error-msg"></p>
-</div></section>
+<div class="live-bar">
+  <span class="live-dot"></span>
+  <span>Live:</span>
+  <span id="liveCount">0</span>
+  <span>coders online</span>
+  <span class="divider">•</span>
+  <span>⭐ YadStore v2</span>
+</div>
 
-<section id="adminPanel" class="admin-panel" style="display:none">
-  <div class="admin-header">
-    <h1>⚙️ Admin Dashboard</h1>
-    <p>Kelola semua konten YadStore dari sini.</p>
-  </div>
-  <div class="admin-tabs">
-    <button class="tab-btn active" onclick="showTab('tabGames')">🎮 Games</button>
-    <button class="tab-btn" onclick="showTab('tabLessons')">📚 Lessons</button>
-    <button class="tab-btn" onclick="showTab('tabArticles')">📖 Articles</button>
-    <button class="tab-btn" onclick="showTab('tabSettings')">🔧 Settings</button>
-    <button class="tab-btn" onclick="showTab('tabStats')">📊 Stats</button>
-  </div>
 
-  <div id="tabGames" class="admin-tab-content active">
-    <h2>Tambah / Edit Game</h2>
-    <form id="gameForm" onsubmit="saveGame(event)">
-      <input type="hidden" id="gameId">
-      <input type="text" id="gameName" placeholder="Nama Game" required>
-      <input type="text" id="gameGenre" placeholder="Genre" required>
-      <input type="text" id="gamePrice" placeholder="Harga (Rp)" required>
-      <input type="text" id="gameImg" placeholder="Emoji" required>
-      <textarea id="gameDesc" placeholder="Deskripsi" required></textarea>
-      <button type="submit" class="btn btn-primary">Simpan Game</button>
-    </form>
-    <h3>Daftar Game</h3><div id="adminGameList"></div>
-  </div>
+<section class="section" style="max-width:600px;text-align:center">
+  <h2 class="section-title">🔐 <span class="gradient-text">Admin Panel</span></h2>
 
-  <div id="tabLessons" class="admin-tab-content">
-    <h2>Tambah Pelajaran</h2>
-    <form id="lessonForm" onsubmit="saveLesson(event)">
-      <input type="hidden" id="lessonId">
-      <input type="text" id="lessonTitle" placeholder="Judul" required>
-      <input type="text" id="lessonIcon" placeholder="Emoji" required>
-      <textarea id="lessonDesc" placeholder="Deskripsi" required></textarea>
-      <textarea id="lessonContent" placeholder="Materi (HTML)" rows="8" required></textarea>
-      <label class="upload-label">Upload file .txt/.html:
-        <input type="file" id="lessonFile" accept=".txt,.html,.md" onchange="loadFileToTextarea('lessonFile','lessonContent')">
-      </label>
-      <button type="submit" class="btn btn-primary">Simpan Pelajaran</button>
-    </form>
-    <h3>Daftar Pelajaran</h3><div id="adminLessonList"></div>
-  </div>
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:20px;padding:40px;backdrop-filter:blur(20px)">
+    <p style="color:var(--text-muted);margin-bottom:24px">Masukkan kredensial admin untuk melanjutkan.</p>
 
-  <div id="tabArticles" class="admin-tab-content">
-    <h2>Tambah Article / Berita / Novel</h2>
-    <form id="articleForm" onsubmit="saveArticle(event)">
-      <input type="hidden" id="articleId">
-      <input type="text" id="articleTitle" placeholder="Judul" required>
-      <select id="articleType" required>
-        <option value="article">Article</option><option value="berita">Berita</option><option value="novel">Novel</option>
-      </select>
-      <input type="text" id="articleAuthor" placeholder="Penulis" required>
-      <textarea id="articleExcerpt" placeholder="Ringkasan" required></textarea>
-      <textarea id="articleContent" placeholder="Isi lengkap (HTML)" rows="10" required></textarea>
-      <label class="upload-label">Upload file .txt/.html:
-        <input type="file" id="articleFile" accept=".txt,.html,.md" onchange="loadFileToTextarea('articleFile','articleContent')">
-      </label>
-      <button type="submit" class="btn btn-primary">Simpan Article</button>
-    </form>
-    <h3>Daftar Article</h3><div id="adminArticleList"></div>
-  </div>
+    <button class="btn btn-primary" onclick="adminLogin()" style="width:100%;justify-content:center">
+      🔓 Login sebagai Admin
+    </button>
 
-  <div id="tabSettings" class="admin-tab-content">
-    <h2>Pengaturan</h2>
-    <label>Nama Situs: <input type="text" id="setSiteName"></label>
-    <label>Tagline: <input type="text" id="setTagline"></label>
-    <label>Warna Tema: <input type="color" id="setThemeColor" value="#00c6ff"></label>
-    <button class="btn btn-primary" onclick="saveSettings()">Simpan</button>
-    <h2>Export / Import</h2>
-    <button class="btn btn-secondary" onclick="exportData()">📥 Export Data</button>
-    <label class="upload-label">📤 Import Data (JSON):
-      <input type="file" id="importFile" accept=".json" onchange="importData(event)">
-    </label>
-    <button class="btn btn-danger" onclick="resetAllData()">🗑️ Reset Semua</button>
-  </div>
-
-  <div id="tabStats" class="admin-tab-content">
-    <h2>📊 Statistik</h2>
-    <div class="stats-grid">
-      <div class="stat-card"><span class="stat-num" id="statGames">0</span><span class="stat-label">Games</span></div>
-      <div class="stat-card"><span class="stat-num" id="statLessons">0</span><span class="stat-label">Lessons</span></div>
-      <div class="stat-card"><span class="stat-num" id="statArticles">0</span><span class="stat-label">Articles</span></div>
-      <div class="stat-card"><span class="stat-num" id="statViews">0</span><span class="stat-label">Views</span></div>
-    </div>
+    <p style="color:var(--text-muted);font-size:13px;margin-top:20px">
+      Username & password diperlukan.
+    </p>
   </div>
 </section>
 
-<footer><p>© 2026 YadStore. Dibuat dengan ❤️ oleh Ysdev</p></footer>
-<script src="js/admin.js"></script>
-<script src="js/sidebar.js"></script>
-</body></html>
+
+<footer>
+  <p>Made with 💙 by <a href="credit.html">Ysdev</a></p>
+  <p style="margin-top:6px">© 2026 YadStore. All rights reserved.</p>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script src="js/bg.js"></script>
+
+<script src="js/app.js"></script>
+</body>
+</html>
