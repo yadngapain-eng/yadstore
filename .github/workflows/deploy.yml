@@ -26,7 +26,7 @@ jobs:
 
       - name: Verify files
         run: |
-          echo "Root directory:"
+          echo "Root:"
           ls -la
           echo ""
           echo "js/:"

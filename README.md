@@ -2,12 +2,16 @@
 
 Website belajar + top up game bergaya Duolingo.
 
+## Fitur
+
+- 31 lesson (Coding, English, Matematika, Sains)
+- Top up 8 game populer
+- XP, Level, Streak, Hearts, Gems
+- 12 Achievements
+
 ## Auto Deploy
 
-Setiap push ke `main` akan otomatis deploy ke Cloudflare Pages.
-
-- **Live:** https://duniamu.my.id
-- **Preview:** https://yadstore.pages.dev
+Setiap push ke `main` auto deploy ke Cloudflare Pages via GitHub Actions.
 
 ## GitHub Secrets
 
@@ -18,26 +22,4 @@ Setiap push ke `main` akan otomatis deploy ke Cloudflare Pages.
 
 ```bash
 wrangler pages deploy . --project-name=yadstore
-```
-
-## Struktur
-
-```
-.
-|-- index.html
-|-- sw.js
-|-- _headers
-|-- wrangler.toml
-|-- css/style.css
-|-- js/
-|   |-- lessons-data.js
-|   |-- duolingo-core.js
-|   |-- duolingo-ui.js
-|   |-- games-data.js
-|   |-- games-ui.js
-|   `-- app.js
-`-- .github/workflows/
-    |-- deploy.yml
-    |-- deploy-wrangler.yml
-    `-- cleanup.yml
 ```

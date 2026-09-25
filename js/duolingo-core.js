@@ -1,6 +1,4 @@
-/* ============================================
-   YADSTORE — DUOLINGO CORE
-   ============================================ */
+/* YADSTORE — DUOLINGO CORE */
 
 const DL = {
   get(key, def) {
@@ -10,10 +8,8 @@ const DL = {
     } catch (e) { return def; }
   },
   set(key, val) {
-    try { localStorage.setItem('yadstore_' + key, JSON.stringify(val)); }
-    catch (e) {}
+    try { localStorage.setItem('yadstore_' + key, JSON.stringify(val)); } catch (e) {}
   },
-
   getState() {
     return {
       xp: this.get('xp', 0),
@@ -26,116 +22,80 @@ const DL = {
       achievements: this.get('achievements', []),
       totalCorrect: this.get('totalCorrect', 0),
       totalWrong: this.get('totalWrong', 0),
-      dailyXp: this.get('dailyXp', 0),
-      dailyXpDate: this.get('dailyXpDate', null),
     };
   },
-
-  saveState(state) {
-    Object.keys(state).forEach(k => this.set(k, state[k]));
-  },
-
+  saveState(state) { Object.keys(state).forEach(k => this.set(k, state[k])); },
   regenHearts() {
-    const state = this.getState();
+    const s = this.getState();
     const now = Date.now();
-    const elapsed = now - state.heartsUpdated;
-    const REGEN_TIME = 4 * 60 * 60 * 1000;
-    const regenCount = Math.floor(elapsed / REGEN_TIME);
-    if (regenCount > 0 && state.hearts < 5) {
-      state.hearts = Math.min(5, state.hearts + regenCount);
-      state.heartsUpdated = now;
-      this.saveState(state);
+    const elapsed = now - s.heartsUpdated;
+    const REGEN = 4 * 60 * 60 * 1000;
+    const count = Math.floor(elapsed / REGEN);
+    if (count > 0 && s.hearts < 5) {
+      s.hearts = Math.min(5, s.hearts + count);
+      s.heartsUpdated = now;
+      this.saveState(s);
     }
-    return state.hearts;
+    return s.hearts;
   },
-
   getLevel() {
     const xp = this.getState().xp;
-    let level = 1, needed = 100, accumulated = 0;
-    while (xp >= accumulated + needed) {
-      accumulated += needed;
-      level++;
-      needed = Math.round(needed * 1.3);
-    }
-    return { level, currentXp: xp - accumulated, neededXp: needed, totalXp: xp };
+    let level = 1, needed = 100, acc = 0;
+    while (xp >= acc + needed) { acc += needed; level++; needed = Math.round(needed * 1.3); }
+    return { level, currentXp: xp - acc, neededXp: needed, totalXp: xp };
   },
-
   addXp(amount) {
-    const state = this.getState();
-    state.xp += amount;
-    const today = new Date().toISOString().split('T')[0];
-    if (state.dailyXpDate !== today) {
-      state.dailyXpDate = today;
-      state.dailyXp = 0;
-    }
-    state.dailyXp += amount;
-    this.saveState(state);
+    const s = this.getState();
+    s.xp += amount;
+    this.saveState(s);
     return this.getLevel();
   },
-
   updateStreak() {
-    const state = this.getState();
+    const s = this.getState();
     const today = new Date().toISOString().split('T')[0];
-    if (state.lastStudy === today) return state.streak;
-    const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
-    if (state.lastStudy === yesterday) state.streak += 1;
-    else state.streak = 1;
-    state.lastStudy = today;
-    this.saveState(state);
-    return state.streak;
+    if (s.lastStudy === today) return s.streak;
+    const y = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+    if (s.lastStudy === y) s.streak += 1; else s.streak = 1;
+    s.lastStudy = today;
+    this.saveState(s);
+    return s.streak;
   },
-
   loseHeart() {
-    const state = this.getState();
-    if (state.hearts <= 0) return 0;
-    state.hearts -= 1;
-    state.heartsUpdated = Date.now();
-    this.saveState(state);
-    return state.hearts;
+    const s = this.getState();
+    if (s.hearts <= 0) return 0;
+    s.hearts -= 1;
+    s.heartsUpdated = Date.now();
+    this.saveState(s);
+    return s.hearts;
   },
-
   refillHearts() {
-    const state = this.getState();
-    state.hearts = 5;
-    state.heartsUpdated = Date.now();
-    this.saveState(state);
+    const s = this.getState();
+    s.hearts = 5;
+    s.heartsUpdated = Date.now();
+    this.saveState(s);
   },
-
   addGems(amount) {
-    const state = this.getState();
-    state.gems += amount;
-    if (state.gems < 0) state.gems = 0;
-    this.saveState(state);
-    return state.gems;
+    const s = this.getState();
+    s.gems += amount;
+    if (s.gems < 0) s.gems = 0;
+    this.saveState(s);
+    return s.gems;
   },
-
-  completeLesson(lessonId, score, total, xpReward) {
-    const state = this.getState();
-    if (!state.completedLessons.includes(lessonId)) {
-      state.completedLessons.push(lessonId);
-    }
+  completeLesson(id, score, total, xpReward) {
+    const s = this.getState();
+    if (!s.completedLessons.includes(id)) s.completedLessons.push(id);
     const perfect = score === total;
     const xpEarned = xpReward + (perfect ? 5 : 0);
-    state.xp += xpEarned;
-    state.gems += perfect ? 5 : 2;
-    state.totalCorrect += score;
-    state.totalWrong += (total - score);
-    const today = new Date().toISOString().split('T')[0];
-    if (state.dailyXpDate !== today) {
-      state.dailyXpDate = today;
-      state.dailyXp = 0;
-    }
-    state.dailyXp += xpEarned;
-    this.saveState(state);
+    s.xp += xpEarned;
+    s.gems += perfect ? 5 : 2;
+    s.totalCorrect += score;
+    s.totalWrong += (total - score);
+    this.saveState(s);
     this.updateStreak();
     this.checkAchievements({ perfect });
     return { xpEarned, perfect, level: this.getLevel() };
   },
-
-  isLessonCompleted(id) {
-    return this.getState().completedLessons.includes(id);
-  },
-
+  isLessonCompleted(id) { return this.getState().completedLessons.includes(id); },
   ACHIEVEMENTS: [
     { id: 'first_lesson', icon: '🎯', title: 'First Steps', desc: 'Selesaikan 1 lesson', check: s => s.completedLessons.length >= 1 },
     { id: 'five_lessons', icon: '🌟', title: 'Getting Started', desc: 'Selesaikan 5 lesson', check: s => s.completedLessons.length >= 5 },
@@ -148,37 +108,29 @@ const DL = {
     { id: 'xp_100', icon: '⭐', title: 'Century', desc: '100 XP', check: s => s.xp >= 100 },
     { id: 'xp_500', icon: '🌠', title: 'XP Master', desc: '500 XP', check: s => s.xp >= 500 },
     { id: 'xp_1000', icon: '🚀', title: 'XP Legend', desc: '1000 XP', check: s => s.xp >= 1000 },
-    { id: 'xp_5000', icon: '🏅', title: 'XP God', desc: '5000 XP', check: s => s.xp >= 5000 },
     { id: 'perfect', icon: '🏆', title: 'Perfectionist', desc: 'Skor 100% 1 lesson', check: (s, e) => e && e.perfect },
-    { id: 'shopper', icon: '🛒', title: 'First Order', desc: 'Top up 1x', check: () => (DL.get('orders', []).length >= 1) },
-    { id: 'big_spender', icon: '💰', title: 'Big Spender', desc: 'Top up 5x', check: () => (DL.get('orders', []).length >= 5) },
   ],
-
   checkAchievements(extra) {
     extra = extra || {};
-    const state = this.getState();
-    const unlocked = [...state.achievements];
+    const s = this.getState();
+    const unlocked = [...s.achievements];
     this.ACHIEVEMENTS.forEach(a => {
-      if (!unlocked.includes(a.id) && a.check(state, extra)) {
+      if (!unlocked.includes(a.id) && a.check(s, extra)) {
         unlocked.push(a.id);
         if (typeof showAchievementPopup === 'function') showAchievementPopup(a);
       }
     });
-    state.achievements = unlocked;
-    this.saveState(state);
+    s.achievements = unlocked;
+    this.saveState(s);
     return unlocked;
   },
-
   getAchievements() {
-    const state = this.getState();
-    return this.ACHIEVEMENTS.map(a => ({ ...a, unlocked: state.achievements.includes(a.id) }));
+    const s = this.getState();
+    return this.ACHIEVEMENTS.map(a => ({ ...a, unlocked: s.achievements.includes(a.id) }));
   },
-
   reset() {
-    const keys = ['xp','gems','hearts','heartsUpdated','streak','lastStudy',
-                  'completedLessons','achievements','totalCorrect','totalWrong',
-                  'dailyXp','dailyXpDate','orders'];
-    keys.forEach(k => localStorage.removeItem('yadstore_' + k));
+    ['xp','gems','hearts','heartsUpdated','streak','lastStudy','completedLessons','achievements','totalCorrect','totalWrong']
+      .forEach(k => localStorage.removeItem('yadstore_' + k));
   },
 };
 
