@@ -3,8 +3,34 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Article — YadStore</title>
+<title>📰 Article — YadStore</title>
 <link rel="stylesheet" href="css/style.css">
+<style>
+.article-hero{text-align:center;padding:80px 24px 40px;background:radial-gradient(circle at 50% 0%,rgba(0,229,255,.12),transparent 70%)}
+.article-hero h1{font-size:clamp(36px,7vw,64px);font-weight:900;line-height:1.1;margin-bottom:14px;background:linear-gradient(90deg,#00e5ff,#7c4dff,#ff4081,#ffd54f);background-size:300% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:shine 4s linear infinite}
+.article-hero p{color:var(--text-muted);font-size:17px;max-width:600px;margin:0 auto}
+.article-controls{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;max-width:900px;margin:0 auto 24px;padding:0 24px}
+.article-search{flex:1;min-width:240px;padding:14px 22px;background:var(--card);border:1px solid var(--border);border-radius:100px;color:var(--text);font-family:inherit;font-size:15px;backdrop-filter:blur(20px);transition:all .3s}
+.article-search:focus{outline:none;border-color:var(--primary);box-shadow:var(--glow)}
+.article-search::placeholder{color:var(--text-muted)}
+.article-cats{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:36px;padding:0 24px}
+.article-cat{padding:10px 20px;background:var(--card);border:1px solid var(--border);border-radius:100px;color:var(--text-muted);font-family:inherit;font-size:13.5px;font-weight:700;cursor:pointer;transition:all .3s;backdrop-filter:blur(10px)}
+.article-cat:hover{color:var(--text);border-color:var(--primary);transform:translateY(-2px)}
+.article-cat.active{background:rgba(0,229,255,.15);color:var(--primary);border-color:var(--primary);box-shadow:var(--glow)}
+.article-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:24px;max-width:1200px;margin:0 auto;padding:0 24px 60px}
+.article-card{display:flex;flex-direction:column;background:var(--card);border:1px solid var(--border);border-radius:20px;overflow:hidden;transition:all .4s cubic-bezier(.4,0,.2,1);backdrop-filter:blur(20px);position:relative}
+.article-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#00e5ff,#7c4dff,#ff4081);transform:scaleX(0);transform-origin:left;transition:transform .5s;z-index:2}
+.article-card:hover::before{transform:scaleX(1)}
+.article-card:hover{transform:translateY(-8px);border-color:var(--primary);box-shadow:0 20px 60px rgba(0,229,255,.25),var(--glow)}
+.article-cover{font-size:72px;text-align:center;padding:32px 20px 20px;background:linear-gradient(135deg,rgba(0,229,255,.08),rgba(124,77,255,.08));filter:drop-shadow(0 0 20px rgba(0,229,255,.4))}
+.article-body{padding:24px;display:flex;flex-direction:column;flex-grow:1}
+.article-meta{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-muted);font-weight:600;margin-bottom:12px}
+.article-cat{padding:4px 10px;background:rgba(0,229,255,.15);color:var(--primary);border-radius:100px;font-weight:800;font-size:11px;text-transform:uppercase;letter-spacing:.5px}
+.article-dot{opacity:.4}
+.article-title{font-size:20px;font-weight:800;margin-bottom:10px;line-height:1.3;color:var(--text)}
+.article-excerpt{color:var(--text-muted);font-size:14px;line-height:1.6;margin-bottom:16px;flex-grow:1}
+.article-footer{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--text-muted);padding-top:14px;border-top:1px solid rgba(42,49,85,.4)}
+</style>
 </head>
 <body>
 <canvas id="bgCanvas"></canvas>
@@ -24,12 +50,12 @@
   <button class="nav-toggle" onclick="document.getElementById('navLinks').classList.toggle('open')">☰</button>
   <div class="nav-links" id="navLinks">
     <a href="gateway.html">🚪 Gateway</a>
-    <a href="index.html" >🏠 Home</a>
-    <a href="learn.html" >📚 Belajar</a>
-    <a href="store.html" >🎮 Store</a>
+    <a href="index.html">🏠 Home</a>
+    <a href="learn.html">📚 Belajar</a>
+    <a href="store.html">🎮 Store</a>
     <a href="article.html" class="active">📰 Article</a>
-    <a href="credit.html" >💎 Credit</a>
-    <a href="admin.html" >🔐 Admin</a>
+    <a href="credit.html">💎 Credit</a>
+    <a href="admin.html">🔐 Admin</a>
   </div>
 </nav>
 
@@ -38,39 +64,20 @@
   <span>Live:</span>
   <span id="liveCount">0</span>
   <span>coders online</span>
-  <span class="divider">•</span>
-  <span>⭐ YadStore v2</span>
 </div>
 
+<header class="article-hero">
+  <h1>📰 Article & Novel</h1>
+  <p>Kumpulan tutorial, berita, opini, novel, dan tips seputar dunia coding.</p>
+</header>
 
-<section class="section">
-  <h2 class="section-title">📰 <span class="gradient-text">Article & Novel</span></h2>
-  <p style="text-align:center;color:var(--text-muted);margin-bottom:36px;font-size:17px">
-    20+ article, berita, dan novel panjang.
-  </p>
+<div class="article-controls">
+  <input type="text" class="article-search" id="articleSearch" placeholder="🔍 Cari artikel, penulis, atau topik...">
+</div>
 
-  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px">
-    <div class="gate-card">
-      <div class="gate-card-icon">📖</div>
-      <h3>Panduan Pemula Coding</h3>
-      <p>Langkah awal memulai perjalanan coding.</p>
-      <div class="gate-card-tags"><span class="tag tag-pro">Pro</span></div>
-    </div>
-    <div class="gate-card">
-      <div class="gate-card-icon">💡</div>
-      <h3>10 Tips Produktif</h3>
-      <p>Biar belajar coding lebih efektif.</p>
-      <div class="gate-card-tags"><span class="tag tag-live">Live</span></div>
-    </div>
-    <div class="gate-card">
-      <div class="gate-card-icon">📰</div>
-      <h3>Berita Teknologi</h3>
-      <p>Update terbaru dunia teknologi.</p>
-      <div class="gate-card-tags"><span class="tag tag-live">Live</span></div>
-    </div>
-  </div>
-</section>
+<div class="article-cats" id="articleCats"></div>
 
+<div class="article-grid" id="articleList"></div>
 
 <footer>
   <p>Made with 💙 by <a href="credit.html">Ysdev</a></p>
@@ -80,7 +87,8 @@
 <div class="toast" id="toast"></div>
 
 <script src="js/bg.js"></script>
-
+<script src="js/articles-data.js"></script>
+<script src="js/articles-render.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>
