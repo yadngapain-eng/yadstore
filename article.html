@@ -1,46 +1,86 @@
 <!DOCTYPE html>
-<html lang="id"><head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Article & Novel — YadStore</title><link rel="stylesheet" href="css/style.css">
-</head><body>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Article — YadStore</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
 <canvas id="bgCanvas"></canvas>
+
 <nav class="navbar">
-  <a href="index.html" class="nav-brand"><span class="logo-svg"><svg viewBox="0 0 40 40" width="40" height="40"><defs><linearGradient id="lg" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#00e5ff"/><stop offset="100%" stop-color="#7c4dff"/></linearGradient></defs><rect width="40" height="40" rx="11" fill="url(#lg)"/><text x="20" y="28" font-family="Arial" font-size="22" font-weight="900" fill="#fff" text-anchor="middle">Y</text></svg></span><span class="brand-name">YadStore</span></a>
-  <div class="nav-links">
-    <a href="index.html">Home</a><a href="learn.html">Learn</a>
-    <a href="store.html">Store</a><a href="article.html" class="active">Article</a>
-    <a href="credit.html">Credit</a><a href="admin.html" class="btn-admin">Admin</a>
+  <a href="gateway.html" class="nav-brand">
+    <span class="logo-svg">
+      <svg width="34" height="34" viewBox="0 0 34 34" fill="none">
+        <rect x="2" y="2" width="30" height="30" rx="8" stroke="#00e5ff" stroke-width="2"/>
+        <path d="M10 12 L6 17 L10 22" stroke="#00e5ff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M24 12 L28 17 L24 22" stroke="#7c4dff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M19 9 L15 25" stroke="#ffd54f" stroke-width="2.5" stroke-linecap="round"/>
+      </svg>
+    </span>
+    <span class="brand-name">YadStore</span>
+  </a>
+  <button class="nav-toggle" onclick="document.getElementById('navLinks').classList.toggle('open')">☰</button>
+  <div class="nav-links" id="navLinks">
+    <a href="gateway.html">🚪 Gateway</a>
+    <a href="index.html" >🏠 Home</a>
+    <a href="learn.html" >📚 Belajar</a>
+    <a href="store.html" >🎮 Store</a>
+    <a href="article.html" class="active">📰 Article</a>
+    <a href="credit.html" >💎 Credit</a>
+    <a href="admin.html" >🔐 Admin</a>
   </div>
-  <button class="nav-toggle" onclick="toggleNav()">☰</button>
 </nav>
 
-<section class="menu-header">
-  <canvas id="menuCanvas" class="menu-canvas"></canvas>
-  <div class="menu-header-content">
-    <h1>📖 Article & Novel</h1>
-    <p>Baca berita teknologi, tutorial, dan novel seru.</p>
+<div class="live-bar">
+  <span class="live-dot"></span>
+  <span>Live:</span>
+  <span id="liveCount">0</span>
+  <span>coders online</span>
+  <span class="divider">•</span>
+  <span>⭐ YadStore v2</span>
+</div>
+
+
+<section class="section">
+  <h2 class="section-title">📰 <span class="gradient-text">Article & Novel</span></h2>
+  <p style="text-align:center;color:var(--text-muted);margin-bottom:36px;font-size:17px">
+    20+ article, berita, dan novel panjang.
+  </p>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px">
+    <div class="gate-card">
+      <div class="gate-card-icon">📖</div>
+      <h3>Panduan Pemula Coding</h3>
+      <p>Langkah awal memulai perjalanan coding.</p>
+      <div class="gate-card-tags"><span class="tag tag-pro">Pro</span></div>
+    </div>
+    <div class="gate-card">
+      <div class="gate-card-icon">💡</div>
+      <h3>10 Tips Produktif</h3>
+      <p>Biar belajar coding lebih efektif.</p>
+      <div class="gate-card-tags"><span class="tag tag-live">Live</span></div>
+    </div>
+    <div class="gate-card">
+      <div class="gate-card-icon">📰</div>
+      <h3>Berita Teknologi</h3>
+      <p>Update terbaru dunia teknologi.</p>
+      <div class="gate-card-tags"><span class="tag tag-live">Live</span></div>
+    </div>
   </div>
 </section>
 
-<section class="filter-bar">
-  <input type="text" id="searchArticle" placeholder="Cari article atau novel..." oninput="renderArticle()">
-  <select id="filterType" onchange="renderArticle()">
-    <option value="">Semua Tipe</option>
-    <option value="article">Article</option>
-    <option value="berita">Berita</option>
-    <option value="novel">Novel</option>
-  </select>
-</section>
 
-<section class="article-section"><div id="articleGrid" class="article-grid"></div></section>
+<footer>
+  <p>Made with 💙 by <a href="credit.html">Ysdev</a></p>
+  <p style="margin-top:6px">© 2026 YadStore. All rights reserved.</p>
+</footer>
 
-<div id="readerModal" class="modal"><div class="modal-content reader-modal">
-  <button class="modal-close" onclick="closeReader()">✕</button>
-  <div id="readerContent"></div>
-</div></div>
+<div class="toast" id="toast"></div>
 
-<footer><p>© 2026 YadStore. Dibuat dengan ❤️ oleh <a href="credit.html">Ysdev</a></p></footer>
-<script src="js/article.js"></script><script src="js/main.js"></script>
-<script src="js/stickman.js"></script><script src="js/bg.js"></script>
-<script src="js/sidebar.js"></script>
-</body></html>
+<script src="js/bg.js"></script>
+
+<script src="js/app.js"></script>
+</body>
+</html>
