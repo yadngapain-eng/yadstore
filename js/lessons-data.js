@@ -1,4 +1,4 @@
-/* YADSTORE — LESSONS DATA v2 (Lengkap + Dual Language) */
+/* LEARN EARN — LESSONS DATA v2 (Lengkap + Dual Language) */
 
 const LESSON_CATEGORIES = {
   coding:  { label: 'Coding',     label_en: 'Coding',   icon: '💻', color: '#1cb0f6' },

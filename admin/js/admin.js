@@ -1,5 +1,5 @@
 /* ============================================
-   YADSTORE — ADMIN PANEL v4
+   LEARN EARN — ADMIN PANEL v4
    + Min Withdraw per user + Pilih Semua
    ============================================ */
 

@@ -19,10 +19,10 @@ const TopUpUI = {
   // ===== HELPER: Ambil harga final (dengan markup) =====
   getFinalPrice: function(itemId, prodId, defaultPrice) {
     try {
-      var prices = JSON.parse(localStorage.getItem('yadstore_prices') || '{}');
+      var prices = JSON.parse(localStorage.getItem('learnearn_prices') || '{}');
       var key = itemId + '_' + prodId;
       if (prices[key] && prices[key].final) return prices[key].final;
-      var cfg = JSON.parse(localStorage.getItem('yadstore_config') || '{}');
+      var cfg = JSON.parse(localStorage.getItem('learnearn_config') || '{}');
       var add = cfg.global_markup || 0;
       return defaultPrice + add;
     } catch(e) { return defaultPrice; }
@@ -164,7 +164,7 @@ const TopUpUI = {
     var accountInfo = '';
     if (pay.account) {
       accountInfo = '<div class="pay-row"><span>Nomor Rekening</span><strong style="color:#58cc02;font-size:18px;letter-spacing:1px">' + pay.account + '</strong></div>' +
-                    '<div class="pay-row"><span>Atas Nama</span><strong>' + (pay.holder || 'YadStore') + '</strong></div>';
+                    '<div class="pay-row"><span>Atas Nama</span><strong>' + (pay.holder || 'Learn Earn') + '</strong></div>';
     }
     m.innerHTML = '<div class="modal-content">' +
       '<div class="modal-header" style="background: #58cc02">' +
@@ -241,9 +241,9 @@ const TopUpUI = {
     Animate.confetti();
   },
 
-  getOrders() { try { return JSON.parse(localStorage.getItem('yadstore_orders') || '[]'); } catch(e) { return []; } },
+  getOrders() { try { return JSON.parse(localStorage.getItem('learnearn_orders') || '[]'); } catch(e) { return []; } },
   saveOrders(o) {
-    try { localStorage.setItem('yadstore_orders', JSON.stringify(o)); } catch(e) {}
+    try { localStorage.setItem('learnearn_orders', JSON.stringify(o)); } catch(e) {}
     if (typeof Auth !== 'undefined' && Auth.db && Auth.user && !Auth.user.isLocal) {
       try {
         const ref = Auth.db.collection('users').doc(Auth.user.uid).collection('orders');

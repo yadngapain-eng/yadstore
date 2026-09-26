@@ -1,4 +1,4 @@
-/* YADSTORE - icon base64 embedded (pasti muncul, no external) */
+/* LEARN EARN - icon base64 embedded (pasti muncul, no external) */
 
 const GAMES = [
   { id: 'mlbb', name: 'Mobile Legends', icon: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAYAAADDPmHLAAAEN0lEQVR42u2dT28TRxiHfzPrOCSy1FIakgA9hUOlqlVbCS6UFqpSoCf4LHwCPgYHvkNPEEiFVSRUNRQkWql/LpWQIhKncYCgNDjx7nIwlbq7trNJcPDMPM/RdpTd/T3zzruza68EAAAAAABhYfbznx37/t+UQ16OhUvjxnkBCHz4hTAEH7YIhuDDFsEQfNgiWMJ3m70ef0v4YUtgCT9sCSzhhy2BJfywJbCEH7YElvDDlsByqMLGMvrDrgJUACoAoz/kKkAFoAIw+kOuAlQAKgAgACAA83+YfQAVgAoACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAeUBmmjfnoHavZM6M9349T6fPZl1rdLH/Dcq0i/XpxTCN9VP+m3tJfa0mpbXm8nuqLH15SAd4GkZHOTe1sk7+ejPqGzxTgGBemo4F+HgGGnC8PR6qVnLhGrHR2EgG8EqC6g1BPvV9eFgQYUjYTaW0r2/RdLFnWz09nd2+lxbfdnBOgaqV7K9kO/exkpOo2W24kfTuVFeXBakLiLk4BP+cEqFU6vUA/PjtodfhA9oe07yOAmwLMNxOlO+zuz3d5/xcEcFOAtXaq359nwzs3ZRWZ8gL8uZYUeglwRIBRa1RfzgrwXtXo5KHumz9TM5qpZe2oNxKNWkPiLgpQsVK9ERde73U20G16uLMcy5C/mwIYSQ9XiyX8wnTU9Zk3+fL/bDPV/WYi8ndUAElqp9KdRnYamB4z+uTd7C5MjBp9ejD72lwjUcz077YAknRzscs0cCQqjP78SL/5JCZpHwSoN2JtxP3n+/zq33pburuMAF4IsBFLP+bCnKkZHX/d8dcqnfX/TPPXiNXi9N8PAXpNA/9dHDo9Ubz23+3z4LAAc0uJtnIj+vREZzfOTGZ3p5V0KgB4JMCLrVT3VrKhnjgUqWKkr3LXB+4ux1pvE7JXAkjSjSfFi0OXP4h0dMzQ/YcgwO2luHBef+XDkcK6wVyD7s9LAZqtzsre/8mP/p9WEj3bZPXHSwEk6cY23T3lvxzO3jE3uxjr6scjXdf3k7Tz/iCYOGB07UR1139//e+25psJAuyVxY1Uj54mhXV/SXrwNNE/A7r/bzySvjuy+zuNby3Fmm8yBQx0GqD8hyJAj6BZ/QtEgMfrqf7Ifafvt+eJFnjYSWl63iPBI2P8Y+HSuPGqAkDgUwAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAD0E6DbPeTgLr3ypAJQAQABAAHoA8Kb/6kAsL0AVAF/Rz8VAMoJQBXwc/RTAaC8AFQB/0b/jisAEvgV/q6mACTwJ/xd9wBI4Ef4e2oCkcD98Pd8FoAEbof/Rk4DkcDd8CW92Ydp8uOS7gQ/EAEQwZ3gByoAIgx/8PsiAELQWwEAAADAEPIKgXxrgR9hmy0AAAAASUVORK5CYII=', color: '#1cb0f6', category: 'game', desc: 'Top up Diamond MLBB',
@@ -71,8 +71,8 @@ const DATA_PACKAGES = [
 ];
 
 const PAYMENTS = [
-  { id: 'seabank', name: 'SEABANK', fee: 0, account: '901825485120', holder: 'YadStore' },
-  { id: 'gopay', name: 'GOPAY', fee: 0, account: '083170617054', holder: 'YadStore' },
+  { id: 'seabank', name: 'SEABANK', fee: 0, account: '901825485120', holder: 'Learn Earn' },
+  { id: 'gopay', name: 'GOPAY', fee: 0, account: '083170617054', holder: 'Learn Earn' },
 ];
 
 if (typeof window !== 'undefined') {

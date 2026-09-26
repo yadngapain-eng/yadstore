@@ -1,15 +1,15 @@
 /* ============================================
-   YADSTORE — DUOLINGO CORE v3
+   LEARN EARN — DUOLINGO CORE v3
    40+ Achievements dengan Tier & Coin
    ============================================ */
 
 const DL = {
   get(k, d) {
-    try { const v = localStorage.getItem('yadstore_' + k); return v !== null ? JSON.parse(v) : d; }
+    try { const v = localStorage.getItem('learnearn_' + k); return v !== null ? JSON.parse(v) : d; }
     catch (e) { return d; }
   },
   set(k, v) {
-    try { localStorage.setItem('yadstore_' + k, JSON.stringify(v)); } catch (e) {}
+    try { localStorage.setItem('learnearn_' + k, JSON.stringify(v)); } catch (e) {}
   },
   getState() {
     return {
@@ -375,7 +375,7 @@ const DL = {
 
   reset() {
     ['xp','gems','hearts','heartsUpdated','streak','lastStudy','completedLessons','achievements','totalCorrect','totalWrong','orders','totalLessonsCompleted','perfectLessons','topupCount','adWatchTotal','dailyStreakMax']
-      .forEach(k => localStorage.removeItem('yadstore_' + k));
+      .forEach(k => localStorage.removeItem('learnearn_' + k));
   },
 };
 if (typeof window !== 'undefined') window.DL = DL;

@@ -1,4 +1,4 @@
-/* YADSTORE — FIREBASE CONFIG */
+/* LEARN EARN — FIREBASE CONFIG */
 window.FIREBASE_CONFIG = {
   apiKey: "AIzaSyBsplpeXg1-WyO4MtbFNqS6pEUzJ0lh_DA",
   authDomain: "yad-video-editor.firebaseapp.com",

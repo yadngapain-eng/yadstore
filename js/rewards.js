@@ -1,4 +1,4 @@
-/* YADSTORE — REWARD SYSTEM v2 */
+/* LEARN EARN — REWARD SYSTEM v2 */
 
 const Rewards = {
   CONFIG: {
@@ -137,12 +137,12 @@ const Rewards = {
 
   get(key, def) {
     try {
-      const v = localStorage.getItem('yadstore_reward_' + key);
+      const v = localStorage.getItem('learnearn_reward_' + key);
       return v !== null ? JSON.parse(v) : def;
     } catch (e) { return def; }
   },
   set(key, val) {
-    try { localStorage.setItem('yadstore_reward_' + key, JSON.stringify(val)); } catch (e) {}
+    try { localStorage.setItem('learnearn_reward_' + key, JSON.stringify(val)); } catch (e) {}
   },
 
   getState() {
@@ -356,7 +356,7 @@ const Rewards = {
 
     // Kalau redirect — proses reward saat balik
     if (result.method === 'redirect') {
-      try { localStorage.setItem('yadstore_ad_pending', Date.now().toString()); } catch (e) {}
+      try { localStorage.setItem('learnearn_ad_pending', Date.now().toString()); } catch (e) {}
       return true;
     }
 
@@ -542,7 +542,7 @@ const Rewards = {
     }
     // Cek default dari config (cache)
     try {
-      const cfg = JSON.parse(localStorage.getItem('yadstore_withdraw_config') || '{}');
+      const cfg = JSON.parse(localStorage.getItem('learnearn_withdraw_config') || '{}');
       if (cfg.default_min_withdraw) return cfg.default_min_withdraw;
     } catch (e) {}
     // Fallback ke CONFIG
@@ -555,7 +555,7 @@ const Rewards = {
     try {
       const doc = await Auth.db.collection('config').doc('withdraw_config').get();
       if (doc.exists) {
-        localStorage.setItem('yadstore_withdraw_config', JSON.stringify(doc.data()));
+        localStorage.setItem('learnearn_withdraw_config', JSON.stringify(doc.data()));
       }
     } catch (e) {}
   },

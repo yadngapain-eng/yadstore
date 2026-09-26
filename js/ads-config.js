@@ -1,4 +1,4 @@
-/* YADSTORE - ADS ACTIVE */
+/* LEARN EARN - ADS ACTIVE */
 window.ADS_CONFIG = {
   TAG_URL: 'https://quge5.com/88/tag.min.js',
   TAG_ZONE: '286791',

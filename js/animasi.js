@@ -1,4 +1,4 @@
-/* YADSTORE - ANIMASI v2 */
+/* LEARN EARN - ANIMASI v2 */
 const Animate = {
   attachRipple() {
     document.addEventListener('click', (e) => {

@@ -1,4 +1,4 @@
-/* YADSTORE — APP v4 (fix achievements) */
+/* LEARN EARN — APP v4 (fix achievements) */
 
 const App = {
   currentTab: 'learn',
@@ -43,7 +43,7 @@ const App = {
 
   checkPendingAdReward() {
     try {
-      const pending = localStorage.getItem('yadstore_ad_pending');
+      const pending = localStorage.getItem('learnearn_ad_pending');
       if (pending) {
         const elapsed = Date.now() - parseInt(pending);
         if (elapsed < 5 * 60 * 1000) {
@@ -52,7 +52,7 @@ const App = {
             if (typeof Rewards !== 'undefined') Rewards.giveAdReward();
           }, 1500);
         }
-        localStorage.removeItem('yadstore_ad_pending');
+        localStorage.removeItem('learnearn_ad_pending');
       }
     } catch (e) {}
   },
@@ -125,7 +125,7 @@ const App = {
   resetAll() {
     if (!confirm('Reset SEMUA data?')) return;
     if (typeof DL !== 'undefined') DL.reset();
-    localStorage.removeItem('yadstore_orders');
+    localStorage.removeItem('learnearn_orders');
     alert('Data direset!');
     location.reload();
   },

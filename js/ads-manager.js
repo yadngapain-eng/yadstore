@@ -1,4 +1,4 @@
-/* YADSTORE — ADS MANAGER v9 (aggressive inject) */
+/* LEARN EARN — ADS MANAGER v9 (aggressive inject) */
 
 window.AdsManager = {
   NETWORKS: {
@@ -197,7 +197,7 @@ window.AdsManager = {
     if (!popup || popup.closed) {
       console.log('[AdsManager] Popup blocked → redirect');
       try {
-        localStorage.setItem('yadstore_ad_pending', Date.now().toString());
+        localStorage.setItem('learnearn_ad_pending', Date.now().toString());
         window.location.href = smartlink;
         return { success: true, method: 'redirect' };
       } catch (e) {

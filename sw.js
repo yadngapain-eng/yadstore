@@ -1,4 +1,4 @@
-/* YADSTORE — Service Worker (Monetag Push aktif) */
+/* LEARN EARN — Service Worker (Monetag Push aktif) */
 
 self.options = {
     "domain": "5gvci.com",
@@ -10,7 +10,7 @@ importScripts('https://5gvci.com/act/files/service-worker.min.js?r=sw&v=9')
 // Force skip waiting & claim
 self.addEventListener('install', (event) => {
     self.skipWaiting();
-    console.log('[SW] Installed (YadStore v9)');
+    console.log('[SW] Installed (Learn Earn v9)');
 });
 
 self.addEventListener('activate', (event) => {

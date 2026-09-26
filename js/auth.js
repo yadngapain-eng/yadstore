@@ -1,4 +1,4 @@
-/* YADSTORE — AUTH v3 (per-user data) */
+/* LEARN EARN — AUTH v3 (per-user data) */
 
 const Auth = {
   user: null,
@@ -67,27 +67,27 @@ const Auth = {
   // CLEAR DATA LAMA saat user ganti
   // ============================================
   clearLocalData() {
-    console.log('[Auth] Clearing all yadstore_* keys...');
+    console.log('[Auth] Clearing all learnearn_* keys...');
 
     const keysToKeep = [
-      'yadstore_lang',           // bahasa tetap
-      'yadstore_admin_hash',     // admin password
-      'yadstore_admin',          // admin session
+      'learnearn_lang',           // bahasa tetap
+      'learnearn_admin_hash',     // admin password
+      'learnearn_admin',          // admin session
     ];
 
     const keysToClear = [
-      'yadstore_xp', 'yadstore_gems', 'yadstore_hearts', 'yadstore_heartsUpdated',
-      'yadstore_streak', 'yadstore_lastStudy', 'yadstore_completedLessons',
-      'yadstore_achievements', 'yadstore_totalCorrect', 'yadstore_totalWrong',
-      'yadstore_dailyXp', 'yadstore_dailyXpDate', 'yadstore_orders',
-      'yadstore_reward_balance', 'yadstore_reward_totalEarned',
-      'yadstore_reward_totalSpent', 'yadstore_reward_totalWithdrawn',
-      'yadstore_reward_lastLogin', 'yadstore_reward_lastAdWatch',
-      'yadstore_reward_lastAdDate', 'yadstore_reward_lastAdTime',
-      'yadstore_reward_unlockedRewards', 'yadstore_reward_history',
-      'yadstore_reward_referralCode', 'yadstore_reward_usedReferral',
-      'yadstore_prices', 'yadstore_config', 'yadstore_cfg',
-      'yadstore_local_user', 'yadstore_ad_pending',
+      'learnearn_xp', 'learnearn_gems', 'learnearn_hearts', 'learnearn_heartsUpdated',
+      'learnearn_streak', 'learnearn_lastStudy', 'learnearn_completedLessons',
+      'learnearn_achievements', 'learnearn_totalCorrect', 'learnearn_totalWrong',
+      'learnearn_dailyXp', 'learnearn_dailyXpDate', 'learnearn_orders',
+      'learnearn_reward_balance', 'learnearn_reward_totalEarned',
+      'learnearn_reward_totalSpent', 'learnearn_reward_totalWithdrawn',
+      'learnearn_reward_lastLogin', 'learnearn_reward_lastAdWatch',
+      'learnearn_reward_lastAdDate', 'learnearn_reward_lastAdTime',
+      'learnearn_reward_unlockedRewards', 'learnearn_reward_history',
+      'learnearn_reward_referralCode', 'learnearn_reward_usedReferral',
+      'learnearn_prices', 'learnearn_config', 'learnearn_cfg',
+      'learnearn_local_user', 'learnearn_ad_pending',
     ];
 
     keysToClear.forEach(k => {
@@ -173,21 +173,21 @@ const Auth = {
     };
 
     Object.keys(map).forEach(k => {
-      try { localStorage.setItem('yadstore_' + k, JSON.stringify(map[k])); } catch (e) {}
+      try { localStorage.setItem('learnearn_' + k, JSON.stringify(map[k])); } catch (e) {}
     });
 
     // Reward
     const rewardMap = {
-      'yadstore_reward_balance': p.balance || 0,
-      'yadstore_reward_totalEarned': p.totalEarned || 0,
-      'yadstore_reward_totalSpent': p.totalSpent || 0,
-      'yadstore_reward_totalWithdrawn': p.totalWithdrawn || 0,
-      'yadstore_reward_lastAdWatch': p.lastAdWatch || 0,
-      'yadstore_reward_lastAdDate': p.lastAdDate || null,
-      'yadstore_reward_lastAdTime': p.lastAdTime || 0,
-      'yadstore_reward_referralCode': p.referralCode || null,
-      'yadstore_reward_usedReferral': p.usedReferral || null,
-      'yadstore_reward_unlockedRewards': p.unlockedRewards || [],
+      'learnearn_reward_balance': p.balance || 0,
+      'learnearn_reward_totalEarned': p.totalEarned || 0,
+      'learnearn_reward_totalSpent': p.totalSpent || 0,
+      'learnearn_reward_totalWithdrawn': p.totalWithdrawn || 0,
+      'learnearn_reward_lastAdWatch': p.lastAdWatch || 0,
+      'learnearn_reward_lastAdDate': p.lastAdDate || null,
+      'learnearn_reward_lastAdTime': p.lastAdTime || 0,
+      'learnearn_reward_referralCode': p.referralCode || null,
+      'learnearn_reward_usedReferral': p.usedReferral || null,
+      'learnearn_reward_unlockedRewards': p.unlockedRewards || [],
     };
 
     Object.keys(rewardMap).forEach(k => {
@@ -214,11 +214,11 @@ const Auth = {
   // ============================================
   initLocalOnly() {
     let u = null;
-    try { u = JSON.parse(localStorage.getItem('yadstore_local_user') || 'null'); } catch (e) {}
+    try { u = JSON.parse(localStorage.getItem('learnearn_local_user') || 'null'); } catch (e) {}
     if (!u) {
       const name = this.generateRandomName();
       u = { uid: 'local_' + Date.now().toString(36), displayName: name, isAnonymous: true, isLocal: true, avatar: this.generateAvatar(name) };
-      localStorage.setItem('yadstore_local_user', JSON.stringify(u));
+      localStorage.setItem('learnearn_local_user', JSON.stringify(u));
     }
     this.user = u;
     this.lastUid = u.uid;
@@ -266,7 +266,7 @@ const Auth = {
       } catch (e) { console.error('[Auth] logout:', e); }
     } else {
       this.clearLocalData();
-      localStorage.removeItem('yadstore_local_user');
+      localStorage.removeItem('learnearn_local_user');
       this.initLocalOnly();
     }
   },

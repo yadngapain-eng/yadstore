@@ -1,5 +1,5 @@
 /* ============================================
-   YADSTORE — TELEGRAM BOT CONFIG
+   LEARN EARN — TELEGRAM BOT CONFIG
    Auto-generated. Jangan edit manual.
    ============================================ */
 

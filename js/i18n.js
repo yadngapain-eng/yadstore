@@ -1,4 +1,4 @@
-/* YADSTORE — i18n v2 (Full Translation) */
+/* LEARN EARN — i18n v2 (Full Translation) */
 
 const I18n = {
   currentLang: 'id',
@@ -7,7 +7,7 @@ const I18n = {
   TRANSLATIONS: {
     id: {
       // Header
-      brand: 'YadStore',
+      brand: 'Learn Earn',
       // Tabs
       tab_learn: 'Learn',
       tab_topup: 'Top Up',
@@ -173,7 +173,7 @@ const I18n = {
 
     en: {
       // Header
-      brand: 'YadStore',
+      brand: 'Learn Earn',
       // Tabs
       tab_learn: 'Learn',
       tab_topup: 'Top Up',
@@ -340,7 +340,7 @@ const I18n = {
 
   init() {
     try {
-      const saved = localStorage.getItem('yadstore_lang');
+      const saved = localStorage.getItem('learnearn_lang');
       if (saved && this.SUPPORTED.includes(saved)) this.currentLang = saved;
     } catch (e) {}
     console.log('[i18n] Lang:', this.currentLang);
@@ -359,7 +359,7 @@ const I18n = {
   setLang(lang) {
     if (!this.SUPPORTED.includes(lang)) return;
     this.currentLang = lang;
-    try { localStorage.setItem('yadstore_lang', lang); } catch (e) {}
+    try { localStorage.setItem('learnearn_lang', lang); } catch (e) {}
     console.log('[i18n] Switched to:', lang);
     this.applyAll();
     this.notifyApp();

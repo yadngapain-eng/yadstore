@@ -1,4 +1,4 @@
-/* YADSTORE — MONETAG v3 (multi-strategy) */
+/* LEARN EARN — MONETAG v3 (multi-strategy) */
 
 window.MONETAG_CONFIG = {
   SW_DOMAIN: '5gvci.com',

@@ -1,4 +1,4 @@
-/* YADSTORE — DEBUG TOOL */
+/* LEARN EARN — DEBUG TOOL */
 
 (function() {
   if (typeof window === 'undefined') return;
