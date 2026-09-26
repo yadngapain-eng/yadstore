@@ -8,7 +8,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    name: Deploy
+    name: Deploy to Cloudflare Pages
     permissions:
       contents: read
       deployments: write
@@ -21,21 +21,20 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Install Wrangler
-        run: npm install -g wrangler@3.99.0
-
-      - name: Verify
+      - name: Verify files
         run: |
-          echo "Root:" && ls -la
-          echo "js/:" && ls -la js/ 2>/dev/null || true
-          echo "css/:" && ls -la css/ 2>/dev/null || true
+          echo "Root:"
+          ls -la
+          echo ""
+          echo "js/:"
+          ls -la js/ 2>/dev/null || echo "No js folder"
+          echo ""
+          echo "css/:"
+          ls -la css/ 2>/dev/null || echo "No css folder"
 
-      - name: Publish to Cloudflare Pages
-        uses: cloudflare/pages-action@v1
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: yadstore
-          directory: .
-          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
-          branch: main
+          command: pages deploy . --project-name=yadstore --branch=main
