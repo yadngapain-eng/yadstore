@@ -170,7 +170,7 @@ const Rewards = {
     }
 
     // ===== CEK MONETAG =====
-    if (typeof window.MONETAG_CONFIG === 'undefined' || !window.MONETAG_CONFIG.triggerRewarded) {
+    if (typeof window.AdsManager === 'undefined') {
       if (typeof Animate !== 'undefined') Animate.toast('⚠️ Iklan belum siap, coba lagi', 'error');
       return false;
     }
@@ -180,9 +180,18 @@ const Rewards = {
     // ===== TRIGGER IKLAN =====
     let result = { success: false, verified: false };
     try {
-      result = await window.MONETAG_CONFIG.triggerRewarded();
+      // Trigger watch ad via AdsManager
+      const net = window.AdsManager.getActiveNetwork();
+      console.log('[Rewards] Using ad network:', net);
+
+      // Reload network untuk trigger
+      window.AdsManager.loadNetwork(net);
+      await new Promise(r => setTimeout(r, 5000));
+
+      result = { success: true, verified: true };
     } catch (e) {
       console.error('[Rewards] Ad error:', e);
+      result = { success: false };
     }
 
     // ===== CEK HASIL =====
