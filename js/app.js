@@ -10,7 +10,11 @@ const App = {
     if (typeof I18n !== 'undefined') I18n.init();
     if (typeof Auth !== 'undefined') await Auth.init();
 
-    setTimeout(() => {
+    setTimeout(async () => {
+      // Sync ad counter dari Firestore dulu
+      if (typeof Rewards !== 'undefined' && Rewards.syncFromFirestore) {
+        try { await Rewards.syncFromFirestore(); } catch(e) {}
+      }
       this.renderAll();
       if (typeof Rewards !== 'undefined') {
         Rewards.checkDailyLogin();

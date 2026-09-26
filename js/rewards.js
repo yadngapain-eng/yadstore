@@ -39,6 +39,16 @@ const Rewards = {
 
   getState() {
     const today = new Date().toISOString().split('T')[0];
+    var lastAdDate = this.get('lastAdDate', null);
+
+    // Kalau lastAdDate berbeda dari hari ini → reset counter (hari baru)
+    if (lastAdDate !== today) {
+      this.set('lastAdWatch', 0);
+      this.set('lastAdDate', today);
+      this.set('lastAdTime', 0);
+      lastAdDate = today;
+    }
+
     return {
       balance: this.get('balance', 0),
       totalEarned: this.get('totalEarned', 0),
@@ -46,7 +56,7 @@ const Rewards = {
       totalWithdrawn: this.get('totalWithdrawn', 0),
       lastLogin: this.get('lastLogin', null),
       lastAdWatch: this.get('lastAdWatch', 0),
-      lastAdDate: this.get('lastAdDate', today),
+      lastAdDate: lastAdDate,
       lastAdTime: this.get('lastAdTime', 0),
       unlockedRewards: this.get('unlockedRewards', []),
       history: this.get('history', []),
@@ -108,9 +118,50 @@ const Rewards = {
         totalEarned: state.totalEarned,
         totalSpent: state.totalSpent,
         totalWithdrawn: state.totalWithdrawn,
+        // ===== AD COUNTER (sync biar tidak reset) =====
+        lastAdWatch: state.lastAdWatch || 0,
+        lastAdDate: state.lastAdDate || null,
+        lastAdTime: state.lastAdTime || 0,
+        adWatchTotal: (typeof DL !== 'undefined' && DL.getState) ? (DL.getState().adWatchTotal || 0) : 0,
         updatedAt: new Date().toISOString(),
       }, { merge: true });
     } catch (e) { console.warn('[Rewards] sync error:', e); }
+  },
+
+  // ============================================
+  // SYNC FROM FIRESTORE (dipanggil saat app load)
+  // Ambil data ad counter dari Firestore ke localStorage
+  // ============================================
+  async syncFromFirestore() {
+    if (typeof Auth === 'undefined' || !Auth.db || !Auth.user || Auth.user.isLocal) return;
+    try {
+      const doc = await Auth.db.collection('users').doc(Auth.user.uid).get();
+      if (!doc.exists) return;
+      const data = doc.data();
+
+      const today = new Date().toISOString().split('T')[0];
+      const lastAdDate = data.lastAdDate || null;
+      const lastAdWatch = data.lastAdWatch || 0;
+
+      // Kalau lastAdDate di Firestore = hari ini, pakai jumlahnya
+      // Kalau lastAdDate hari lain, reset ke 0 (hari baru)
+      if (lastAdDate === today) {
+        this.set('lastAdWatch', lastAdWatch);
+        this.set('lastAdDate', lastAdDate);
+        this.set('lastAdTime', data.lastAdTime || 0);
+        console.log('[Rewards] Ad counter synced from Firestore:', lastAdWatch, '/', this.CONFIG.AD_WATCH_LIMIT);
+      } else {
+        // Hari baru → reset
+        this.set('lastAdWatch', 0);
+        this.set('lastAdDate', today);
+        this.set('lastAdTime', 0);
+        console.log('[Rewards] New day, ad counter reset to 0');
+        // Sync balik ke Firestore
+        this.syncToFirestore();
+      }
+    } catch (e) {
+      console.warn('[Rewards] syncFromFirestore error:', e);
+    }
   },
 
   // ============================================
@@ -279,6 +330,9 @@ const Rewards = {
         Animate.toast('+' + randomCoin + ' koin! 🪙', 'success');
       }
     }
+
+    // ===== SYNC KE FIRESTORE (biar tidak reset saat refresh) =====
+    this.syncToFirestore();
 
     // Refresh halaman reward
     if (typeof App !== 'undefined' && App.currentTab === 'rewards') {
