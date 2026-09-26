@@ -13,6 +13,11 @@ const DuoUI = {
   },
 
   getLessons(cat) {
+    var lang = (typeof I18n !== 'undefined') ? I18n.getLang() : 'id';
+    if (typeof window.getLessonsByLang === 'function') {
+      return window.getLessonsByLang(cat, lang);
+    }
+    // Fallback
     if (cat === 'english') return window.ENGLISH_LESSONS || [];
     if (cat === 'math') return window.MATH_LESSONS || [];
     if (cat === 'science') return window.SCIENCE_LESSONS || [];
@@ -20,7 +25,18 @@ const DuoUI = {
   },
 
   getCategories() {
-    return window.LESSON_CATEGORIES || { coding: { label: 'Coding', icon: '💻', color: '#1cb0f6' } };
+    var lang = (typeof I18n !== 'undefined') ? I18n.getLang() : 'id';
+    var cats = window.LESSON_CATEGORIES || { coding: { label: 'Coding', icon: '💻', color: '#1cb0f6' } };
+    // Buat versi sesuai bahasa
+    var result = {};
+    Object.keys(cats).forEach(function(k) {
+      result[k] = {
+        label: (lang === 'en' && cats[k].label_en) ? cats[k].label_en : cats[k].label,
+        icon: cats[k].icon,
+        color: cats[k].color,
+      };
+    });
+    return result;
   },
 
   renderStats() {
