@@ -122,7 +122,7 @@ const I18n = {
       profile_btn_login: 'Login dengan Google',
       profile_btn_change_name: '🎲 Ganti Nama Random',
       profile_btn_logout: '🚪 Logout',
-      profile_btn_refill: 'Isi Hearts (50 💎)',
+      profile_btn_refill: 'Isi Hearts (20 💎)',
       profile_btn_reset: 'Reset Data',
 
       // Stats
@@ -275,7 +275,7 @@ const I18n = {
       profile_btn_login: 'Login with Google',
       profile_btn_change_name: '🎲 Change Random Name',
       profile_btn_logout: '🚪 Logout',
-      profile_btn_refill: 'Refill Hearts (50 💎)',
+      profile_btn_refill: 'Refill Hearts (20 💎)',
       profile_btn_reset: 'Reset Data',
 
       // Stats

@@ -7,7 +7,7 @@ const Rewards = {
     HEART_COST_GEMS: 50,
 
     MISSION_REWARDS: {
-      daily_login: 10,
+      daily_login: 15,   // naik dari 10 → 15
       watch_ad: 1,
       complete_lesson: 5,
       perfect_score: 20,
@@ -125,6 +125,11 @@ const Rewards = {
     this.save(state);
     const reward = this.CONFIG.MISSION_REWARDS.daily_login;
     this.addCoin(reward, 'Login harian');
+
+    // Bonus hearts
+    if (typeof DL !== 'undefined' && DL.addHeart) {
+      DL.addHeart(1);
+    }
     return reward;
   },
 
@@ -177,6 +182,7 @@ const Rewards = {
       Animate.toast('Membuka iklan di tab baru...', 'info');
     }
 
+    // Buka smartlink
     const result = await window.AdsManager.openRewarded();
 
     if (!result.success) {
@@ -188,17 +194,97 @@ const Rewards = {
       return false;
     }
 
+    // Kalau redirect — proses reward saat balik
     if (result.method === 'redirect') {
       try { localStorage.setItem('yadstore_ad_pending', Date.now().toString()); } catch (e) {}
       return true;
     }
 
+    // Kalau popup — kasih reward setelah delay
     if (typeof Animate !== 'undefined') {
       Animate.toast('Nonton iklan dulu, lalu tutup tab-nya ✅', 'info');
     }
 
     setTimeout(() => { this.giveAdReward(); }, 8000);
     return true;
+  },
+
+  // ============================================
+  // RANDOM COIN GENERATOR (crypto-grade)
+  // ============================================
+  getRandomCoin() {
+    // Pakai crypto.getRandomValues untuk random yang BENAR-BENAR random
+    try {
+      if (window.crypto && window.crypto.getRandomValues) {
+        const arr = new Uint32Array(1);
+        window.crypto.getRandomValues(arr);
+        // Modulo 100 + 1 → range 1-100
+        return (arr[0] % 100) + 1;
+      }
+    } catch (e) {}
+
+    // Fallback: Math.random
+    return Math.floor(Math.random() * 100) + 1;
+  },
+
+  // ============================================
+  // GIVE AD REWARD (Random 1-100)
+  // ============================================
+  giveAdReward() {
+    const state = this.getState();
+    const today = new Date().toISOString().split('T')[0];
+
+    if (state.lastAdDate !== today) {
+      state.lastAdWatch = 0;
+      state.lastAdDate = today;
+    }
+
+    state.lastAdWatch += 1;
+    state.lastAdTime = Date.now();
+    this.save(state);
+
+    // ====== RANDOM COIN 1-100 ======
+    const randomCoin = this.getRandomCoin();
+
+    // Bonus kalau dapat 100 (jackpot!)
+    const isJackpot = randomCoin === 100;
+
+    // Kirim reward
+    this.addCoin(randomCoin, 'Nonton iklan (random ' + randomCoin + ')');
+
+    // Bonus 5 iklan
+    if (state.lastAdWatch === 5) {
+      this.addCoin(this.CONFIG.MISSION_REWARDS.watch_5_ads, 'Bonus 5 iklan');
+    }
+
+    // ====== TAMBAH HEART (bonus kecil) ======
+    // Setiap nonton iklan, 30% chance dapat +1 heart
+    if (Math.random() < 0.3) {
+      if (typeof DL !== 'undefined' && DL.addHeart) {
+        DL.addHeart(1);
+      }
+    }
+
+    // Popup efek keren
+    if (typeof Animate !== 'undefined') {
+      Animate.confetti();
+
+      if (isJackpot) {
+        Animate.toast('🎉 JACKPOT! +100 koin! 🪙', 'success');
+        // Extra confetti
+        setTimeout(() => Animate.confetti(), 500);
+      } else if (randomCoin >= 50) {
+        Animate.toast('🎊 +' + randomCoin + ' koin! 🪙', 'success');
+      } else {
+        Animate.toast('+' + randomCoin + ' koin! 🪙', 'success');
+      }
+    }
+
+    // Refresh halaman reward
+    if (typeof App !== 'undefined' && App.currentTab === 'rewards') {
+      const el = document.getElementById('rewards-content');
+      if (el) el.innerHTML = this.renderRewardsPage();
+    }
   },
 
   giveAdReward() {
@@ -237,6 +323,16 @@ const Rewards = {
   onLessonComplete(perfect) {
     this.addCoin(this.CONFIG.MISSION_REWARDS.complete_lesson, 'Lesson selesai');
     if (perfect) this.addCoin(this.CONFIG.MISSION_REWARDS.perfect_score, 'Skor sempurna');
+
+    // BONUS HEART: Setiap selesai lesson, 50% chance dapat +1 heart
+    if (Math.random() < 0.5) {
+      if (typeof DL !== 'undefined' && DL.addHeart) {
+        DL.addHeart(1);
+        if (typeof Animate !== 'undefined') {
+          setTimeout(() => Animate.toast('❤️ +1 heart bonus!', 'success'), 800);
+        }
+      }
+    }
   },
 
   // ============================================
@@ -259,6 +355,14 @@ const Rewards = {
   // ============================================
   onTopUp() {
     this.addCoin(this.CONFIG.MISSION_REWARDS.topup_any, 'Order Top Up');
+
+    // Bonus: Top up = +2 hearts
+    if (typeof DL !== 'undefined' && DL.addHeart) {
+      DL.addHeart(2);
+      if (typeof Animate !== 'undefined') {
+        setTimeout(() => Animate.toast('❤️ +2 hearts dari top up!', 'success'), 500);
+      }
+    }
   },
 
   // ============================================

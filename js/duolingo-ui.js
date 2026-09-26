@@ -277,8 +277,8 @@ const DuoUI = {
 
   refill() {
     var s = DL.getState();
-    if (s.gems < 50) { Animate.toast('Gems tidak cukup', 'error'); return; }
-    DL.addGems(-50); DL.refillHearts();
+    if (s.gems < 20) { Animate.toast('Gems tidak cukup', 'error'); return; }
+    DL.addGems(-20); DL.refillHearts();
     this.renderStats(); Animate.toast('Hearts penuh!', 'success');
   },
 };

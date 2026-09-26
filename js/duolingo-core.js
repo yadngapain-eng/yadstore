@@ -51,6 +51,16 @@ const DL = {
   addGems(n) { const s = this.getState(); s.gems = Math.max(0, s.gems + n); this.save(s); return s.gems; },
   loseHeart() { const s = this.getState(); if (s.hearts > 0) { s.hearts--; s.heartsUpdated = Date.now(); this.save(s); } return s.hearts; },
   refillHearts() { const s = this.getState(); s.hearts = 5; s.heartsUpdated = Date.now(); this.save(s); },
+
+  // ===== TAMBAH HEART (dari aktivitas) =====
+  addHeart(amount) {
+    const s = this.getState();
+    const max = 5;
+    s.hearts = Math.min(max, s.hearts + (amount || 1));
+    s.heartsUpdated = Date.now();
+    this.save(s);
+    return s.hearts;
+  },
   updateStreak() {
     const s = this.getState();
     const today = new Date().toISOString().split('T')[0];
