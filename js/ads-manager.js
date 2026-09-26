@@ -1,4 +1,4 @@
-/* YADSTORE — ADS MANAGER v7 (FULL ADS) */
+/* YADSTORE — ADS MANAGER v8 (clean mode: A) */
 
 window.AdsManager = {
   NETWORKS: {
@@ -25,6 +25,18 @@ window.AdsManager = {
     },
   },
 
+  // ====== FLAG MODE (dibuat oleh Colab) ======
+  MODE: 'A',
+
+  FLAGS: {
+    adsterra_popunder:  true,
+    adsterra_socialbar: false,
+    monetag_vignette:   false,
+    monetag_inpage:     false,
+    monetag_push:       false,
+    monetag_popunder:   false,
+  },
+
   currentRotation: 'adsterra',
   lastRotation: 0,
   ROTATION_INTERVAL: 60 * 1000,
@@ -36,14 +48,11 @@ window.AdsManager = {
   init() {
     if (this.initialized) return;
     this.initialized = true;
-    console.log('[AdsManager] v7 init');
+    console.log('[AdsManager] v8 init — MODE ' + this.MODE);
 
     this.registerSW();
 
-    // Auto-load semua background ads
     setTimeout(() => this.loadBackgroundAds(), 1500);
-
-    // Rotasi tiap menit
     setInterval(() => this.rotateBackground(), this.ROTATION_INTERVAL);
 
     console.log('[AdsManager] Ready');
@@ -61,27 +70,62 @@ window.AdsManager = {
   },
 
   loadBackgroundAds() {
-    console.log('[AdsManager] Loading ads...');
+    console.log('[AdsManager] Loading ads... (mode ' + this.MODE + ')');
+    const F = this.FLAGS;
 
-    // Adsterra
+    // ====== ADSTERRA ======
     const a = this.NETWORKS.adsterra;
     if (a.enabled) {
-      this.injectScript(a.scripts.popunder, 'adsterra-popunder');
-      setTimeout(() => this.injectScript(a.scripts.socialbar, 'adsterra-socialbar'), 2000);
+      if (F.adsterra_popunder) {
+        this.injectScript(a.scripts.popunder, 'adsterra-popunder');
+        console.log('[AdsManager] ✓ adsterra-popunder');
+      } else {
+        console.log('[AdsManager] ✗ adsterra-popunder (disabled)');
+      }
+      if (F.adsterra_socialbar) {
+        setTimeout(() => this.injectScript(a.scripts.socialbar, 'adsterra-socialbar'), 2000);
+        console.log('[AdsManager] ✓ adsterra-socialbar');
+      } else {
+        console.log('[AdsManager] ✗ adsterra-socialbar (disabled)');
+      }
     }
 
-    // Monetag
+    // ====== MONETAG ======
     const m = this.NETWORKS.monetag;
     if (m.enabled) {
       const d = m.swDomain;
       const z = m.zones;
-      setTimeout(() => this.injectScript('https://' + d + '/act/files/tag.min.js?z=' + z.vignette, 'monetag-vignette'), 3000);
-      setTimeout(() => this.injectScript('https://' + d + '/act/files/tag.min.js?z=' + z.inpage, 'monetag-inpage'), 5000);
-      setTimeout(() => this.injectScript('https://' + d + '/act/files/tag.min.js?z=' + z.push, 'monetag-push'), 7000);
-      setTimeout(() => this.injectScript('https://' + d + '/act/files/tag.min.js?z=' + z.popunder, 'monetag-popunder'), 9000);
+
+      if (F.monetag_vignette) {
+        setTimeout(() => this.injectScript('https://' + d + '/act/files/tag.min.js?z=' + z.vignette, 'monetag-vignette'), 3000);
+        console.log('[AdsManager] ✓ monetag-vignette');
+      } else {
+        console.log('[AdsManager] ✗ monetag-vignette (disabled)');
+      }
+
+      if (F.monetag_inpage) {
+        setTimeout(() => this.injectScript('https://' + d + '/act/files/tag.min.js?z=' + z.inpage, 'monetag-inpage'), 5000);
+        console.log('[AdsManager] ✓ monetag-inpage');
+      } else {
+        console.log('[AdsManager] ✗ monetag-inpage (disabled)');
+      }
+
+      if (F.monetag_push) {
+        setTimeout(() => this.injectScript('https://' + d + '/act/files/tag.min.js?z=' + z.push, 'monetag-push'), 7000);
+        console.log('[AdsManager] ✓ monetag-push');
+      } else {
+        console.log('[AdsManager] ✗ monetag-push (disabled)');
+      }
+
+      if (F.monetag_popunder) {
+        setTimeout(() => this.injectScript('https://' + d + '/act/files/tag.min.js?z=' + z.popunder, 'monetag-popunder'), 9000);
+        console.log('[AdsManager] ✓ monetag-popunder');
+      } else {
+        console.log('[AdsManager] ✗ monetag-popunder (disabled)');
+      }
     }
 
-    console.log('[AdsManager] All ads injected');
+    console.log('[AdsManager] Done.');
   },
 
   rotateBackground() {
@@ -89,7 +133,6 @@ window.AdsManager = {
     const currentIdx = networks.indexOf(this.currentRotation);
     const nextIdx = (currentIdx + 1) % networks.length;
     this.currentRotation = networks[nextIdx];
-    console.log('[AdsManager] Rotation:', this.currentRotation);
     this.lastRotation = Date.now();
   },
 
@@ -133,7 +176,6 @@ window.AdsManager = {
         resolve(true);
         return;
       }
-
       try {
         const s = document.createElement('script');
         s.src = src;
@@ -153,8 +195,6 @@ window.AdsManager = {
         s.onerror = () => done(false);
         setTimeout(() => done(true), 5000);
         document.head.appendChild(s);
-
-        console.log('[AdsManager] Injected:', id);
       } catch (e) {
         resolve(false);
       }
@@ -164,9 +204,6 @@ window.AdsManager = {
   getActiveNetwork() { return this.currentRotation; },
 };
 
-// ============================================
-// AUTO INIT
-// ============================================
 if (typeof window !== 'undefined') {
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => window.AdsManager.init());
@@ -174,4 +211,4 @@ if (typeof window !== 'undefined') {
     setTimeout(() => window.AdsManager.init(), 500);
   }
 }
-console.log('[ads-manager] v7 loaded');
+console.log('[ads-manager] v8 loaded — mode ' + window.AdsManager.MODE);
