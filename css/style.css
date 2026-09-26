@@ -463,3 +463,26 @@ body::before { content: ''; position: fixed; inset: 0; background: linear-gradie
   font-weight: 900;
   font-size: 36px;
 }
+
+
+/* Fix icon fallback */
+.game-icon-img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important;
+  background: transparent !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+}
+.game-icon-wrap {
+  width: 72px;
+  height: 72px;
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 6px;
+  box-sizing: border-box;
+  background: #f7f7f7;
+}
