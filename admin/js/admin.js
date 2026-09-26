@@ -1,33 +1,38 @@
 /* ============================================
-   YADSTORE — ADMIN PANEL v2
-   + Fitur Markup Harga
+   YADSTORE — ADMIN PANEL v2 + MARKUP
    ============================================ */
 
 const Admin = {
   section: 'dash',
   password: 'admin123',
 
-  // ============================================
-  // STORAGE KEYS
-  // ============================================
   PRICE_KEY: 'yadstore_prices',
-  CONFIG_KEY: 'yadstore_config',
+  MARKUP_KEY: 'yadstore_config',
 
-  // ============================================
-  // INIT
-  // ============================================
   init() {
+    // Load password
+    try {
+      const savedPwd = localStorage.getItem('yadstore_admin_pwd');
+      if (savedPwd) this.password = savedPwd;
+    } catch(e) {}
+
     if (sessionStorage.getItem('yadstore_admin') === 'true') {
       document.getElementById('login-modal').classList.remove('active');
       this.render();
     }
+
     document.querySelectorAll('.nav-item').forEach(el => {
       el.addEventListener('click', (e) => {
         e.preventDefault();
         this.section = el.dataset.sec;
         document.querySelectorAll('.nav-item').forEach(x => x.classList.remove('active'));
         el.classList.add('active');
-        const titles = { dash: 'Dashboard', orders: 'Pesanan', products: 'Produk & Markup', settings: 'Pengaturan' };
+        const titles = {
+          dash: 'Dashboard',
+          orders: 'Pesanan',
+          products: 'Produk & Markup',
+          settings: 'Pengaturan'
+        };
         document.getElementById('sec-title').textContent = titles[this.section] || this.section;
         this.render();
       });
@@ -55,42 +60,21 @@ const Admin = {
   },
 
   // ============================================
-  // PRICE MARKUP STORAGE
+  // STORAGE
   // ============================================
   getPrices() {
     try { return JSON.parse(localStorage.getItem(this.PRICE_KEY) || '{}'); } catch(e) { return {}; }
   },
-  savePrices(p) {
-    localStorage.setItem(this.PRICE_KEY, JSON.stringify(p));
-  },
+  savePrices(p) { localStorage.setItem(this.PRICE_KEY, JSON.stringify(p)); },
+
   getMarkup() {
-    try { return JSON.parse(localStorage.getItem(this.CONFIG_KEY) || '{}'); } catch(e) { return {}; }
+    try { return JSON.parse(localStorage.getItem(this.MARKUP_KEY) || '{}'); } catch(e) { return {}; }
   },
-  saveMarkup(c) {
-    localStorage.setItem(this.CONFIG_KEY, JSON.stringify(c));
-  },
-  getConfig() {
-    try { return JSON.parse(localStorage.getItem('yadstore_cfg') || '{}'); } catch(e) { return {}; }
-  },
+  saveMarkup(m) { localStorage.setItem(this.MARKUP_KEY, JSON.stringify(m)); },
 
-  // Ambil harga final (dengan markup)
-  getFinalPrice(itemId, prodId, defaultPrice) {
-    const prices = this.getPrices();
-    const key = itemId + '_' + prodId;
-    if (prices[key] && prices[key].final) return prices[key].final;
-    const markup = this.getMarkup();
-    const add = markup.global_markup || 0;
-    return defaultPrice + add;
-  },
-
-  // Set harga final untuk 1 produk
-  setProductPrice(itemId, prodId, finalPrice) {
-    const prices = this.getPrices();
-    const key = itemId + '_' + prodId;
-    if (!prices[key]) prices[key] = {};
-    prices[key].final = parseInt(finalPrice) || 0;
-    prices[key].updated = new Date().toISOString();
-    this.savePrices(prices);
+  getGlobalMarkup() {
+    const m = this.getMarkup();
+    return m.global_markup || 0;
   },
 
   // ============================================
@@ -158,17 +142,19 @@ const Admin = {
   },
 
   // ============================================
-  // PRODUCTS & MARKUP (FITUR BARU)
+  // PRODUCTS + MARKUP (FITUR BARU)
   // ============================================
   products() {
-    const markup = this.getMarkup();
-    const globalMarkup = markup.global_markup || 0;
+    const globalMarkup = this.getGlobalMarkup();
+    const prices = this.getPrices();
+    const all = [].concat(window.GAMES || [], window.DATA_PACKAGES || []);
 
-    // ===== GLOBAL MARKUP PANEL =====
-    let html = '<div class="card" style="background:linear-gradient(135deg,#f0fff0,#e6ffe6);border-color:#89e219">' +
-      '<h3>⚡ Global Markup (Semua Produk)</h3>' +
-      '<p style="color:#666;font-size:13px;margin-bottom:12px">Naikkan harga SEMUA produk sekaligus dengan nominal tertentu</p>' +
-      '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">' +
+    // ===== PANEL GLOBAL MARKUP =====
+    let html = '<div class="card" style="background:linear-gradient(135deg,#f0fff0,#e6ffe6);border:2px solid #89e219">' +
+      '<h3 style="color:#2c5a00">⚡ Global Markup — Semua Produk</h3>' +
+      '<p style="color:#555;font-size:13px;margin-bottom:14px">Naikkan harga SEMUA produk sekaligus dengan nominal tertentu</p>' +
+
+      '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">' +
       '<button class="btn-preset" onclick="Admin.applyGlobalMarkup(500)">+ Rp 500</button>' +
       '<button class="btn-preset" onclick="Admin.applyGlobalMarkup(1000)">+ Rp 1.000</button>' +
       '<button class="btn-preset" onclick="Admin.applyGlobalMarkup(2000)">+ Rp 2.000</button>' +
@@ -176,28 +162,36 @@ const Admin = {
       '<button class="btn-preset" onclick="Admin.applyGlobalMarkup(5000)">+ Rp 5.000</button>' +
       '<button class="btn-preset" onclick="Admin.applyGlobalMarkup(10000)">+ Rp 10.000</button>' +
       '</div>' +
-      '<div style="display:flex;gap:8px">' +
-      '<input type="number" id="custom-markup" placeholder="Nominal lain..." style="flex:1;padding:10px;border:2px solid #e5e5e5;border-radius:8px;font-size:14px;font-weight:700">' +
-      '<button class="btn-primary" onclick="Admin.applyCustomMarkup()">Terapkan</button>' +
+
+      '<div style="display:flex;gap:8px;margin-bottom:14px">' +
+      '<input type="number" id="custom-markup" placeholder="Nominal lain (contoh: 1500)" style="flex:1;padding:12px;border:2px solid #e5e5e5;border-radius:8px;font-size:14px;font-weight:700">' +
+      '<button class="btn-primary" onclick="Admin.applyCustomMarkup()" style="padding:12px 24px">Terapkan</button>' +
       '</div>' +
-      '<p style="margin-top:12px;font-size:13px;color:#555"><strong>Global markup aktif:</strong> +Rp ' + globalMarkup.toLocaleString('id-ID') + '</p>' +
-      '<button class="btn-danger" style="margin-top:8px" onclick="Admin.resetAllMarkup()">Reset Semua Markup</button>' +
+
+      '<div style="background:white;padding:12px;border-radius:8px;margin-bottom:12px">' +
+      '<strong style="color:#2c5a00;font-size:14px">💰 Global markup aktif: +Rp ' + globalMarkup.toLocaleString('id-ID') + '</strong>' +
+      '</div>' +
+
+      '<button class="btn-danger" onclick="Admin.resetAllMarkup()" style="width:100%">🔄 Reset Semua Markup</button>' +
       '</div>';
 
     // ===== DAFTAR PRODUK =====
-    const all = [...(window.GAMES || []), ...(window.DATA_PACKAGES || [])];
-    const prices = this.getPrices();
-
-    html += '<div class="card"><h3>Daftar Produk & Harga</h3>' +
-      '<p style="color:#666;font-size:13px;margin-bottom:12px">Edit harga satu-satu, atau tambah markup individual</p>' +
+    html += '<div class="card"><h3>📋 Daftar Produk & Harga</h3>' +
+      '<p style="color:#666;font-size:13px;margin-bottom:14px">Edit harga per produk atau tambah markup individual</p>' +
       '<div style="max-height:600px;overflow-y:auto">';
 
     all.forEach(item => {
-      html += '<div style="margin-bottom:20px">' +
-        '<h4 style="font-size:14px;font-weight:900;margin-bottom:8px;padding:8px;background:#f7f7f7;border-radius:8px">' +
-        item.icon + ' ' + item.name +
-        '</h4>' +
-        '<table><thead><tr><th>Produk</th><th>Harga Dasar</th><th>Harga Jual</th><th>Markup</th><th>Aksi</th></tr></thead><tbody>';
+      html += '<div style="margin-bottom:20px;border:1px solid #eee;border-radius:12px;overflow:hidden">' +
+        '<div style="padding:12px;background:#f7f7f7;font-weight:900;font-size:14px">' +
+        (item.icon || '') + ' ' + item.name +
+        '</div>' +
+        '<table style="width:100%"><thead><tr style="background:#fafafa">' +
+        '<th style="padding:8px;font-size:11px;text-align:left">Produk</th>' +
+        '<th style="padding:8px;font-size:11px;text-align:right">Dasar</th>' +
+        '<th style="padding:8px;font-size:11px;text-align:right">Jual</th>' +
+        '<th style="padding:8px;font-size:11px;text-align:center">Markup</th>' +
+        '<th style="padding:8px;font-size:11px;text-align:center">Aksi</th>' +
+        '</tr></thead><tbody>';
 
       item.products.forEach(p => {
         const key = item.id + '_' + p.id;
@@ -207,12 +201,19 @@ const Admin = {
         const diffColor = diff > 0 ? '#58cc02' : (diff < 0 ? '#ff4b4b' : '#999');
         const diffText = diff >= 0 ? '+' + diff.toLocaleString('id-ID') : diff.toLocaleString('id-ID');
 
-        html += '<tr>' +
-          '<td>' + p.name + '</td>' +
-          '<td>Rp ' + p.price.toLocaleString('id-ID') + '</td>' +
-          '<td><input type="number" class="price-edit" value="' + finalPrice + '" onchange="Admin.updatePrice(\'' + item.id + '\', \'' + p.id + '\', this.value)" style="width:110px"></td>' +
-          '<td style="color:' + diffColor + ';font-weight:800">' + diffText + '</td>' +
-          '<td><button class="btn-secondary" style="padding:4px 10px;font-size:11px" onclick="Admin.resetPrice(\'' + item.id + '\', \'' + p.id + '\')">Reset</button></td>' +
+        html += '<tr style="border-bottom:1px solid #f0f0f0">' +
+          '<td style="padding:8px;font-size:12px">' + p.name + '</td>' +
+          '<td style="padding:8px;font-size:12px;text-align:right;color:#888">' + p.price.toLocaleString('id-ID') + '</td>' +
+          '<td style="padding:8px;text-align:right">' +
+          '<input type="number" value="' + finalPrice + '" ' +
+          'onchange="Admin.updatePrice(\'' + item.id + '\', \'' + p.id + '\', this.value)" ' +
+          'style="width:90px;padding:6px 8px;border:2px solid #e5e5e5;border-radius:6px;font-size:12px;font-weight:700;text-align:right">' +
+          '</td>' +
+          '<td style="padding:8px;font-size:11px;font-weight:800;color:' + diffColor + ';text-align:center">' + diffText + '</td>' +
+          '<td style="padding:8px;text-align:center">' +
+          '<button onclick="Admin.resetPrice(\'' + item.id + '\', \'' + p.id + '\')" ' +
+          'style="padding:4px 8px;background:#f0f0f0;border:none;border-radius:6px;font-size:10px;font-weight:700;cursor:pointer">Reset</button>' +
+          '</td>' +
           '</tr>';
       });
 
@@ -227,40 +228,46 @@ const Admin = {
   // ===== UPDATE HARGA 1 PRODUK =====
   updatePrice(itemId, prodId, value) {
     const price = parseInt(value) || 0;
-    this.setProductPrice(itemId, prodId, price);
-    this.render();
+    const prices = this.getPrices();
+    const key = itemId + '_' + prodId;
+    prices[key] = { final: price, updated: new Date().toISOString() };
+    this.savePrices(prices);
+    // Show toast
+    if (typeof Animate !== 'undefined') Animate.toast('Harga diupdate: Rp ' + price.toLocaleString('id-ID'), 'success');
   },
 
   // ===== RESET HARGA 1 PRODUK =====
   resetPrice(itemId, prodId) {
     const prices = this.getPrices();
-    const key = itemId + '_' + prodId;
-    delete prices[key];
+    delete prices[itemId + '_' + prodId];
     this.savePrices(prices);
     this.render();
+    if (typeof Animate !== 'undefined') Animate.toast('Harga direset', 'info');
   },
 
   // ===== GLOBAL MARKUP =====
   applyGlobalMarkup(amount) {
-    const markup = this.getMarkup();
-    markup.global_markup = (markup.global_markup || 0) + amount;
-    this.saveMarkup(markup);
-    alert('Global markup ditambah +Rp ' + amount.toLocaleString('id-ID') + '\nTotal markup sekarang: Rp ' + markup.global_markup.toLocaleString('id-ID'));
+    const m = this.getMarkup();
+    m.global_markup = (m.global_markup || 0) + amount;
+    this.saveMarkup(m);
+    if (typeof Animate !== 'undefined') Animate.toast('Markup +Rp ' + amount.toLocaleString('id-ID'), 'success');
+    else alert('Markup ditambah +Rp ' + amount.toLocaleString('id-ID'));
     this.render();
   },
 
   applyCustomMarkup() {
     const input = document.getElementById('custom-markup');
     const amount = parseInt(input.value) || 0;
-    if (amount === 0) { alert('Masukkan nominal'); return; }
+    if (amount === 0) { alert('Masukkan nominal > 0'); return; }
     this.applyGlobalMarkup(amount);
+    input.value = '';
   },
 
   resetAllMarkup() {
-    if (!confirm('Reset SEMUA markup dan kembali ke harga dasar?')) return;
+    if (!confirm('⚠️ Reset SEMUA markup ke harga default?')) return;
     localStorage.removeItem(this.PRICE_KEY);
-    localStorage.removeItem(this.CONFIG_KEY);
-    alert('Semua markup direset');
+    localStorage.removeItem(this.MARKUP_KEY);
+    alert('✅ Semua markup direset!');
     this.render();
   },
 
@@ -268,18 +275,19 @@ const Admin = {
   // SETTINGS
   // ============================================
   settings() {
-    const cfg = this.getConfig();
-    return '<div class="card"><h3>Ganti Password</h3>' +
-      '<div class="form-group"><label>Password Baru</label><input type="text" id="new-pwd" value="' + this.password + '"></div>' +
+    return '<div class="card"><h3>🔐 Ganti Password</h3>' +
+      '<div class="form-group"><label>Password Baru</label>' +
+      '<input type="text" id="new-pwd" value="' + this.password + '"></div>' +
       '<button class="btn-primary" onclick="Admin.savePwd()">Simpan</button></div>' +
 
-      '<div class="card"><h3>Nomor WhatsApp Admin</h3>' +
-      '<div class="form-group"><label>Nomor WA (untuk notifikasi user)</label><input type="text" id="cfg-wa" value="' + (cfg.wa || '') + '" placeholder="628xxx"></div>' +
-      '<button class="btn-primary" onclick="Admin.saveCfg()">Simpan</button></div>' +
+      '<div class="card"><h3>📞 Nomor WhatsApp Admin</h3>' +
+      '<div class="form-group"><label>Nomor WA</label>' +
+      '<input type="text" id="cfg-wa" placeholder="628xxx" value="' + (localStorage.getItem('yadstore_wa') || '') + '"></div>' +
+      '<button class="btn-primary" onclick="Admin.saveWa()">Simpan</button></div>' +
 
-      '<div class="card" style="background:#fff9e6;border-color:#ffe58f">' +
-      '<h3>⚠️ Danger Zone</h3>' +
-      '<p style="color:#7a5d00;font-size:13px;margin-bottom:12px">Reset semua data order</p>' +
+      '<div class="card" style="background:#fff9e6;border:2px solid #ffe58f">' +
+      '<h3 style="color:#7a5d00">⚠️ Danger Zone</h3>' +
+      '<p style="color:#7a5d00;font-size:13px;margin-bottom:12px">Hapus semua order (tidak bisa dibalikin)</p>' +
       '<button class="btn-danger" onclick="Admin.resetOrders()">Hapus Semua Order</button>' +
       '</div>';
   },
@@ -289,30 +297,23 @@ const Admin = {
     if (v) {
       this.password = v;
       localStorage.setItem('yadstore_admin_pwd', v);
-      alert('Password diubah! (tersimpan di browser ini)');
+      alert('✅ Password diubah!');
     }
   },
 
-  saveCfg() {
-    const cfg = this.getConfig();
-    cfg.wa = document.getElementById('cfg-wa').value;
-    localStorage.setItem('yadstore_cfg', JSON.stringify(cfg));
-    alert('Nomor WA disimpan!');
+  saveWa() {
+    const wa = document.getElementById('cfg-wa').value;
+    localStorage.setItem('yadstore_wa', wa);
+    alert('✅ Nomor WA disimpan!');
   },
 
   resetOrders() {
     if (!confirm('Hapus SEMUA order?')) return;
     localStorage.removeItem('yadstore_orders');
-    alert('Semua order dihapus');
+    alert('✅ Order dihapus');
     this.render();
   },
 };
-
-// Load password dari storage
-try {
-  const savedPwd = localStorage.getItem('yadstore_admin_pwd');
-  if (savedPwd) Admin.password = savedPwd;
-} catch(e) {}
 
 document.addEventListener('DOMContentLoaded', () => Admin.init());
 if (typeof window !== 'undefined') window.Admin = Admin;
