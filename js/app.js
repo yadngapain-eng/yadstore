@@ -52,11 +52,8 @@ const App = {
 
   onUserChanged(user) {
     console.log('[App] User changed:', user ? user.uid : 'none');
+    // Re-render semua dengan data user baru
     this.renderAll();
-      // Rewards: cek login harian
-      if (typeof Rewards !== 'undefined') {
-        Rewards.checkDailyLogin();
-      }
   },
 
   renderAll() {
