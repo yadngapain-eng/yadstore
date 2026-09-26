@@ -25,6 +25,114 @@ const Rewards = {
     MIN_WITHDRAW: 10000,
     AD_WATCH_LIMIT: 5,
     AD_COOLDOWN_SECONDS: 30,
+
+    // ====== DAILY SPIN HEART (peluang berjenjang) ======
+    SPIN_REWARDS: [
+      { hearts: 1,  chance: 45 },   // 45%
+      { hearts: 2,  chance: 25 },   // 25%
+      { hearts: 3,  chance: 15 },   // 15%
+      { hearts: 5,  chance: 8  },   // 8%
+      { hearts: 8,  chance: 5  },   // 5%
+      { hearts: 10, chance: 2  },   // 2%
+    ],
+
+    // ====== AD COIN REWARDS (peluang berjenjang) ======
+    // Semakin besar coin → semakin kecil peluang
+    AD_REWARDS: [
+      { coins: 1,   chance: 30.0 },  // 30%
+      { coins: 2,   chance: 20.0 },  // 20%
+      { coins: 5,   chance: 15.0 },  // 15%
+      { coins: 10,  chance: 12.0 },  // 12%
+      { coins: 20,  chance: 8.0  },  // 8%
+      { coins: 30,  chance: 5.0  },  // 5%
+      { coins: 50,  chance: 5.0  },  // 5%
+      { coins: 75,  chance: 3.0  },  // 3%
+      { coins: 100, chance: 1.5  },  // 1.5%
+      { coins: 200, chance: 0.5  },  // 0.5%
+    ],
+  },
+
+  // ============================================
+  // SISTEM PELUANG BERJENJANG
+  // ============================================
+  _rollReward: function(rewardsList) {
+    // Total chance harus 100 (kalau tidak, normalisasi otomatis)
+    var total = 0;
+    for (var i = 0; i < rewardsList.length; i++) total += rewardsList[i].chance;
+
+    // Ambil angka random 0-100
+    var roll = Math.random() * total;
+    var cumulative = 0;
+
+    for (var j = 0; j < rewardsList.length; j++) {
+      cumulative += rewardsList[j].chance;
+      if (roll < cumulative) return rewardsList[j];
+    }
+    return rewardsList[rewardsList.length - 1]; // fallback: hadiah terakhir
+  },
+
+  // ============================================
+  // DAILY SPIN HEART (1x/hari)
+  // ============================================
+  canSpinToday: function() {
+    var today = new Date().toISOString().split('T')[0];
+    var lastSpin = this.get('lastSpinDate', null);
+    return lastSpin !== today;
+  },
+
+  getLastSpinDate: function() {
+    return this.get('lastSpinDate', null);
+  },
+
+  async doSpin() {
+    if (!this.canSpinToday()) {
+      return { success: false, reason: 'already_spun' };
+    }
+    var today = new Date().toISOString().split('T')[0];
+    this.set('lastSpinDate', today);
+
+    // Roll reward
+    var reward = this._rollReward(this.CONFIG.SPIN_REWARDS);
+    var hearts = reward.hearts;
+
+    // Tambah heart ke player
+    if (typeof DL !== 'undefined' && DL.addHeart) {
+      // addHeart max 5 default. Bypass limit untuk spin reward
+      var s = DL.getState();
+      s.hearts = Math.min(5, (s.hearts || 0) + hearts);
+      s.heartsUpdated = Date.now();
+      DL.save(s);
+    }
+
+    // Simpan history
+    var state = this.getState();
+    state.history = state.history || [];
+    state.history.unshift({
+      type: 'spin',
+      amount: hearts,
+      reason: 'Daily Spin (+' + hearts + ' heart)',
+      date: new Date().toISOString(),
+    });
+    if (state.history.length > 200) state.history = state.history.slice(0, 200);
+    this.save(state);
+
+    // Sync ke Firestore
+    this.syncToFirestore();
+
+    // Update UI stats
+    if (typeof DuoUI !== 'undefined' && DuoUI.renderStats) {
+      try { DuoUI.renderStats(); } catch(e) {}
+    }
+
+    return { success: true, hearts: hearts };
+  },
+
+  // ============================================
+  // GET AD REWARD (pakai peluang berjenjang)
+  // ============================================
+  _getAdRewardCoin: function() {
+    var reward = this._rollReward(this.CONFIG.AD_REWARDS);
+    return reward.coins;
   },
 
   get(key, def) {
@@ -122,7 +230,8 @@ const Rewards = {
         lastAdWatch: state.lastAdWatch || 0,
         lastAdDate: state.lastAdDate || null,
         lastAdTime: state.lastAdTime || 0,
-        adWatchTotal: (typeof DL !== 'undefined' && DL.getState) ? (DL.getState().adWatchTotal || 0) : 0,
+        // ===== DAILY SPIN =====
+        lastSpinDate: this.get('lastSpinDate', null),
         updatedAt: new Date().toISOString(),
       }, { merge: true });
     } catch (e) { console.warn('[Rewards] sync error:', e); }
@@ -552,6 +661,18 @@ const Rewards = {
         '</button>') +
       '</div>';
 
+    // ====== DAILY SPIN HEART ======
+    var canSpin = this.canSpinToday();
+    html += '<div class="reward-missions" style="background:linear-gradient(135deg,#fff9e6,#fff4cc);border:2px solid #ffc800">' +
+      '<h3>' + t('spin_title') + '</h3>' +
+      '<p style="color:#7a5d00;font-size:13px;margin-bottom:10px">' + t('spin_desc') + '</p>' +
+      (canSpin ?
+        '<button class="btn-primary" style="width:100%;background:linear-gradient(135deg,#ffc800,#ff9600);box-shadow:0 4px 0 #cc7800" onclick="Rewards.doSpinUI()">' + t('spin_btn') + '</button>' :
+        '<div style="text-align:center;padding:14px;background:white;border-radius:12px;font-weight:800;color:#2c5a00">' +
+          t('spin_already') + '<br><span style="font-size:12px;color:#999">' + t('spin_next') + '</span>' +
+        '</div>') +
+      '</div>';
+
     // Missions
     html += '<div class="reward-missions">' +
       '<h3>' + t('reward_missions_title') + '</h3>' +
@@ -708,6 +829,54 @@ const Rewards = {
         document.getElementById('rewards-content').innerHTML = this.renderRewardsPage();
       }
     }
+  },
+
+  // ============================================
+  // DAILY SPIN UI
+  // ============================================
+  async doSpinUI() {
+    if (!this.canSpinToday()) {
+      if (typeof Animate !== 'undefined') Animate.toast('Sudah spin hari ini', 'error');
+      return;
+    }
+
+    // Tampilkan animasi spin
+    var modal = document.getElementById('reward-modal');
+    modal.innerHTML = '<div class="modal-content" style="max-width:400px">' +
+      '<div class="modal-header" style="background:linear-gradient(135deg,#ffc800,#ff9600)">' +
+      '<h2>🎰 ' + ((typeof I18n !== 'undefined') ? I18n.t('spin_title') : 'Spin Harian') + '</h2>' +
+      '</div>' +
+      '<div class="modal-body" style="text-align:center;padding:30px">' +
+      '<div id="spin-wheel" style="font-size:80px;animation:spinAnim 2s linear infinite">🎰</div>' +
+      '<h3 style="margin-top:20px;color:#666">' + ((typeof I18n !== 'undefined') ? I18n.t('spin_spinning') : 'Memutar...') + '</h3>' +
+      '</div>' +
+      '</div>';
+    modal.classList.add('active');
+
+    // Trigger spin logic
+    var result = await this.doSpin();
+
+    setTimeout(() => {
+      var wheel = document.getElementById('spin-wheel');
+      if (wheel) {
+        wheel.style.animation = 'none';
+        wheel.style.fontSize = '100px';
+        wheel.textContent = '🎉';
+      }
+
+      var body = modal.querySelector('.modal-body');
+      if (body) {
+        var t = (typeof I18n !== 'undefined') ? I18n.t : function(k){return k;};
+        var msg = t('spin_win').replace('{n}', result.hearts);
+        body.innerHTML =
+          '<div style="font-size:80px;margin-bottom:16px">🎉</div>' +
+          '<h2 style="color:#2c5a00;font-size:32px;margin-bottom:8px">+' + result.hearts + ' ❤️</h2>' +
+          '<p style="color:#666;font-size:15px;margin-bottom:20px">' + msg + '</p>' +
+          '<button class="btn-primary btn-full" onclick="Rewards.closeModal(); if(typeof App!==\'undefined\') App.switchTab(\'rewards\')">OK</button>';
+      }
+
+      if (typeof Animate !== 'undefined') Animate.confetti();
+    }, 2000);
   },
 
   closeModal() {
