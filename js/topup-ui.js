@@ -127,6 +127,11 @@ const TopUpUI = {
   showPayment(order, pay) {
     var m = document.getElementById('game-modal');
     var self = this;
+    var accountInfo = '';
+    if (pay.account) {
+      accountInfo = '<div class="pay-row"><span>Nomor Rekening</span><strong style="color:#58cc02;font-size:18px;letter-spacing:1px">' + pay.account + '</strong></div>' +
+                    '<div class="pay-row"><span>Atas Nama</span><strong>' + (pay.holder || 'YadStore') + '</strong></div>';
+    }
     m.innerHTML = '<div class="modal-content">' +
       '<div class="modal-header" style="background: #58cc02">' +
       '<button class="modal-close" onclick="TopUpUI.close()">X</button>' +
@@ -137,7 +142,12 @@ const TopUpUI = {
       '<div class="pay-detail">' +
       '<div class="pay-row"><span>Metode</span><strong>' + self.esc(pay.name) + '</strong></div>' +
       '<div class="pay-row"><span>Nominal</span><strong>Rp ' + self.fmt(order.total) + '</strong></div>' +
-      '<div class="pay-row"><span>Tujuan</span><strong>081234567890 a/n YadStore</strong></div></div></div>' +
+      accountInfo +
+      '</div></div>' +
+      '<div class="payment-notice">' +
+      '<p>Transfer sesuai nominal <strong>Rp ' + self.fmt(order.total) + '</strong> ke rekening di atas.</p>' +
+      '<p>Setelah transfer, upload bukti di bawah.</p>' +
+      '</div>' +
       '<h3 class="section-title">Upload Bukti Transfer</h3>' +
       '<div class="form-group"><input type="file" id="proof-input" accept="image/*" onchange="TopUpUI.handleProof(this)">' +
       '<div id="proof-preview"></div></div>' +

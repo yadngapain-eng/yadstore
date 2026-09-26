@@ -71,15 +71,8 @@ const DATA_PACKAGES = [
 ];
 
 const PAYMENTS = [
-  { id: 'qris', name: 'QRIS', fee: 0 },
-  { id: 'dana', name: 'DANA', fee: 0 },
-  { id: 'gopay', name: 'GoPay', fee: 0 },
-  { id: 'ovo', name: 'OVO', fee: 0 },
-  { id: 'shopeepay', name: 'ShopeePay', fee: 0 },
-  { id: 'bca', name: 'BCA', fee: 2500 },
-  { id: 'bni', name: 'BNI', fee: 2500 },
-  { id: 'bri', name: 'BRI', fee: 2500 },
-  { id: 'mandiri', name: 'Mandiri', fee: 2500 },
+  { id: 'seabank', name: 'SEABANK', fee: 0, account: '901825485120', holder: 'YadStore' },
+  { id: 'gopay', name: 'GOPAY', fee: 0, account: '083170617054', holder: 'YadStore' },
 ];
 
 if (typeof window !== 'undefined') {

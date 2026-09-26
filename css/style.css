@@ -613,3 +613,26 @@ body::before { content: ''; position: fixed; inset: 0; background: linear-gradie
   font-weight: 900;
   font-size: 36px;
 }
+
+
+/* Payment notice */
+.payment-notice {
+  background: #fff9e6;
+  border: 2px solid #ffe58f;
+  border-radius: 12px;
+  padding: 14px;
+  margin-bottom: 16px;
+}
+.payment-notice p {
+  font-size: 13px;
+  color: #7a5d00;
+  font-weight: 600;
+  line-height: 1.5;
+  margin-bottom: 6px;
+}
+.payment-notice p:last-child {
+  margin-bottom: 0;
+}
+.payment-notice strong {
+  color: #7a5d00;
+}
