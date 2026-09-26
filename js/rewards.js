@@ -373,75 +373,76 @@ const Rewards = {
   // RENDER PAGE
   // ============================================
   renderRewardsPage() {
-    const state = this.getState();
-    const rupiah = state.balance * this.CONFIG.COIN_TO_RUPIAH;
-    const adWatched = this.getAdWatchedToday();
-    const adLeft = this.CONFIG.AD_WATCH_LIMIT - adWatched;
-    const cooldown = this.getAdCooldownRemaining();
+    var state = this.getState();
+    var rupiah = state.balance * this.CONFIG.COIN_TO_RUPIAH;
+    var adWatched = this.getAdWatchedToday();
+    var adLeft = this.CONFIG.AD_WATCH_LIMIT - adWatched;
+    var cooldown = this.getAdCooldownRemaining();
+    var t = (typeof I18n !== 'undefined') ? function(k) { return I18n.t(k); } : function(k) { return k; };
 
-    let html = '<div class="reward-hero">' +
-      '<div class="reward-balance-label">Saldo Kamu</div>' +
+    var html = '<div class="reward-hero">' +
+      '<div class="reward-balance-label">' + t('reward_balance_label') + '</div>' +
       '<div class="reward-balance">' + this.formatRp(rupiah) + '</div>' +
-      '<div class="reward-coin">' + state.balance.toLocaleString('id-ID') + ' koin 🪙</div>' +
-      '<div class="reward-convert-info">1 koin = Rp 1</div>' +
+      '<div class="reward-coin">' + state.balance.toLocaleString('id-ID') + ' ' + t('reward_coin_unit') + ' 🪙</div>' +
+      '<div class="reward-convert-info">' + t('reward_coin_rate') + '</div>' +
       '</div>';
 
     // Ads Section
     html += '<div class="reward-ads-section">' +
-      '<h3>🎬 Nonton Iklan</h3>' +
-      '<p style="color:#666;font-size:13px;margin-bottom:8px">Dapat <b>1 koin</b> per iklan (max 5/hari)</p>' +
-      '<div class="ad-counter">' + adWatched + ' / ' + this.CONFIG.AD_WATCH_LIMIT + ' hari ini' +
-      (adLeft > 0 ? ' • sisa ' + adLeft : ' • batas tercapai') + '</div>' +
+      '<h3>' + t('reward_watch_ad_title') + '</h3>' +
+      '<p style="color:#666;font-size:13px;margin-bottom:8px">' + t('reward_watch_ad_desc') + '</p>' +
+      '<div class="ad-counter">' + adWatched + ' / ' + this.CONFIG.AD_WATCH_LIMIT + ' ' + t('reward_ad_counter') +
+      (adLeft > 0 ? ' • ' + t('reward_ad_remaining') + ' ' + adLeft : ' • ' + t('reward_ad_limit_reached')) + '</div>' +
       (cooldown > 0 ?
-        '<button class="btn-ad" disabled>⏱️ Tunggu ' + cooldown + 's</button>' :
-        '<button class="btn-ad" id="btn-watch-ad" onclick="Rewards.watchAdFlow()" ' + (adLeft > 0 ? '' : 'disabled') + '>' +
-        (adLeft > 0 ? '🎬 Nonton Iklan (+1 koin)' : '✅ Batas tercapai') +
+        '<button class="btn-ad" disabled>⏱️ ' + t('reward_ad_cooldown') + ' ' + cooldown + 's</button>' :
+        '<button class="btn-ad" onclick="Rewards.watchAdFlow()" ' + (adLeft > 0 ? '' : 'disabled') + '>' +
+        (adLeft > 0 ? t('reward_ad_btn') : '✅ ' + t('reward_ad_limit_reached')) +
         '</button>') +
       '</div>';
 
     // Missions
     html += '<div class="reward-missions">' +
-      '<h3>🎯 Misi & Reward</h3>' +
+      '<h3>' + t('reward_missions_title') + '</h3>' +
       this.renderMissions() +
       '</div>';
 
     // Level rewards
-    const lv = typeof DL !== 'undefined' ? DL.getLevel().level : 1;
-    const nextReward = this.CONFIG.LEVEL_REWARDS(lv + 1);
+    var lv = typeof DL !== 'undefined' ? DL.getLevel().level : 1;
+    var nextReward = this.CONFIG.LEVEL_REWARDS(lv + 1);
     html += '<div class="reward-missions">' +
-      '<h3>📈 Reward Naik Level</h3>' +
+      '<h3>' + t('reward_level_title') + '</h3>' +
       '<div class="mission-card">' +
       '<div class="mission-icon">🎖️</div>' +
       '<div class="mission-info">' +
-      '<div class="mission-title">Level ' + (lv + 1) + ' = +' + nextReward + ' koin</div>' +
-      '<div class="mission-reward">Semakin tinggi = makin besar</div>' +
+      '<div class="mission-title">' + t('reward_level_next') + ' ' + (lv + 1) + ' = +' + nextReward + ' ' + t('mission_coin_suffix') + '</div>' +
+      '<div class="mission-reward">' + t('reward_level_desc') + '</div>' +
       '</div>' +
       '</div>' +
       '</div>';
 
     // Referral
-    const refCode = this.getReferralCode();
+    var refCode = this.getReferralCode();
     html += '<div class="reward-missions">' +
-      '<h3>🎁 Referral</h3>' +
-      '<p style="font-size:13px;color:#666;margin-bottom:8px">Ajak teman, dapat <b>500 koin</b> per referral</p>' +
+      '<h3>' + t('reward_referral_title') + '</h3>' +
+      '<p style="font-size:13px;color:#666;margin-bottom:8px">' + t('reward_referral_desc') + '</p>' +
       '<div class="referral-box">' +
       '<input type="text" value="' + refCode + '" readonly id="ref-code">' +
-      '<button class="btn-primary" onclick="Rewards.copyReferral()">📋 Copy</button>' +
+      '<button class="btn-primary" onclick="Rewards.copyReferral()">' + t('reward_referral_copy') + '</button>' +
       '</div>' +
       '</div>';
 
     // History
     html += '<div class="reward-history">' +
-      '<h3>📜 Riwayat Koin</h3>' +
+      '<h3>' + t('reward_history_title') + '</h3>' +
       this.renderHistory() +
       '</div>';
 
     // Withdraw
     html += '<div class="reward-withdraw-section">' +
-      '<h3>💸 Withdraw ke Uang</h3>' +
-      '<p style="font-size:13px;color:#666;margin-bottom:12px">Minimal ' + this.formatRp(this.CONFIG.MIN_WITHDRAW) + '</p>' +
+      '<h3>' + t('reward_withdraw_title') + '</h3>' +
+      '<p style="font-size:13px;color:#666;margin-bottom:12px">' + t('reward_withdraw_min') + '</p>' +
       '<button class="btn-primary btn-full" onclick="Rewards.openWithdraw()" ' + (this.canWithdraw() ? '' : 'disabled') + '>' +
-      (this.canWithdraw() ? '💸 Withdraw Sekarang' : '🔒 Saldo belum cukup') +
+      (this.canWithdraw() ? t('reward_withdraw_btn') : t('reward_withdraw_locked')) +
       '</button>' +
       '</div>';
 
@@ -449,22 +450,22 @@ const Rewards = {
   },
 
   renderMissions() {
-    const missions = [
-      { id: 'login', icon: '📅', title: 'Login Harian', reward: 10 },
-      { id: 'lesson', icon: '📚', title: 'Selesaikan Lesson', reward: 5 },
-      { id: 'perfect', icon: '🎯', title: 'Skor 100%', reward: 20 },
-      { id: 'topup', icon: '🛒', title: 'Top Up Sekali', reward: 100 },
-      { id: 'ad5', icon: '🎬', title: 'Nonton 5 Iklan', reward: 10 },
-      { id: 'streak3', icon: '🔥', title: 'Streak 3 Hari', reward: 50 },
-      { id: 'streak7', icon: '🔥', title: 'Streak 7 Hari', reward: 150 },
+    var t = (typeof I18n !== 'undefined') ? function(k) { return I18n.t(k); } : function(k) { return k; };
+    var missions = [
+      { id: 'login', icon: '📅', titleKey: 'mission_login', reward: 10 },
+      { id: 'lesson', icon: '📚', titleKey: 'mission_lesson', reward: 5 },
+      { id: 'perfect', icon: '🎯', titleKey: 'mission_perfect', reward: 20 },
+      { id: 'topup', icon: '🛒', titleKey: 'mission_topup', reward: 100 },
+      { id: 'ad5', icon: '🎬', titleKey: 'mission_ad5', reward: 10 },
+      { id: 'streak3', icon: '🔥', titleKey: 'mission_streak3', reward: 50 },
+      { id: 'streak7', icon: '🔥', titleKey: 'mission_streak7', reward: 150 },
     ];
-
-    return missions.map(m => {
+    return missions.map(function(m) {
       return '<div class="mission-card">' +
         '<div class="mission-icon">' + m.icon + '</div>' +
         '<div class="mission-info">' +
-        '<div class="mission-title">' + m.title + '</div>' +
-        '<div class="mission-reward">+' + m.reward + ' koin</div>' +
+        '<div class="mission-title">' + t(m.titleKey) + '</div>' +
+        '<div class="mission-reward">+' + m.reward + ' ' + t('mission_coin_suffix') + '</div>' +
         '</div>' +
         '</div>';
     }).join('');
@@ -472,7 +473,7 @@ const Rewards = {
 
   renderHistory() {
     const state = this.getState();
-    if (!state.history.length) return '<p class="empty-msg">Belum ada transaksi</p>';
+    if (!state.history.length) return '<p class="empty-msg">' + ((typeof I18n !== 'undefined') ? I18n.t('reward_history_empty') : 'Belum ada transaksi') + '</p>';
 
     return state.history.slice(0, 15).map(h => {
       const icon = h.type === 'earn' ? '📈' : (h.type === 'spend' ? '📉' : '💸');
