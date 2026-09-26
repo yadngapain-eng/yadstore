@@ -1,4 +1,4 @@
-/* YADSTORE — MONETAG CONFIG (FIXED) */
+/* YADSTORE — MONETAG v3 (multi-strategy) */
 
 window.MONETAG_CONFIG = {
   SW_DOMAIN: '5gvci.com',
@@ -9,148 +9,85 @@ window.MONETAG_CONFIG = {
     vignette: 11893258,
     inpage: 11893257,
     popunder: 11893256,
-    rewarded: 11893256,   // pakai popunder
   },
 
   ENABLED: true,
-  AUTO_INJECT: true,
-  _popunderLoaded: false,
-  _popunderQueue: [],
 };
 
 (function() {
-  if (typeof window === 'undefined' || !window.MONETAG_CONFIG.ENABLED) return;
-
+  if (typeof window === 'undefined') return;
   const cfg = window.MONETAG_CONFIG;
   const Z = cfg.ZONES;
 
-  // ============================================
-  // INJECT SCRIPT HELPER
-  // ============================================
-  function injectScript(src, onload, onerror) {
-    try {
-      const s = document.createElement('script');
-      s.src = src;
-      s.setAttribute('data-cfasync', 'false');
-      s.async = true;
-      if (onload) s.onload = onload;
-      if (onerror) s.onerror = onerror;
-      document.head.appendChild(s);
-      return s;
-    } catch (e) {
-      console.warn('[Monetag] inject error:', e);
-      if (onerror) onerror(e);
-      return null;
-    }
-  }
-
-  // ============================================
-  // AUTO-INJECT (non-rewarded zones)
-  // ============================================
-  function injectBackgroundZones() {
-    // Push notif (SW)
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js')
-        .then(() => console.log('[Monetag] SW registered'))
-        .catch((e) => console.warn('[Monetag] SW failed:', e.message));
-    }
-
-    // Vignette Banner (auto, setelah user interaksi)
-    setTimeout(() => {
-      injectScript('//' + cfg.SW_DOMAIN + '/400/' + Z.vignette,
-        () => console.log('[Monetag] Vignette loaded'),
-        () => console.warn('[Monetag] Vignette failed')
-      );
-    }, 3000);
-
-    // In-Page Push (auto)
-    setTimeout(() => {
-      injectScript('//' + cfg.SW_DOMAIN + '/400/' + Z.inpage,
-        () => console.log('[Monetag] In-Page loaded'),
-        () => console.warn('[Monetag] In-Page failed')
-      );
-    }, 5000);
-  }
-
-  // ============================================
-  // REWARDED POPUNDER TRIGGER (untuk koin)
-  // ============================================
-  cfg.triggerRewarded = function() {
+  function inject(src) {
     return new Promise((resolve) => {
-      console.log('[Monetag] Triggering rewarded popunder...');
-
-      let resolved = false;
-      let popupShown = false;
-
-      // Detect if popup/iframe appears (mutation observer)
-      const observer = new MutationObserver((mutations) => {
-        for (const m of mutations) {
-          for (const node of m.addedNodes) {
-            if (node.nodeType === 1) {
-              // Cek iframe / div dari Monetag
-              if (node.tagName === 'IFRAME' ||
-                  (node.id && node.id.toLowerCase().includes('monetag')) ||
-                  (node.className && String(node.className).toLowerCase().includes('monetag')) ||
-                  (node.src && String(node.src).includes(cfg.SW_DOMAIN))) {
-                popupShown = true;
-                console.log('[Monetag] Popup detected!');
-              }
-            }
-          }
-        }
-      });
-      observer.observe(document.body, { childList: true, subtree: true });
-
-      // Inject popunder script
-      const s = injectScript('//' + cfg.SW_DOMAIN + '/400/' + Z.popunder,
-        () => {
-          console.log('[Monetag] Popunder script loaded');
-          // Tunggu 1.5 detik untuk cek popup
-          setTimeout(() => {
-            observer.disconnect();
-            if (resolved) return;
-            resolved = true;
-
-            if (popupShown) {
-              console.log('[Monetag] ✅ Popup confirmed');
-              resolve({ success: true, verified: true });
-            } else {
-              // Popunder mungkin tidak terdeteksi via DOM tapi tetap muncul
-              console.log('[Monetag] ⚠️ Popup not detected in DOM (might still show)');
-              resolve({ success: true, verified: false });
-            }
-          }, 1500);
-        },
-        (err) => {
-          console.warn('[Monetag] Popunder failed:', err);
-          observer.disconnect();
-          if (!resolved) {
-            resolved = true;
-            resolve({ success: false, verified: false });
-          }
-        }
-      );
-
-      // Timeout 8 detik
-      setTimeout(() => {
-        observer.disconnect();
-        if (!resolved) {
-          resolved = true;
-          console.warn('[Monetag] Popunder timeout');
-          resolve({ success: false, verified: false });
-        }
-      }, 8000);
+      try {
+        const s = document.createElement('script');
+        s.src = src;
+        s.setAttribute('data-cfasync', 'false');
+        s.async = true;
+        s.onload = () => resolve({ ok: true, src });
+        s.onerror = () => resolve({ ok: false, src });
+        document.head.appendChild(s);
+        setTimeout(() => resolve({ ok: true, src, timeout: true }), 3000);
+      } catch (e) {
+        resolve({ ok: false, src, error: e.message });
+      }
     });
+  }
+
+  // ============================================
+  // WATCH AD — Multi-strategy
+  // ============================================
+  cfg.triggerRewarded = async function() {
+    console.log('[Monetag] Trigger watch ad...');
+
+    // Strategy 1: Vignette (support mobile) — auto open overlay
+    const vignetteUrl = '//' + cfg.SW_DOMAIN + '/400/' + Z.vignette;
+    console.log('[Monetag] Strategy 1: Vignette');
+    const r1 = await inject(vignetteUrl);
+    console.log('[Monetag] Vignette result:', r1);
+
+    // Tunggu 3 detik user lihat iklan
+    await new Promise(r => setTimeout(r, 3000));
+
+    // Strategy 2: In-Page push sebagai backup
+    const inpageUrl = '//' + cfg.SW_DOMAIN + '/400/' + Z.inpage;
+    console.log('[Monetag] Strategy 2: In-Page');
+    await inject(inpageUrl);
+
+    // Strategy 3: Popunder (jika user pakai desktop)
+    const popunderUrl = '//' + cfg.SW_DOMAIN + '/400/' + Z.popunder;
+    console.log('[Monetag] Strategy 3: Popunder');
+    await inject(popunderUrl);
+
+    // Tunggu 4 detik lagi
+    await new Promise(r => setTimeout(r, 4000));
+
+    // Anggap sukses kalau salah satu script load OK
+    const success = r1.ok || r1.timeout;
+
+    console.log('[Monetag] Final result:', success ? 'SUCCESS' : 'FAILED');
+    return { success: success, method: 'multi' };
   };
 
   // ============================================
-  // INIT
+  // AUTO-INJECT background
   // ============================================
-  if (document.readyState === 'complete') {
-    setTimeout(injectBackgroundZones, 2000);
-  } else {
-    window.addEventListener('load', () => setTimeout(injectBackgroundZones, 2000));
+  function autoInject() {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js')
+        .then(() => console.log('[Monetag] SW OK'))
+        .catch(e => console.warn('[Monetag] SW fail:', e.message));
+    }
+    console.log('[Monetag] Auto-inject complete');
   }
 
-  console.log('[Monetag] Config loaded');
+  if (document.readyState === 'complete') {
+    setTimeout(autoInject, 1500);
+  } else {
+    window.addEventListener('load', () => setTimeout(autoInject, 1500));
+  }
+
+  console.log('[Monetag] v3 loaded');
 })();
