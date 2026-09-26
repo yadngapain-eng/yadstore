@@ -1,4 +1,4 @@
-/* YADSTORE — APP v3 */
+/* YADSTORE — APP v4 (fix achievements) */
 
 const App = {
   currentTab: 'learn',
@@ -6,11 +6,12 @@ const App = {
   async init() {
     this.checkPendingAdReward();
     console.log('[App] Initializing...');
+
     if (typeof I18n !== 'undefined') I18n.init();
     if (typeof Auth !== 'undefined') await Auth.init();
+
     setTimeout(() => {
       this.renderAll();
-      // Rewards: cek login harian
       if (typeof Rewards !== 'undefined') {
         Rewards.checkDailyLogin();
       }
@@ -25,10 +26,12 @@ const App = {
       if (typeof DuoUI !== 'undefined') {
         DuoUI.renderCategories();
         DuoUI.renderLessons();
-        DuoUI.renderAch();
       }
       if (typeof TopUpUI !== 'undefined') TopUpUI.render();
-      if (typeof Rewards !== 'undefined' && this.currentTab === 'rewards') {
+      if (this.currentTab === 'achievements' && typeof DuoUI !== 'undefined') {
+        DuoUI.renderAch();
+      }
+      if (this.currentTab === 'rewards' && typeof Rewards !== 'undefined') {
         document.getElementById('rewards-content').innerHTML = Rewards.renderRewardsPage();
       }
     } catch (e) { console.error('[App] onLangChanged:', e); }
@@ -52,7 +55,6 @@ const App = {
 
   onUserChanged(user) {
     console.log('[App] User changed:', user ? user.uid : 'none');
-    // Re-render semua dengan data user baru
     this.renderAll();
   },
 
@@ -61,8 +63,10 @@ const App = {
       if (typeof Animate !== 'undefined') Animate.init();
       if (typeof DL !== 'undefined') DL.regenHearts();
       if (typeof DuoUI !== 'undefined') {
-        DuoUI.renderStats(); DuoUI.renderCategories();
-        DuoUI.renderLessons(); DuoUI.renderAch(); DuoUI.renderProfile();
+        DuoUI.renderStats();
+        DuoUI.renderCategories();
+        DuoUI.renderLessons();
+        DuoUI.renderProfile();
       }
       if (typeof TopUpUI !== 'undefined') TopUpUI.render();
       if (typeof Auth !== 'undefined') Auth.updateUI();
@@ -73,13 +77,17 @@ const App = {
     this.currentTab = tab;
     document.querySelectorAll('.tab-page').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+
     const p = document.getElementById('page-' + tab);
     if (p) p.classList.add('active');
     const b = document.querySelector('.nav-btn[data-tab="' + tab + '"]');
     if (b) b.classList.add('active');
+
     try {
       if (tab === 'learn' && typeof DuoUI !== 'undefined') {
-        DuoUI.renderStats(); DuoUI.renderLessons(); DuoUI.renderAch();
+        DuoUI.renderStats();
+        DuoUI.renderCategories();
+        DuoUI.renderLessons();
       } else if (tab === 'topup' && typeof TopUpUI !== 'undefined') {
         TopUpUI.render();
       } else if (tab === 'profile' && typeof DuoUI !== 'undefined') {
@@ -90,9 +98,11 @@ const App = {
       } else if (tab === 'achievements' && typeof DuoUI !== 'undefined') {
         DuoUI.renderAch();
       } else if (tab === 'rewards' && typeof Rewards !== 'undefined') {
-        document.getElementById('rewards-content').innerHTML = Rewards.renderRewardsPage();
+        const el = document.getElementById('rewards-content');
+        if (el) el.innerHTML = Rewards.renderRewardsPage();
       }
     } catch (e) { console.error('[App] switchTab:', e); }
+
     window.scrollTo({ top: 0, behavior: 'smooth' });
   },
 
@@ -120,7 +130,9 @@ const App = {
 document.addEventListener('DOMContentLoaded', () => App.init());
 setInterval(() => {
   if (typeof DL !== 'undefined' && typeof DuoUI !== 'undefined') {
-    DL.regenHearts(); DuoUI.renderStats();
+    DL.regenHearts();
+    DuoUI.renderStats();
   }
 }, 60000);
 if (typeof window !== 'undefined') window.App = App;
+console.log('[app] v4 loaded');
