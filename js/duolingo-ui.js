@@ -184,7 +184,7 @@ const DuoUI = {
     });
 
     // Push bot reply
-    var reply = ok ? 'Benar! 🎉' : 'Salah. Jawaban benar: ' + q.o[q.a];
+    var reply = ok ? ((typeof I18n !== 'undefined' ? I18n.t('correct') : 'Benar! 🎉')) : ((typeof I18n !== 'undefined' ? I18n.t('wrong') : 'Salah. Jawaban benar:') + ' ' + q.o[q.a]);
     this.chatHistory.push({
       type: 'bot-reply',
       text: reply,
@@ -222,11 +222,11 @@ const DuoUI = {
     modal.classList.remove('wa-mode');
     modal.innerHTML = '<div class="modal-content lesson-modal-content"><div class="lesson-result">' +
       '<div class="result-icon">' + (r.perfect ? '🏆' : '🎉') + '</div>' +
-      '<h2>' + (r.perfect ? 'Sempurna!' : 'Selesai!') + '</h2>' +
-      '<p class="result-score">Skor: ' + score + ' / ' + total + '</p>' +
+      '<h2>' + (typeof I18n !== 'undefined' ? I18n.t(r.perfect ? 'lesson_perfect' : 'lesson_complete') : (r.perfect ? 'Sempurna!' : 'Selesai!')) + '</h2>' +
+      '<p class="result-score">' + (typeof I18n !== 'undefined' ? I18n.t('score') : 'Skor') + ': ' + score + ' / ' + total + '</p>' +
       '<div class="result-stats"><div class="result-stat">+' + r.xpEarned + ' XP</div>' +
       '<div class="result-stat">+' + (r.perfect ? 5 : 2) + ' Gems</div></div>' +
-      '<button class="btn-primary btn-full" onclick="DuoUI.exit()">Lanjut</button>' +
+      '<button class="btn-primary btn-full" onclick="DuoUI.exit()">' + (typeof I18n !== 'undefined' ? I18n.t('btn_continue') : 'Lanjut') + '</button>' +
       '</div></div>';
     Animate.confetti();
   },

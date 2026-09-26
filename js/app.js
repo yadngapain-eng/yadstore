@@ -5,6 +5,7 @@ const App = {
 
   async init() {
     console.log('[App] Initializing...');
+    if (typeof I18n !== 'undefined') I18n.init();
     if (typeof Auth !== 'undefined') await Auth.init();
     setTimeout(() => {
       this.renderAll();
@@ -14,6 +15,22 @@ const App = {
       }
       this.switchTab('learn');
     }, 800);
+  },
+
+  onLangChanged(lang) {
+    console.log('[App] Lang changed:', lang);
+    try {
+      if (typeof I18n !== 'undefined') I18n.applyAll();
+      if (typeof DuoUI !== 'undefined') {
+        DuoUI.renderCategories();
+        DuoUI.renderLessons();
+        DuoUI.renderAch();
+      }
+      if (typeof TopUpUI !== 'undefined') TopUpUI.render();
+      if (typeof Rewards !== 'undefined' && this.currentTab === 'rewards') {
+        document.getElementById('rewards-content').innerHTML = Rewards.renderRewardsPage();
+      }
+    } catch (e) { console.error('[App] onLangChanged:', e); }
   },
 
   onUserChanged(user) {
