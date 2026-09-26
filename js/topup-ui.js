@@ -1,4 +1,16 @@
 const TopUpUI = {
+  // ===== HELPER: Ambil harga final (dengan markup) =====
+  getFinalPrice: function(itemId, prodId, defaultPrice) {
+    try {
+      var prices = JSON.parse(localStorage.getItem('yadstore_prices') || '{}');
+      var key = itemId + '_' + prodId;
+      if (prices[key] && prices[key].final) return prices[key].final;
+      var cfg = JSON.parse(localStorage.getItem('yadstore_config') || '{}');
+      var add = cfg.global_markup || 0;
+      return defaultPrice + add;
+    } catch(e) { return defaultPrice; }
+  },
+
   currentItem: null, currentProduct: null, userData: {}, proofImage: null,
   rendered: false,
 
@@ -61,7 +73,7 @@ const TopUpUI = {
       item.products.map(function(p) { return '<div class="product-card" onclick="TopUpUI.pick(\'' + p.id + '\')">' +
         '<div class="product-name">' + self.esc(p.name) + '</div>' +
         (p.bonus ? '<div class="product-bonus">' + self.esc(p.bonus) + '</div>' : '') +
-        '<div class="product-price">Rp ' + self.fmt(p.price) + '</div></div>'; }).join('') +
+        '<div class="product-price">Rp ' + self.fmt(self.getFinalPrice(item.id, p.id, p.price)) + '</div></div>'; }).join('') +
       '</div></div></div>';
     m.classList.add('active');
   },
@@ -97,7 +109,7 @@ const TopUpUI = {
       '<div class="order-row"><span>Layanan</span><strong>' + self.esc(item.name) + '</strong></div>' +
       '<div class="order-row"><span>Item</span><strong>' + self.esc(p.name) + '</strong></div>' +
       Object.keys(this.userData).map(function(k) { return '<div class="order-row"><span>' + self.esc(k) + '</span><strong>' + self.esc(self.userData[k]) + '</strong></div>'; }).join('') +
-      '<div class="order-row total"><span>Total</span><strong>Rp ' + self.fmt(p.price) + '</strong></div></div>' +
+      '<div class="order-row total"><span>Total</span><strong>Rp ' + self.fmt(self.getFinalPrice(item.id, p.id, p.price)) + '</strong></div></div>' +
       '<h3 class="section-title">Pilih Pembayaran</h3>' +
       '<div class="payments-grid">' +
       PAYMENTS.map(function(pay) { return '<div class="payment-card" onclick="TopUpUI.submit(\'' + pay.id + '\')">' +
@@ -113,8 +125,9 @@ const TopUpUI = {
     var order = {
       id: 'YDS' + Date.now().toString(36).toUpperCase(),
       item: this.currentItem.name, itemIcon: this.currentItem.icon,
-      product: this.currentProduct.name, price: this.currentProduct.price,
-      fee: pay.fee, total: this.currentProduct.price + pay.fee,
+      product: this.currentProduct.name,
+      price: this.getFinalPrice(this.currentItem.id, this.currentProduct.id, this.currentProduct.price),
+      fee: pay.fee, total: this.getFinalPrice(this.currentItem.id, this.currentProduct.id, this.currentProduct.price) + pay.fee,
       userData: this.userData, payment: pay.name, status: 'pending',
       proof: null, date: new Date().toISOString(),
     };

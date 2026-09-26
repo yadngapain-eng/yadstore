@@ -45,3 +45,27 @@ table td { padding: 12px 10px; border-bottom: 1px solid var(--border); font-size
 .login-box p { color: var(--text-light); font-size: 14px; margin-bottom: 20px; }
 .login-box input { width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 8px; font-size: 15px; margin-bottom: 16px; }
 .login-hint { font-size: 12px; color: var(--text-light); margin-top: 16px; }
+
+
+/* ===== MARKUP BUTTONS ===== */
+.btn-preset {
+  padding: 10px 16px;
+  background: white;
+  border: 2px solid var(--green);
+  color: var(--green);
+  border-radius: 8px;
+  font-family: inherit;
+  font-weight: 800;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-preset:hover {
+  background: var(--green);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(88,204,2,0.3);
+}
+.btn-preset:active {
+  transform: translateY(0);
+}
