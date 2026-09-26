@@ -2,36 +2,36 @@ const App = {
   currentTab: 'learn',
 
   init() {
+    console.log('=== APP INIT ===');
     try {
-      console.log('[App] init...');
-      if (typeof Animate !== 'undefined') Animate.init();
-      if (typeof DL !== 'undefined') DL.regenHearts();
+      if (typeof Animate !== 'undefined') { Animate.init(); console.log('Animate: OK'); }
+      if (typeof DL !== 'undefined') { DL.regenHearts(); console.log('DL: OK'); }
       if (typeof DuoUI !== 'undefined') {
-        DuoUI.renderStats();
-        DuoUI.renderCategories();
-        DuoUI.renderLessons();
-        DuoUI.renderAch();
-        DuoUI.renderProfile();
+        DuoUI.renderStats(); console.log('renderStats: OK');
+        DuoUI.renderCategories(); console.log('renderCategories: OK');
+        DuoUI.renderLessons(); console.log('renderLessons: OK');
+        DuoUI.renderAch(); console.log('renderAch: OK');
+        DuoUI.renderProfile(); console.log('renderProfile: OK');
       }
-      if (typeof TopUpUI !== 'undefined') TopUpUI.render();
+      if (typeof TopUpUI !== 'undefined') { TopUpUI.render(); console.log('TopUpUI: OK'); }
       this.switchTab('learn');
       if (typeof DL !== 'undefined') DL.updateStreak();
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/sw.js').catch(function() {});
-      }
-      console.log('[App] ready');
+      console.log('=== APP READY ===');
     } catch (e) {
-      console.error('[App] init error:', e);
+      console.error('=== APP ERROR ===', e);
+      document.body.innerHTML = '<div style="padding:20px;font-family:monospace;background:#ffe0e0">' +
+        '<h2 style="color:red">Error:</h2><pre>' + (e.message || e) + '\n\n' + (e.stack || '') + '</pre>' +
+        '<p>Fix dan refresh.</p></div>';
     }
   },
 
   switchTab(tab) {
     this.currentTab = tab;
-    document.querySelectorAll('.tab-page').forEach(p => p.classList.remove('active'));
-    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-    const p = document.getElementById('page-' + tab);
+    document.querySelectorAll('.tab-page').forEach(function(p) { p.classList.remove('active'); });
+    document.querySelectorAll('.nav-btn').forEach(function(b) { b.classList.remove('active'); });
+    var p = document.getElementById('page-' + tab);
     if (p) p.classList.add('active');
-    const b = document.querySelector('.nav-btn[data-tab="' + tab + '"]');
+    var b = document.querySelector('.nav-btn[data-tab="' + tab + '"]');
     if (b) b.classList.add('active');
     try {
       if (tab === 'learn' && typeof DuoUI !== 'undefined') {
@@ -43,7 +43,7 @@ const App = {
       } else if (tab === 'orders' && typeof TopUpUI !== 'undefined') {
         TopUpUI.renderOrders();
       }
-    } catch (e) { console.error('[App] switchTab error:', e); }
+    } catch (e) { console.error('[App] switchTab:', e); }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   },
 
@@ -61,4 +61,5 @@ setInterval(function() {
     DL.regenHearts(); DuoUI.renderStats();
   }
 }, 60000);
+console.log('[app] loaded');
 if (typeof window !== 'undefined') window.App = App;
