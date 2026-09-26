@@ -1,4 +1,4 @@
-/* YADSTORE — ADS MANAGER v8 (clean mode: A) */
+/* YADSTORE — ADS MANAGER v9 (aggressive inject) */
 
 window.AdsManager = {
   NETWORKS: {
@@ -25,17 +25,7 @@ window.AdsManager = {
     },
   },
 
-  // ====== FLAG MODE (dibuat oleh Colab) ======
-  MODE: 'A',
-
-  FLAGS: {
-    adsterra_popunder:  true,
-    adsterra_socialbar: false,
-    monetag_vignette:   false,
-    monetag_inpage:     false,
-    monetag_push:       false,
-    monetag_popunder:   false,
-  },
+  VERSION: 'v9',
 
   currentRotation: 'adsterra',
   lastRotation: 0,
@@ -43,51 +33,81 @@ window.AdsManager = {
   lastSmartlinkOpen: 0,
   SMARTLINK_COOLDOWN: 30 * 1000,
   loadedScripts: {},
+  injected: {},   // cegah double inject
   initialized: false,
 
   init() {
-    if (this.initialized) return;
+    if (this.initialized) {
+      console.log('[AdsManager] already initialized');
+      return;
+    }
     this.initialized = true;
-    console.log('[AdsManager] v8 init — MODE ' + this.MODE);
+    console.log('[AdsManager] ' + this.VERSION + ' init');
 
+    // 1. Register service worker (dengan cache bust)
     this.registerSW();
 
-    setTimeout(() => this.loadBackgroundAds(), 1500);
+    // 2. Inject ads SEKARANG (tidak tunggu lama)
+    this.loadBackgroundAds();
+
+    // 3. Inject ulang setelah 5 detik (backup)
+    setTimeout(() => this.loadBackgroundAds(true), 5000);
+
+    // 4. Inject ulang setelah 15 detik (backup kedua)
+    setTimeout(() => this.loadBackgroundAds(true), 15000);
+
+    // 5. Rotasi tiap menit
     setInterval(() => this.rotateBackground(), this.ROTATION_INTERVAL);
+
+    // 6. Cek script yang gagal load
+    setInterval(() => this.reinjectFailed(), 30000);
 
     console.log('[AdsManager] Ready');
   },
 
   registerSW() {
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js')
-        .then(reg => {
-          console.log('[AdsManager] SW registered');
-          if (reg.update) reg.update();
-        })
-        .catch(e => console.warn('[AdsManager] SW fail:', e.message));
+      // Unregister SW lama dulu biar fresh
+      navigator.serviceWorker.getRegistrations().then(regs => {
+        regs.forEach(reg => {
+          console.log('[AdsManager] Unregistering old SW:', reg.scope);
+          reg.unregister();
+        });
+
+        // Register ulang dengan cache bust
+        const swUrl = '/sw.js?v=' + Date.now();
+        navigator.serviceWorker.register(swUrl)
+          .then(reg => {
+            console.log('[AdsManager] SW registered (fresh):', reg.scope);
+            if (reg.update) reg.update();
+          })
+          .catch(e => console.warn('[AdsManager] SW fail:', e.message));
+      });
     }
   },
 
-  loadBackgroundAds() {
-    console.log('[AdsManager] Loading ads... (mode ' + this.MODE + ')');
-    const F = this.FLAGS;
+  loadBackgroundAds(force) {
+    console.log('[AdsManager] Loading ads...' + (force ? ' (force re-inject)' : ''));
+    const cb = Date.now(); // cache buster untuk URL iklan
 
     // ====== ADSTERRA ======
     const a = this.NETWORKS.adsterra;
     if (a.enabled) {
-      if (F.adsterra_popunder) {
-        this.injectScript(a.scripts.popunder, 'adsterra-popunder');
-        console.log('[AdsManager] ✓ adsterra-popunder');
-      } else {
-        console.log('[AdsManager] ✗ adsterra-popunder (disabled)');
+      // Popunder — inject langsung
+      if (force || !this.injected['adsterra-popunder']) {
+        this.injectScript(a.scripts.popunder + '?cb=' + cb, 'adsterra-popunder');
+        this.injected['adsterra-popunder'] = true;
+        console.log('[AdsManager] ✓ adsterra-popunder injected');
       }
-      if (F.adsterra_socialbar) {
-        setTimeout(() => this.injectScript(a.scripts.socialbar, 'adsterra-socialbar'), 2000);
-        console.log('[AdsManager] ✓ adsterra-socialbar');
-      } else {
-        console.log('[AdsManager] ✗ adsterra-socialbar (disabled)');
-      }
+
+      // Social bar — delay 1 detik
+      setTimeout(() => {
+        if (force || !this.injected['adsterra-socialbar']) {
+          this.injectScript(a.scripts.socialbar + '?cb=' + cb, 'adsterra-socialbar');
+          this.injected['adsterra-socialbar'] = true;
+          console.log('[AdsManager] ✓ adsterra-socialbar injected');
+        }
+      }, 1000);
     }
 
     // ====== MONETAG ======
@@ -96,36 +116,54 @@ window.AdsManager = {
       const d = m.swDomain;
       const z = m.zones;
 
-      if (F.monetag_vignette) {
-        setTimeout(() => this.injectScript('https://' + d + '/act/files/tag.min.js?z=' + z.vignette, 'monetag-vignette'), 3000);
-        console.log('[AdsManager] ✓ monetag-vignette');
-      } else {
-        console.log('[AdsManager] ✗ monetag-vignette (disabled)');
-      }
+      // Vignette — 500ms
+      setTimeout(() => {
+        if (force || !this.injected['monetag-vignette']) {
+          this.injectScript('https://' + d + '/act/files/tag.min.js?z=' + z.vignette + '&cb=' + cb, 'monetag-vignette');
+          this.injected['monetag-vignette'] = true;
+          console.log('[AdsManager] ✓ monetag-vignette injected');
+        }
+      }, 500);
 
-      if (F.monetag_inpage) {
-        setTimeout(() => this.injectScript('https://' + d + '/act/files/tag.min.js?z=' + z.inpage, 'monetag-inpage'), 5000);
-        console.log('[AdsManager] ✓ monetag-inpage');
-      } else {
-        console.log('[AdsManager] ✗ monetag-inpage (disabled)');
-      }
+      // In-Page Push — 1500ms
+      setTimeout(() => {
+        if (force || !this.injected['monetag-inpage']) {
+          this.injectScript('https://' + d + '/act/files/tag.min.js?z=' + z.inpage + '&cb=' + cb, 'monetag-inpage');
+          this.injected['monetag-inpage'] = true;
+          console.log('[AdsManager] ✓ monetag-inpage injected');
+        }
+      }, 1500);
 
-      if (F.monetag_push) {
-        setTimeout(() => this.injectScript('https://' + d + '/act/files/tag.min.js?z=' + z.push, 'monetag-push'), 7000);
-        console.log('[AdsManager] ✓ monetag-push');
-      } else {
-        console.log('[AdsManager] ✗ monetag-push (disabled)');
-      }
+      // Push Notification — 2500ms
+      setTimeout(() => {
+        if (force || !this.injected['monetag-push']) {
+          this.injectScript('https://' + d + '/act/files/tag.min.js?z=' + z.push + '&cb=' + cb, 'monetag-push');
+          this.injected['monetag-push'] = true;
+          console.log('[AdsManager] ✓ monetag-push injected');
+        }
+      }, 2500);
 
-      if (F.monetag_popunder) {
-        setTimeout(() => this.injectScript('https://' + d + '/act/files/tag.min.js?z=' + z.popunder, 'monetag-popunder'), 9000);
-        console.log('[AdsManager] ✓ monetag-popunder');
-      } else {
-        console.log('[AdsManager] ✗ monetag-popunder (disabled)');
-      }
+      // Popunder — 3500ms
+      setTimeout(() => {
+        if (force || !this.injected['monetag-popunder']) {
+          this.injectScript('https://' + d + '/act/files/tag.min.js?z=' + z.popunder + '&cb=' + cb, 'monetag-popunder');
+          this.injected['monetag-popunder'] = true;
+          console.log('[AdsManager] ✓ monetag-popunder injected');
+        }
+      }, 3500);
     }
 
-    console.log('[AdsManager] Done.');
+    console.log('[AdsManager] All ads injected');
+  },
+
+  // Re-inject script yang gagal load
+  reinjectFailed() {
+    Object.keys(this.loadedScripts).forEach(id => {
+      if (this.loadedScripts[id] === false) {
+        console.log('[AdsManager] Re-injecting failed:', id);
+        this.injected[id] = false; // reset flag biar bisa inject ulang
+      }
+    });
   },
 
   rotateBackground() {
@@ -133,6 +171,7 @@ window.AdsManager = {
     const currentIdx = networks.indexOf(this.currentRotation);
     const nextIdx = (currentIdx + 1) % networks.length;
     this.currentRotation = networks[nextIdx];
+    console.log('[AdsManager] Rotation:', this.currentRotation);
     this.lastRotation = Date.now();
   },
 
@@ -172,15 +211,16 @@ window.AdsManager = {
 
   injectScript(src, id) {
     return new Promise((resolve) => {
-      if (id && document.getElementById(id)) {
-        resolve(true);
-        return;
-      }
       try {
+        // Hapus script lama kalau ada (biar re-inject fresh)
+        const old = document.getElementById(id);
+        if (old) old.remove();
+
         const s = document.createElement('script');
         s.src = src;
         s.async = true;
         s.setAttribute('data-cfasync', 'false');
+        s.setAttribute('data-zone', id);
         if (id) s.id = id;
 
         let resolved = false;
@@ -188,14 +228,16 @@ window.AdsManager = {
           if (resolved) return;
           resolved = true;
           this.loadedScripts[id] = ok;
+          console.log('[AdsManager] ' + (ok ? '✓' : '✗') + ' ' + id + ' loaded=' + ok);
           resolve(ok);
         };
 
         s.onload = () => done(true);
         s.onerror = () => done(false);
-        setTimeout(() => done(true), 5000);
+        setTimeout(() => done(true), 8000);
         document.head.appendChild(s);
       } catch (e) {
+        console.warn('[AdsManager] inject error:', e);
         resolve(false);
       }
     });
@@ -204,11 +246,15 @@ window.AdsManager = {
   getActiveNetwork() { return this.currentRotation; },
 };
 
+// ============================================
+// AUTO INIT — panggil SEKARANG, bukan tunggu DOMContentLoaded
+// ============================================
 if (typeof window !== 'undefined') {
+  // Panggil langsung
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => window.AdsManager.init());
   } else {
-    setTimeout(() => window.AdsManager.init(), 500);
+    window.AdsManager.init();
   }
 }
-console.log('[ads-manager] v8 loaded — mode ' + window.AdsManager.MODE);
+console.log('[ads-manager] v9 loaded');
