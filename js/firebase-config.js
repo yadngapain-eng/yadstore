@@ -1,5 +1,4 @@
 /* YADSTORE — FIREBASE CONFIG */
-
 window.FIREBASE_CONFIG = {
   apiKey: "AIzaSyBsplpeXg1-WyO4MtbFNqS6pEUzJ0lh_DA",
   authDomain: "yad-video-editor.firebaseapp.com",
@@ -9,5 +8,4 @@ window.FIREBASE_CONFIG = {
   messagingSenderId: "954465770137",
   appId: "1:954465770137:web:2a4cdea761beb090bd3608"
 };
-
 console.log('[firebase] config loaded');
