@@ -287,35 +287,6 @@ const Rewards = {
     }
   },
 
-  giveAdReward() {
-    const state = this.getState();
-    const today = new Date().toISOString().split('T')[0];
-
-    if (state.lastAdDate !== today) {
-      state.lastAdWatch = 0;
-      state.lastAdDate = today;
-    }
-
-    state.lastAdWatch += 1;
-    state.lastAdTime = Date.now();
-    this.save(state);
-
-    this.addCoin(this.CONFIG.MISSION_REWARDS.watch_ad, 'Nonton iklan');
-
-    if (state.lastAdWatch === 5) {
-      this.addCoin(this.CONFIG.MISSION_REWARDS.watch_5_ads, 'Bonus 5 iklan');
-    }
-
-    if (typeof Animate !== 'undefined') {
-      Animate.confetti();
-      Animate.toast('+1 koin! 🪙', 'success');
-    }
-
-    if (typeof App !== 'undefined' && App.currentTab === 'rewards') {
-      const el = document.getElementById('rewards-content');
-      if (el) el.innerHTML = this.renderRewardsPage();
-    }
-  },
 
   // ============================================
   // LESSON COMPLETE

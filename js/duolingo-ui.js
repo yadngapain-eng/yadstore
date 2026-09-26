@@ -72,8 +72,9 @@ const DuoUI = {
   renderLessons() {
     var c = document.getElementById('lessons-list');
     if (!c) return;
+    try {
     var lessons = this.getLessons(this.currentCat);
-    if (lessons.length === 0) { c.innerHTML = '<p class="empty-msg">Belum ada lesson.</p>'; return; }
+    if (!lessons || lessons.length === 0) { c.innerHTML = '<p class="empty-msg">Belum ada lesson.</p>'; return; }
     var self = this;
     c.innerHTML = lessons.map(function(l) {
       var done = DL.isCompleted(l.id);
@@ -86,6 +87,10 @@ const DuoUI = {
         '<span>' + l.questions.length + ' soal</span></div></div>' +
         '<div class="lesson-status">' + (done ? '✓' : '›') + '</div></div>';
     }).join('');
+    } catch (err) {
+      console.error('[DuoUI] renderLessons error:', err);
+      c.innerHTML = '<p class="empty-msg" style="color:red">⚠️ Gagal memuat lesson: ' + err.message + '</p>';
+    }
   },
 
   start(id) {
@@ -254,17 +259,15 @@ const DuoUI = {
   },
 
   renderAch() {
-    var c = document.getElementById('achievements-list');
-    if (!c) return;
-
-    // ===== RENDER STATS =====
-    this.renderAchStats();
-
-    // ===== RENDER TIER TABS =====
-    this.renderTierTabs();
-
-    // ===== RENDER LIST (sesuai filter tier) =====
-    this.renderAchList();
+    try {
+      this.renderAchStats();
+      this.renderTierTabs();
+      this.renderAchList();
+    } catch (err) {
+      console.error('[DuoUI] renderAch error:', err);
+      var c = document.getElementById('achievements-list');
+      if (c) c.innerHTML = '<p class="empty-msg" style="color:red">⚠️ Gagal memuat achievement: ' + err.message + '</p>';
+    }
   },
 
   // ============================================
@@ -326,7 +329,7 @@ const DuoUI = {
       var active = self.currentTier === t.id ? 'active' : '';
       var count = tierCounts[t.id] || 0;
       return '<button class="ach-tier-tab ' + active + '" ' +
-        'onclick="DuoUI.switchTier('' + t.id + '')" ' +
+        'onclick="DuoUI.switchTier(\'' + t.id + '\')" ' +
         'style="--tier-color: ' + t.color + '">' +
         '<span class="ach-tier-icon">' + t.icon + '</span>' +
         '<span class="ach-tier-label">' + t.label + '</span>' +
