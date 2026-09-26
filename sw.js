@@ -1,4 +1,4 @@
-/* YADSTORE — SERVICE WORKER (Monetag) */
+/* YADSTORE - Service Worker (Monetag) */
 self.options = {
     "domain": "5gvci.com",
     "zoneId": 11886708

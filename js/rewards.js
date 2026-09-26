@@ -158,6 +158,7 @@ const Rewards = {
   },
 
   async watchAdFlow() {
+    // ===== CEK BISA NONTON =====
     if (!this.canWatchAd()) {
       const cd = this.getAdCooldownRemaining();
       if (cd > 0) {
@@ -168,22 +169,29 @@ const Rewards = {
       return false;
     }
 
-    if (typeof Animate !== 'undefined') Animate.toast('Membuka iklan...', 'info');
-
-    // Trigger Monetag popunder
-    let ok = true;
-    if (window.MONETAG_CONFIG && window.MONETAG_CONFIG.triggerRewarded) {
-      try {
-        ok = await window.MONETAG_CONFIG.triggerRewarded();
-      } catch (e) { ok = true; }
-    } else {
-      // Fallback: timer 5 detik
-      await new Promise(r => setTimeout(r, 5000));
+    // ===== CEK MONETAG =====
+    if (typeof window.MONETAG_CONFIG === 'undefined' || !window.MONETAG_CONFIG.triggerRewarded) {
+      if (typeof Animate !== 'undefined') Animate.toast('⚠️ Iklan belum siap, coba lagi', 'error');
+      return false;
     }
 
-    if (!ok) return false;
+    if (typeof Animate !== 'undefined') Animate.toast('Membuka iklan...', 'info');
 
-    // Beri reward
+    // ===== TRIGGER IKLAN =====
+    let result = { success: false, verified: false };
+    try {
+      result = await window.MONETAG_CONFIG.triggerRewarded();
+    } catch (e) {
+      console.error('[Rewards] Ad error:', e);
+    }
+
+    // ===== CEK HASIL =====
+    if (!result.success) {
+      if (typeof Animate !== 'undefined') Animate.toast('❌ Iklan gagal dimuat. Coba lagi.', 'error');
+      return false;
+    }
+
+    // ===== KASIH REWARD HANYA KALAU SUKSES =====
     const state = this.getState();
     const today = new Date().toISOString().split('T')[0];
     if (state.lastAdDate !== today) {
@@ -206,10 +214,11 @@ const Rewards = {
       Animate.toast('+1 koin! 🪙', 'success');
     }
 
-    // Refresh halaman rewards
+    // Refresh
     if (typeof App !== 'undefined' && App.currentTab === 'rewards') {
       document.getElementById('rewards-content').innerHTML = this.renderRewardsPage();
     }
+
     return true;
   },
 
@@ -366,7 +375,7 @@ const Rewards = {
       (adLeft > 0 ? ' • sisa ' + adLeft : ' • batas tercapai') + '</div>' +
       (cooldown > 0 ?
         '<button class="btn-ad" disabled>⏱️ Tunggu ' + cooldown + 's</button>' :
-        '<button class="btn-ad" onclick="Rewards.watchAdFlow()" ' + (adLeft > 0 ? '' : 'disabled') + '>' +
+        '<button class="btn-ad" id="btn-watch-ad" onclick="Rewards.watchAdFlow()" ' + (adLeft > 0 ? '' : 'disabled') + '>' +
         (adLeft > 0 ? '🎬 Nonton Iklan (+1 koin)' : '✅ Batas tercapai') +
         '</button>') +
       '</div>';
