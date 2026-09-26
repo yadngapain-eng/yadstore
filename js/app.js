@@ -2,11 +2,6 @@ const App = {
   currentTab: 'learn',
 
   init() {
-    // ALERT test — kalau ini muncul berarti JS jalan
-    try {
-      alert('APP INIT - JS JALAN!');
-    } catch(e) {}
-
     try {
       if (typeof Animate !== 'undefined') Animate.init();
       if (typeof DL !== 'undefined') DL.regenHearts();
@@ -21,7 +16,7 @@ const App = {
       this.switchTab('learn');
       if (typeof DL !== 'undefined') DL.updateStreak();
     } catch (e) {
-      alert('ERROR: ' + e.message);
+      console.error('[App] init:', e);
     }
   },
 
@@ -43,20 +38,26 @@ const App = {
       } else if (tab === 'orders' && typeof TopUpUI !== 'undefined') {
         TopUpUI.renderOrders();
       }
-    } catch (e) { alert('Tab error: ' + e.message); }
+    } catch (e) { console.error('[App] switchTab:', e); }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   },
 
   resetAll() {
-    if (!confirm('Reset?')) return;
+    if (!confirm('Reset SEMUA data?')) return;
     if (typeof DL !== 'undefined') DL.reset();
+    alert('Data direset!');
     location.reload();
   },
 };
 
-// TANPA DOMContentLoaded — langsung jalan
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', function() { App.init(); });
 } else {
   App.init();
 }
+setInterval(function() {
+  if (typeof DL !== 'undefined' && typeof DuoUI !== 'undefined') {
+    DL.regenHearts(); DuoUI.renderStats();
+  }
+}, 60000);
 if (typeof window !== 'undefined') window.App = App;
