@@ -1,25 +1,35 @@
 const TopUpUI = {
   currentItem: null, currentProduct: null, userData: {}, proofImage: null,
+  rendered: false,
 
   esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); },
   fmt(n) { try { return n.toLocaleString('id-ID'); } catch(e) { return '' + n; } },
 
-  render() {
+  render(force) {
     var c = document.getElementById('topup-grid');
     if (!c) return;
+    // Jangan re-render kalau sudah ada & tidak dipaksa
+    if (!force && this.rendered && c.children.length > 0) {
+      console.log('[TopUpUI] skip re-render');
+      return;
+    }
     var items = this.getItems();
     var self = this;
     c.innerHTML = items.map(function(item) {
       var initial = item.name.charAt(0);
       return '<div class="game-card" onclick="TopUpUI.open(\'' + item.id + '\')" style="--game-color: ' + item.color + '">' +
         '<div class="game-icon-wrap" style="background: ' + item.color + '15">' +
-          '<img src="' + item.icon + '" class="game-icon-img" alt="' + self.esc(item.name) + '" loading="lazy" ' +
+          '<img src="' + item.icon + '" class="game-icon-img" alt="' + self.esc(item.name) + '" ' +
+               'onload="this.style.opacity=1" ' +
+               'style="opacity:0;transition:opacity 0.3s" ' +
                'onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">' +
           '<div class="game-icon-fallback" style="display:none;background:' + item.color + '">' + initial + '</div>' +
         '</div>' +
         '<div class="game-info"><h3>' + self.esc(item.name) + '</h3><p>' + self.esc(item.desc) + '</p></div>' +
       '</div>';
     }).join('');
+    this.rendered = true;
+    console.log('[TopUpUI] rendered ' + items.length + ' items');
   },
 
   getItems() {
@@ -197,3 +207,4 @@ const TopUpUI = {
   },
 };
 if (typeof window !== 'undefined') window.TopUpUI = TopUpUI;
+console.log('[topup-ui] loaded');
