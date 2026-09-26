@@ -1,65 +1,116 @@
-/* YADSTORE — GAMES DATA */
-
 const GAMES = [
-  { id: 'mlbb', name: 'Mobile Legends', icon: '⚔️', color: '#1cb0f6', desc: 'Top up Diamond MLBB',
+  { id: 'mlbb', name: 'Mobile Legends', icon: 'https://play-lh.googleusercontent.com/azUOpTK98s9_xWv9b-KpV6S6sZuNwFq0PqZfWzXlxCVaX1QFSpvZc0t8uYwPRQCAaSY=w240-h480', color: '#1cb0f6', category: 'game', desc: 'Top up Diamond MLBB',
+    fields: [{ id: 'user_id', label: 'User ID', placeholder: '12345678' }, { id: 'zone_id', label: 'Zone ID', placeholder: '1234' }],
     products: [
-      { id: 'ml_86', name: '86 Diamond', price: 20000, bonus: '' },
-      { id: 'ml_172', name: '172 Diamond', price: 40000, bonus: '' },
-      { id: 'ml_257', name: '257 Diamond', price: 60000, bonus: '' },
-      { id: 'ml_344', name: '344 Diamond', price: 80000, bonus: '' },
-      { id: 'ml_514', name: '514 Diamond', price: 120000, bonus: '' },
-      { id: 'ml_706', name: '706 Diamond', price: 160000, bonus: '+50' },
-      { id: 'ml_1050', name: '1050 Diamond', price: 240000, bonus: '+100' },
-      { id: 'ml_2195', name: '2195 Diamond', price: 480000, bonus: '+200' },
+      { id: 'ml_5', name: '5 Diamond', price: 1500 }, { id: 'ml_12', name: '12 Diamond', price: 3500 },
+      { id: 'ml_19', name: '19 Diamond', price: 5500 }, { id: 'ml_28', name: '28 Diamond', price: 8000 },
+      { id: 'ml_44', name: '44 Diamond', price: 12000 }, { id: 'ml_59', name: '59 Diamond', price: 16000 },
+      { id: 'ml_86', name: '86 Diamond', price: 22000 }, { id: 'ml_172', name: '172 Diamond', price: 43000 },
+      { id: 'ml_257', name: '257 Diamond', price: 64000 }, { id: 'ml_344', name: '344 Diamond', price: 85000 },
+      { id: 'ml_514', name: '514 Diamond', price: 128000 }, { id: 'ml_706', name: '706 Diamond', price: 172000, bonus: '+50' },
+      { id: 'ml_1050', name: '1050 Diamond', price: 256000, bonus: '+100' },
+      { id: 'ml_2195', name: '2195 Diamond', price: 512000, bonus: '+200' },
+      { id: 'ml_weekly', name: 'Weekly Diamond Pass', price: 28000, bonus: '7 hari' },
     ]},
-  { id: 'ff', name: 'Free Fire', icon: '🔥', color: '#ff4081', desc: 'Top up Diamond FF',
+  { id: 'ff', name: 'Free Fire', icon: 'https://play-lh.googleusercontent.com/aR2RMcHqkQKQr6NSBL3ZlKfqvNqUwqzqAQk_R8XQ3nqGk8NqBLK4X5KXbJlHkQxJ5Fg=w240-h480', color: '#ff4081', category: 'game', desc: 'Top up Diamond FF',
+    fields: [{ id: 'user_id', label: 'User ID', placeholder: '123456789' }],
     products: [
-      { id: 'ff_70', name: '70 Diamond', price: 15000, bonus: '' },
-      { id: 'ff_140', name: '140 Diamond', price: 30000, bonus: '' },
-      { id: 'ff_355', name: '355 Diamond', price: 70000, bonus: '' },
-      { id: 'ff_720', name: '720 Diamond', price: 140000, bonus: '+50' },
-      { id: 'ff_1440', name: '1440 Diamond', price: 270000, bonus: '+100' },
+      { id: 'ff_5', name: '5 Diamond', price: 1500 }, { id: 'ff_12', name: '12 Diamond', price: 3500 },
+      { id: 'ff_50', name: '50 Diamond', price: 7500 }, { id: 'ff_70', name: '70 Diamond', price: 10000 },
+      { id: 'ff_140', name: '140 Diamond', price: 19000 }, { id: 'ff_355', name: '355 Diamond', price: 48000 },
+      { id: 'ff_720', name: '720 Diamond', price: 95000, bonus: '+30' },
+      { id: 'ff_1440', name: '1440 Diamond', price: 190000, bonus: '+100' },
+      { id: 'ff_weekly', name: 'Weekly Member', price: 28000 }, { id: 'ff_elite', name: 'Elite Pass', price: 65000 },
     ]},
-  { id: 'pubg', name: 'PUBG Mobile', icon: '🎯', color: '#ff9800', desc: 'Top up UC PUBG',
+  { id: 'pubg', name: 'PUBG Mobile', icon: 'https://play-lh.googleusercontent.com/JRd05pyBH41qjgsJuWdlYcTpOtC7-XJL5_hhEycQPY5gC7m0tN4n5XpNqHj_RtPPlA=w240-h480', color: '#ff9800', category: 'game', desc: 'Top up UC PUBG',
+    fields: [{ id: 'user_id', label: 'User ID', placeholder: '51234567' }],
     products: [
-      { id: 'pubg_60', name: '60 UC', price: 15000, bonus: '' },
-      { id: 'pubg_325', name: '325 UC', price: 70000, bonus: '' },
+      { id: 'pubg_60', name: '60 UC', price: 15000 }, { id: 'pubg_325', name: '325 UC', price: 70000 },
       { id: 'pubg_660', name: '660 UC', price: 140000, bonus: '+30' },
       { id: 'pubg_1800', name: '1800 UC', price: 350000, bonus: '+100' },
+      { id: 'pubg_royal', name: 'Royal Pass', price: 75000 },
     ]},
-  { id: 'genshin', name: 'Genshin Impact', icon: '🌸', color: '#7c4dff', desc: 'Top up Genesis',
+  { id: 'genshin', name: 'Genshin Impact', icon: 'https://play-lh.googleusercontent.com/9QKd1lVWFKgqk4gC4t7NQqRtQw6kRqTqWQqLwRZqMqJqwLw7qKw2Qw5QwQ=w240-h480', color: '#7c4dff', category: 'game', desc: 'Top up Genesis',
+    fields: [{ id: 'user_id', label: 'UID', placeholder: '812345678' }, { id: 'server', label: 'Server', placeholder: 'Asia' }],
     products: [
-      { id: 'gi_60', name: '60 Genesis', price: 15000, bonus: '' },
-      { id: 'gi_300', name: '300+30 Genesis', price: 75000, bonus: '+30' },
-      { id: 'gi_980', name: '980+110 Genesis', price: 240000, bonus: '+110' },
-      { id: 'gi_1980', name: '1980+260 Genesis', price: 480000, bonus: '+260' },
+      { id: 'gi_60', name: '60 Genesis', price: 16000 }, { id: 'gi_300', name: '300+30', price: 75000 },
+      { id: 'gi_980', name: '980+110', price: 240000 }, { id: 'gi_1980', name: '1980+260', price: 480000 },
+      { id: 'gi_welkin', name: 'Welkin Moon', price: 75000 },
     ]},
-  { id: 'cod', name: 'COD Mobile', icon: '🎖️', color: '#4caf50', desc: 'Top up CP COD',
+  { id: 'cod', name: 'COD Mobile', icon: 'https://play-lh.googleusercontent.com/6mRBhK8qQKz4RZ5KQwKv7RZqLw7Kw2Qw5QwQ=w240-h480', color: '#4caf50', category: 'game', desc: 'Top up CP COD',
+    fields: [{ id: 'user_id', label: 'Open ID', placeholder: '6512345678' }],
     products: [
-      { id: 'cod_80', name: '80 CP', price: 15000, bonus: '' },
-      { id: 'cod_420', name: '420 CP', price: 70000, bonus: '' },
-      { id: 'cod_880', name: '880 CP', price: 140000, bonus: '+40' },
-      { id: 'cod_2400', name: '2400 CP', price: 350000, bonus: '+100' },
+      { id: 'cod_80', name: '80 CP', price: 15000 }, { id: 'cod_420', name: '420 CP', price: 70000 },
+      { id: 'cod_880', name: '880 CP', price: 140000 }, { id: 'cod_2400', name: '2400 CP', price: 350000 },
     ]},
-  { id: 'valorant', name: 'Valorant', icon: '🔫', color: '#ff4655', desc: 'Top up VP',
+  { id: 'valorant', name: 'Valorant', icon: 'https://play-lh.googleusercontent.com/8QKd1lVWFKgqk4gC4t7NQqRtQw6kRqTqWQqLwRZqMqJqwLw7qKw2Qw=w240-h480', color: '#ff4655', category: 'game', desc: 'Top up VP',
+    fields: [{ id: 'user_id', label: 'Riot ID', placeholder: 'Player#1234' }],
     products: [
-      { id: 'val_125', name: '125 VP', price: 15000, bonus: '' },
-      { id: 'val_420', name: '420 VP', price: 50000, bonus: '' },
-      { id: 'val_700', name: '700 VP', price: 80000, bonus: '' },
-      { id: 'val_1375', name: '1375 VP', price: 150000, bonus: '+75' },
+      { id: 'val_125', name: '125 VP', price: 15000 }, { id: 'val_420', name: '420 VP', price: 48000 },
+      { id: 'val_700', name: '700 VP', price: 78000 }, { id: 'val_1375', name: '1375 VP', price: 152000 },
     ]},
-  { id: 'roblox', name: 'Roblox', icon: '🧱', color: '#e91e63', desc: 'Top up Robux',
+  { id: 'roblox', name: 'Roblox', icon: 'https://play-lh.googleusercontent.com/Wd9rqqKz8qvQvVQw9KKQ8QKqQwKqQwKqQwKqQwKqQwKqQwKqQw=w240-h480', color: '#e91e63', category: 'game', desc: 'Top up Robux',
+    fields: [{ id: 'user_id', label: 'Username', placeholder: 'Player123' }],
     products: [
-      { id: 'rbx_80', name: '80 Robux', price: 15000, bonus: '' },
-      { id: 'rbx_400', name: '400 Robux', price: 70000, bonus: '' },
-      { id: 'rbx_800', name: '800 Robux', price: 140000, bonus: '' },
-      { id: 'rbx_1700', name: '1700 Robux', price: 280000, bonus: '+100' },
-    ]},
-  { id: 'gplay', name: 'Google Play', icon: '▶️', color: '#4caf50', desc: 'Top up Google Play',
-    products: [
-      { id: 'gp_20k', name: 'IDR 20.000', price: 22000, bonus: '' },
-      { id: 'gp_50k', name: 'IDR 50.000', price: 53000, bonus: '' },
-      { id: 'gp_100k', name: 'IDR 100.000', price: 103000, bonus: '' },
+      { id: 'rbx_80', name: '80 Robux', price: 15000 }, { id: 'rbx_400', name: '400 Robux', price: 70000 },
+      { id: 'rbx_800', name: '800 Robux', price: 138000 }, { id: 'rbx_1700', name: '1700 Robux', price: 280000 },
     ]},
 ];
-if (typeof window !== 'undefined') window.GAMES = GAMES;
+
+const DATA_PACKAGES = [
+  { id: 'telkomsel', name: 'Telkomsel', icon: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/Telkomsel_2021_icon.svg/240px-Telkomsel_2021_icon.svg.png', color: '#e60000', category: 'kuota', desc: 'Pulsa & Kuota',
+    fields: [{ id: 'phone', label: 'Nomor HP', placeholder: '081234567890' }],
+    products: [
+      { id: 'tsel_5k', name: 'Pulsa 5.000', price: 6500 }, { id: 'tsel_10k', name: 'Pulsa 10.000', price: 11500 },
+      { id: 'tsel_25k', name: 'Pulsa 25.000', price: 26500 }, { id: 'tsel_50k', name: 'Pulsa 50.000', price: 51500 },
+      { id: 'tsel_1gb', name: 'Kuota 1 GB', price: 12000 }, { id: 'tsel_3gb', name: 'Kuota 3 GB', price: 30000 },
+      { id: 'tsel_5gb', name: 'Kuota 5 GB', price: 45000 }, { id: 'tsel_10gb', name: 'Kuota 10 GB', price: 80000 },
+    ]},
+  { id: 'indosat', name: 'Indosat', icon: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Indosat_Ooredoo_Hutchison_logo.svg/240px-Indosat_Ooredoo_Hutchison_logo.svg.png', color: '#ffcc00', category: 'kuota', desc: 'Pulsa & Kuota',
+    fields: [{ id: 'phone', label: 'Nomor HP', placeholder: '085712345678' }],
+    products: [
+      { id: 'isat_5k', name: 'Pulsa 5.000', price: 6500 }, { id: 'isat_10k', name: 'Pulsa 10.000', price: 11500 },
+      { id: 'isat_25k', name: 'Pulsa 25.000', price: 26500 }, { id: 'isat_2gb', name: 'Kuota 2 GB', price: 18000 },
+      { id: 'isat_5gb', name: 'Kuota 5 GB', price: 42000 }, { id: 'isat_10gb', name: 'Kuota 10 GB', price: 75000 },
+    ]},
+  { id: 'xl', name: 'XL Axiata', icon: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/86/XL_Axiata_logo.svg/240px-XL_Axiata_logo.svg.png', color: '#00a651', category: 'kuota', desc: 'Pulsa & Kuota',
+    fields: [{ id: 'phone', label: 'Nomor HP', placeholder: '081712345678' }],
+    products: [
+      { id: 'xl_5k', name: 'Pulsa 5.000', price: 6500 }, { id: 'xl_10k', name: 'Pulsa 10.000', price: 11500 },
+      { id: 'xl_25k', name: 'Pulsa 25.000', price: 26500 }, { id: 'xl_3gb', name: 'Kuota 3 GB', price: 28000 },
+      { id: 'xl_8gb', name: 'Kuota 8 GB', price: 65000 }, { id: 'xl_15gb', name: 'Kuota 15 GB', price: 115000 },
+    ]},
+  { id: 'tri', name: 'Tri (3)', icon: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/52/Tri_Indonesia_logo.svg/240px-Tri_Indonesia_logo.svg.png', color: '#a83297', category: 'kuota', desc: 'Pulsa & Kuota',
+    fields: [{ id: 'phone', label: 'Nomor HP', placeholder: '089612345678' }],
+    products: [
+      { id: 'tri_5k', name: 'Pulsa 5.000', price: 6500 }, { id: 'tri_10k', name: 'Pulsa 10.000', price: 11500 },
+      { id: 'tri_25k', name: 'Pulsa 25.000', price: 26500 }, { id: 'tri_5gb', name: 'Kuota 5 GB', price: 40000 },
+      { id: 'tri_10gb', name: 'Kuota 10 GB', price: 70000 },
+    ]},
+  { id: 'smartfren', name: 'Smartfren', icon: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Smartfren_logo.svg/240px-Smartfren_logo.svg.png', color: '#e60012', category: 'kuota', desc: 'Pulsa & Kuota',
+    fields: [{ id: 'phone', label: 'Nomor HP', placeholder: '088712345678' }],
+    products: [
+      { id: 'sf_5k', name: 'Pulsa 5.000', price: 6500 }, { id: 'sf_10k', name: 'Pulsa 10.000', price: 11500 },
+      { id: 'sf_25k', name: 'Pulsa 25.000', price: 26500 }, { id: 'sf_10gb', name: 'Kuota 10 GB', price: 65000 },
+    ]},
+  { id: 'axis', name: 'Axis', icon: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Axis_Telekomunikasi_Indonesia_logo.svg/240px-Axis_Telekomunikasi_Indonesia_logo.svg.png', color: '#702082', category: 'kuota', desc: 'Pulsa & Kuota',
+    fields: [{ id: 'phone', label: 'Nomor HP', placeholder: '083812345678' }],
+    products: [
+      { id: 'axis_5k', name: 'Pulsa 5.000', price: 6500 }, { id: 'axis_10k', name: 'Pulsa 10.000', price: 11500 },
+      { id: 'axis_25k', name: 'Pulsa 25.000', price: 26500 }, { id: 'axis_5gb', name: 'Kuota 5 GB', price: 35000 },
+    ]},
+];
+
+const PAYMENTS = [
+  { id: 'qris', name: 'QRIS', fee: 0 }, { id: 'dana', name: 'DANA', fee: 0 },
+  { id: 'gopay', name: 'GoPay', fee: 0 }, { id: 'ovo', name: 'OVO', fee: 0 },
+  { id: 'shopeepay', name: 'ShopeePay', fee: 0 }, { id: 'bca', name: 'BCA', fee: 2500 },
+  { id: 'bni', name: 'BNI', fee: 2500 }, { id: 'bri', name: 'BRI', fee: 2500 },
+  { id: 'mandiri', name: 'Mandiri', fee: 2500 },
+];
+
+if (typeof window !== 'undefined') {
+  window.GAMES = GAMES;
+  window.DATA_PACKAGES = DATA_PACKAGES;
+  window.PAYMENTS = PAYMENTS;
+}

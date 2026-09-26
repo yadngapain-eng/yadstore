@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin - YadStore</title>
+<link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+<div class="admin-layout">
+  <aside class="admin-sidebar">
+    <div class="admin-brand"><div class="admin-logo">Y</div><span>Admin</span></div>
+    <nav>
+      <a href="#" class="nav-item active" data-sec="dash">Dashboard</a>
+      <a href="#" class="nav-item" data-sec="orders">Pesanan</a>
+      <a href="#" class="nav-item" data-sec="products">Produk</a>
+      <a href="#" class="nav-item" data-sec="settings">Pengaturan</a>
+    </nav>
+    <a href="../" class="back-link">Ke Website</a>
+  </aside>
+  <main class="admin-main">
+    <header class="admin-header">
+      <h1 id="sec-title">Dashboard</h1>
+      <button class="btn-logout" onclick="Admin.logout()">Logout</button>
+    </header>
+    <div id="content"></div>
+  </main>
+</div>
+
+<div class="login-modal active" id="login-modal">
+  <div class="login-box">
+    <div class="login-logo">Y</div>
+    <h2>Admin Login</h2>
+    <p>Masukkan password</p>
+    <input type="password" id="login-pwd" placeholder="Password" onkeypress="if(event.key==='Enter')Admin.login()">
+    <button class="btn-primary btn-full" onclick="Admin.login()">Login</button>
+    <p class="login-hint">Default: <strong>admin123</strong></p>
+  </div>
+</div>
+
+<script src="../js/games-data.js"></script>
+<script src="js/admin.js"></script>
+</body>
+</html>

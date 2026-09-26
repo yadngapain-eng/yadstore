@@ -2,24 +2,25 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#58cc02">
-<title>YadStore - Belajar & Top Up Game</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>G</text></svg>">
+<title>YadStore - Belajar & Top Up</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%2358cc02'/><text x='50' y='65' font-size='60' font-weight='bold' fill='white' text-anchor='middle'>Y</text></svg>">
 <link rel="stylesheet" href="css/style.css">
+<script src="js/ads-config.js"></script>
 </head>
 <body>
 
 <header class="app-header">
   <div class="header-inner">
     <div class="brand">
-      <div class="brand-logo">G</div>
+      <div class="brand-logo">Y</div>
       <div class="brand-name">YadStore</div>
     </div>
     <div class="header-stats">
-      <div class="stat"><span class="stat-icon">🔥</span><span class="stat-val" id="stat-streak">0</span></div>
-      <div class="stat"><span class="stat-icon">💎</span><span class="stat-val" id="stat-gems">0</span></div>
-      <div class="stat"><span class="stat-icon">❤️</span><span class="stat-val" id="stat-hearts">5</span></div>
+      <div class="stat"><span class="stat-icon">F</span><span class="stat-val" id="stat-streak">0</span></div>
+      <div class="stat"><span class="stat-icon">D</span><span class="stat-val" id="stat-gems">0</span></div>
+      <div class="stat"><span class="stat-icon">H</span><span class="stat-val" id="stat-hearts">5</span></div>
     </div>
   </div>
   <div class="level-bar-wrap">
@@ -33,57 +34,76 @@
 
 <main class="app-main">
   <section class="tab-page active" id="page-learn">
-    <div class="page-header"><h1>📚 Belajar</h1><p>Selesaikan lesson untuk dapat XP & Gems</p></div>
+    <div class="page-header"><h1>Belajar</h1><p>Selesaikan lesson untuk dapat XP & Gems</p></div>
     <div class="category-tabs" id="category-tabs"></div>
     <div class="lessons-list" id="lessons-list"></div>
-    <div class="page-header mt-32"><h2>🏆 Achievements</h2></div>
+    <div class="page-header mt-32"><h2>Achievements</h2></div>
     <div class="achievements-list" id="achievements-list"></div>
   </section>
 
   <section class="tab-page" id="page-topup">
-    <div class="page-header"><h1>🛒 Top Up Game</h1><p>Pilih game & top up sekarang</p></div>
-    <div class="games-grid" id="games-grid"></div>
+    <div class="page-header"><h1>Top Up Instan</h1><p>Game, Pulsa & Kuota - Proses 1 detik</p></div>
+    <div class="topup-grid" id="topup-grid"></div>
+  </section>
+
+  <section class="tab-page" id="page-orders">
+    <div class="page-header"><h1>Pesanan</h1><p>Riwayat transaksi</p></div>
+    <div id="orders-list"></div>
   </section>
 
   <section class="tab-page" id="page-profile">
-    <div class="page-header"><h1>👤 Profile</h1><p>Statistik & pencapaianmu</p></div>
+    <div class="page-header"><h1>Profile</h1><p>Statistik & pencapaianmu</p></div>
     <div class="profile-card">
-      <div class="profile-avatar">G</div>
+      <div class="profile-avatar">Y</div>
       <div class="profile-level-big">Level <span id="profile-level">1</span></div>
       <div class="profile-level-bar"><div class="profile-level-progress" id="profile-level-progress"></div></div>
     </div>
     <div class="stats-grid">
-      <div class="stat-card"><div class="stat-card-icon">⭐</div><div class="stat-card-val" id="profile-xp">0</div><div class="stat-card-label">Total XP</div></div>
-      <div class="stat-card"><div class="stat-card-icon">🔥</div><div class="stat-card-val" id="profile-streak">0</div><div class="stat-card-label">Streak</div></div>
-      <div class="stat-card"><div class="stat-card-icon">💎</div><div class="stat-card-val" id="profile-gems">0</div><div class="stat-card-label">Gems</div></div>
-      <div class="stat-card"><div class="stat-card-icon">📚</div><div class="stat-card-val" id="profile-lessons">0</div><div class="stat-card-label">Lesson</div></div>
-      <div class="stat-card"><div class="stat-card-icon">✅</div><div class="stat-card-val" id="profile-correct">0</div><div class="stat-card-label">Benar</div></div>
-      <div class="stat-card"><div class="stat-card-icon">❌</div><div class="stat-card-val" id="profile-wrong">0</div><div class="stat-card-label">Salah</div></div>
+      <div class="stat-card"><div class="stat-card-icon">XP</div><div class="stat-card-val" id="profile-xp">0</div><div class="stat-card-label">Total XP</div></div>
+      <div class="stat-card"><div class="stat-card-icon">F</div><div class="stat-card-val" id="profile-streak">0</div><div class="stat-card-label">Streak</div></div>
+      <div class="stat-card"><div class="stat-card-icon">D</div><div class="stat-card-val" id="profile-gems">0</div><div class="stat-card-label">Gems</div></div>
+      <div class="stat-card"><div class="stat-card-icon">L</div><div class="stat-card-val" id="profile-lessons">0</div><div class="stat-card-label">Lesson</div></div>
+      <div class="stat-card"><div class="stat-card-icon">OK</div><div class="stat-card-val" id="profile-correct">0</div><div class="stat-card-label">Benar</div></div>
+      <div class="stat-card"><div class="stat-card-icon">X</div><div class="stat-card-val" id="profile-wrong">0</div><div class="stat-card-label">Salah</div></div>
     </div>
     <div class="profile-actions">
-      <button class="btn-primary btn-full" onclick="DuoUI.refillHeartsWithGems()">❤️ Isi Ulang Hearts (50 💎)</button>
-      <button class="btn-danger btn-full" onclick="App.resetAll()">🗑️ Reset Semua Data</button>
+      <button class="btn-primary btn-full" onclick="DuoUI.refill()">Isi Hearts (50 Gems)</button>
+      <button class="btn-danger btn-full" onclick="App.resetAll()">Reset Data</button>
+    </div>
+  </section>
+
+  <section class="tab-page" id="page-help">
+    <div class="page-header"><h1>Bantuan</h1><p>Pertanyaan umum</p></div>
+    <div class="help-content">
+      <div class="help-card"><h3>Cara belajar?</h3><p>Pilih kategori (Coding/English/Math/Science) → pilih lesson → jawab soal → dapat XP.</p></div>
+      <div class="help-card"><h3>Cara top up?</h3><p>Pilih game/pulsa → isi data → pilih nominal → bayar → upload bukti.</p></div>
+      <div class="help-card"><h3>Metode bayar?</h3><p>QRIS, DANA, GoPay, OVO, ShopeePay, BCA, BNI, BRI, Mandiri.</p></div>
     </div>
   </section>
 </main>
 
 <nav class="bottom-nav">
   <button class="nav-btn active" data-tab="learn" onclick="App.switchTab('learn')">
-    <span class="nav-icon">📚</span><span class="nav-label">Learn</span></button>
+    <span class="nav-icon">L</span><span class="nav-label">Learn</span></button>
   <button class="nav-btn" data-tab="topup" onclick="App.switchTab('topup')">
-    <span class="nav-icon">🛒</span><span class="nav-label">Top Up</span></button>
+    <span class="nav-icon">T</span><span class="nav-label">Top Up</span></button>
+  <button class="nav-btn" data-tab="orders" onclick="App.switchTab('orders')">
+    <span class="nav-icon">P</span><span class="nav-label">Pesanan</span></button>
   <button class="nav-btn" data-tab="profile" onclick="App.switchTab('profile')">
-    <span class="nav-icon">👤</span><span class="nav-label">Profile</span></button>
+    <span class="nav-icon">U</span><span class="nav-label">Profile</span></button>
+  <button class="nav-btn" data-tab="help" onclick="App.switchTab('help')">
+    <span class="nav-icon">?</span><span class="nav-label">Bantuan</span></button>
 </nav>
 
-<div class="modal" id="game-modal"></div>
 <div class="modal" id="lesson-modal"></div>
+<div class="modal" id="game-modal"></div>
 
 <script src="js/lessons-data.js"></script>
 <script src="js/duolingo-core.js"></script>
 <script src="js/games-data.js"></script>
+<script src="js/animasi.js"></script>
 <script src="js/duolingo-ui.js"></script>
-<script src="js/games-ui.js"></script>
+<script src="js/topup-ui.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>

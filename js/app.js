@@ -1,26 +1,20 @@
-/* YADSTORE — APP */
-
 const App = {
   currentTab: 'learn',
+
   init() {
+    Animate.init();
     DL.regenHearts();
-    this.renderAll();
+    DuoUI.renderStats();
+    DuoUI.renderCategories();
+    DuoUI.renderLessons();
+    DuoUI.renderAch();
+    DuoUI.renderProfile();
+    TopUpUI.render();
     this.switchTab('learn');
     DL.updateStreak();
-    DuoUI.renderStats();
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js').then(
-        () => console.log('SW registered'),
-        (e) => console.log('SW skip:', e.message));
+      navigator.serviceWorker.register('/sw.js').catch(() => {});
     }
-  },
-  renderAll() {
-    DuoUI.renderStats();
-    DuoUI.renderCategoryTabs();
-    DuoUI.renderLessons();
-    DuoUI.renderAchievements();
-    DuoUI.renderProfile();
-    GamesUI.render();
   },
   switchTab(tab) {
     this.currentTab = tab;
@@ -30,9 +24,10 @@ const App = {
     if (p) p.classList.add('active');
     const b = document.querySelector('.nav-btn[data-tab="' + tab + '"]');
     if (b) b.classList.add('active');
-    if (tab === 'learn') { DuoUI.renderStats(); DuoUI.renderLessons(); DuoUI.renderAchievements(); }
-    else if (tab === 'topup') GamesUI.render();
+    if (tab === 'learn') { DuoUI.renderStats(); DuoUI.renderLessons(); DuoUI.renderAch(); }
+    else if (tab === 'topup') TopUpUI.render();
     else if (tab === 'profile') DuoUI.renderProfile();
+    else if (tab === 'orders') TopUpUI.renderOrders();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   },
   resetAll() {
