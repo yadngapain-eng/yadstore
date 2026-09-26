@@ -87,6 +87,8 @@ const App = {
         if (typeof Auth !== 'undefined') Auth.updateUI();
       } else if (tab === 'orders' && typeof TopUpUI !== 'undefined') {
         TopUpUI.renderOrders();
+      } else if (tab === 'achievements' && typeof DuoUI !== 'undefined') {
+        DuoUI.renderAch();
       } else if (tab === 'rewards' && typeof Rewards !== 'undefined') {
         document.getElementById('rewards-content').innerHTML = Rewards.renderRewardsPage();
       }

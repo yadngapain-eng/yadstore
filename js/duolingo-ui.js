@@ -256,17 +256,118 @@ const DuoUI = {
   renderAch() {
     var c = document.getElementById('achievements-list');
     if (!c) return;
+
+    // ===== RENDER STATS =====
+    this.renderAchStats();
+
+    // ===== RENDER TIER TABS =====
+    this.renderTierTabs();
+
+    // ===== RENDER LIST (sesuai filter tier) =====
+    this.renderAchList();
+  },
+
+  // ============================================
+  // ACHIEVEMENT STATS
+  // ============================================
+  renderAchStats() {
+    var el = document.getElementById('ach-stats');
+    if (!el) return;
+
+    var achs = DL.getAch();
+    var unlocked = achs.filter(function(a) { return a.unlocked; }).length;
+    var total = achs.length;
+    var totalCoin = 0;
+    achs.forEach(function(a) { if (a.unlocked) totalCoin += (a.coin || 0); });
+
+    el.innerHTML =
+      '<div class="ach-stat">' +
+        '<div class="ach-stat-value">' + unlocked + ' / ' + total + '</div>' +
+        '<div class="ach-stat-label">Unlocked</div>' +
+      '</div>' +
+      '<div class="ach-stat">' +
+        '<div class="ach-stat-value">+' + totalCoin.toLocaleString('id-ID') + ' 🪙</div>' +
+        '<div class="ach-stat-label">Coin Earned</div>' +
+      '</div>';
+  },
+
+  // ============================================
+  // TIER TABS
+  // ============================================
+  currentTier: 'all',
+
+  renderTierTabs() {
+    var c = document.getElementById('ach-tier-tabs');
+    if (!c) return;
+
+    var achs = DL.getAch();
+    var tierOrder = ['common', 'rare', 'epic', 'legendary', 'mythic'];
+    var tierCounts = { all: achs.length };
+
+    tierOrder.forEach(function(t) {
+      tierCounts[t] = achs.filter(function(a) { return a.tier === t; }).length;
+    });
+
+    var tabs = [
+      { id: 'all', label: 'Semua', icon: '🎯', color: '#58cc02' }
+    ];
+    tierOrder.forEach(function(t) {
+      var tier = DL.TIERS[t];
+      tabs.push({
+        id: t,
+        label: tier.name,
+        icon: tier.icon,
+        color: tier.color
+      });
+    });
+
+    var self = this;
+    c.innerHTML = tabs.map(function(t) {
+      var active = self.currentTier === t.id ? 'active' : '';
+      var count = tierCounts[t.id] || 0;
+      return '<button class="ach-tier-tab ' + active + '" ' +
+        'onclick="DuoUI.switchTier('' + t.id + '')" ' +
+        'style="--tier-color: ' + t.color + '">' +
+        '<span class="ach-tier-icon">' + t.icon + '</span>' +
+        '<span class="ach-tier-label">' + t.label + '</span>' +
+        '<span class="ach-tier-count">' + count + '</span>' +
+        '</button>';
+    }).join('');
+  },
+
+  switchTier(tier) {
+    this.currentTier = tier;
+    this.renderTierTabs();
+    this.renderAchList();
+  },
+
+  // ============================================
+  // ACHIEVEMENT LIST
+  // ============================================
+  renderAchList() {
+    var c = document.getElementById('achievements-list');
+    if (!c) return;
+
     var achs = DL.getAch();
     var self = this;
 
-    // Sort by tier (mythic → common) untuk user yang belum unlock
+    // Filter by tier
+    if (this.currentTier !== 'all') {
+      achs = achs.filter(function(a) { return a.tier === self.currentTier; });
+    }
+
+    // Sort: unlocked last, then by tier difficulty
     var tierOrder = { mythic: 0, legendary: 1, epic: 2, rare: 3, common: 4 };
     achs.sort(function(a, b) {
-      // Unlocked di bawah
       if (a.unlocked && !b.unlocked) return 1;
       if (!a.unlocked && b.unlocked) return -1;
       return (tierOrder[a.tier] || 4) - (tierOrder[b.tier] || 4);
     });
+
+    if (achs.length === 0) {
+      c.innerHTML = '<p class="empty-msg">Belum ada achievement</p>';
+      return;
+    }
 
     c.innerHTML = achs.map(function(a) {
       var tier = DL.TIERS[a.tier] || DL.TIERS.common;
@@ -276,11 +377,12 @@ const DuoUI = {
       return '<div class="achievement-card ' + cardClass + ' achievement-tier-' + (a.tier || 'common') + '">' +
         '<div class="achievement-icon" style="background:linear-gradient(135deg,' + tier.color + ',' + tier.color + 'cc)">' + iconDisplay + '</div>' +
         '<div class="achievement-info">' +
-        '<div class="achievement-tier-badge" style="background:' + tier.color + '">' + tier.icon + ' ' + tier.name + '</div>' +
-        '<h4>' + self.esc(a.title) + '</h4>' +
-        '<p>' + self.esc(a.desc) + '</p>' +
-        '<div class="achievement-reward">+' + a.coin + ' 🪙</div>' +
-        '</div></div>';
+          '<div class="achievement-tier-badge" style="background:' + tier.color + '">' + tier.icon + ' ' + tier.name + '</div>' +
+          '<h4>' + self.esc(a.title) + '</h4>' +
+          '<p>' + self.esc(a.desc) + '</p>' +
+          '<div class="achievement-reward">+' + a.coin + ' 🪙</div>' +
+        '</div>' +
+      '</div>';
     }).join('');
   },
 

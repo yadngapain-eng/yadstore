@@ -1658,3 +1658,94 @@ body::before {
   background: #ccc;
   opacity: 0.6;
 }
+
+
+/* ============================================
+   ACHIEVEMENT MENU (Terpisah)
+   ============================================ */
+
+/* Stats */
+.ach-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.ach-stat {
+  background: linear-gradient(135deg, #f0fff0, #e6ffe6);
+  border: 1.5px solid #89e219;
+  border-radius: 12px;
+  padding: 14px 12px;
+  text-align: center;
+}
+.ach-stat-value {
+  font-size: 20px;
+  font-weight: 900;
+  color: #2c5a00;
+  margin-bottom: 2px;
+}
+.ach-stat-label {
+  font-size: 10px;
+  color: #666;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Tier Tabs */
+.ach-tier-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 16px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.ach-tier-tabs::-webkit-scrollbar { display: none; }
+
+.ach-tier-tab {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: var(--bg);
+  border: 1.5px solid var(--border);
+  border-radius: 999px;
+  font-family: inherit;
+  font-weight: 800;
+  font-size: 12px;
+  color: var(--text-light);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.ach-tier-tab:hover {
+  border-color: var(--tier-color, var(--green));
+}
+.ach-tier-tab.active {
+  background: var(--tier-color, var(--green));
+  color: white;
+  border-color: var(--tier-color, var(--green));
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+.ach-tier-icon { font-size: 14px; }
+.ach-tier-label { font-size: 12px; }
+.ach-tier-count {
+  background: rgba(255,255,255,0.3);
+  color: inherit;
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 900;
+}
+.ach-tier-tab:not(.active) .ach-tier-count {
+  background: var(--bg-alt);
+  color: var(--text-light);
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .ach-stat-value { font-size: 17px; }
+  .ach-tier-tab { padding: 7px 12px; font-size: 11px; }
+}
