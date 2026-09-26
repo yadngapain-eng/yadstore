@@ -1,72 +1,59 @@
 const TopUpUI = {
   currentItem: null, currentProduct: null, userData: {}, proofImage: null,
 
-  esc(s) {
-    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  },
-
+  esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); },
   fmt(n) { try { return n.toLocaleString('id-ID'); } catch(e) { return '' + n; } },
 
   render() {
-    try {
-      var c = document.getElementById('topup-grid');
-      if (!c) return;
-      var items = this.getItems();
-      if (items.length === 0) { c.innerHTML = '<p class="empty-msg">Tidak ada layanan</p>'; return; }
-      var self = this;
-      c.innerHTML = items.map(function(item) {
-        var initial = item.name.charAt(0);
-        return '<div class="game-card" onclick="TopUpUI.open(\'' + item.id + '\')" style="--game-color: ' + item.color + '">' +
-          '<div class="game-icon-wrap" style="background: ' + item.color + '22">' +
-            '<img src="' + item.icon + '" class="game-icon-img" alt="' + self.esc(item.name) + '" ' +
-                 'onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">' +
-            '<div class="game-icon-fallback" style="display:none;background:' + item.color + '">' + initial + '</div>' +
-          '</div>' +
-          '<div class="game-info"><h3>' + self.esc(item.name) + '</h3><p>' + self.esc(item.desc) + '</p></div>' +
-        '</div>';
-      }).join('');
-      console.log('[TopUpUI] rendered ' + items.length + ' items');
-    } catch (e) {
-      console.error('[TopUpUI] render error:', e);
-    }
+    var c = document.getElementById('topup-grid');
+    if (!c) return;
+    var items = this.getItems();
+    var self = this;
+    c.innerHTML = items.map(function(item) {
+      var initial = item.name.charAt(0);
+      return '<div class="game-card" onclick="TopUpUI.open(\'' + item.id + '\')" style="--game-color: ' + item.color + '">' +
+        '<div class="game-icon-wrap" style="background: ' + item.color + '15">' +
+          '<img src="' + item.icon + '" class="game-icon-img" alt="' + self.esc(item.name) + '" loading="lazy" ' +
+               'onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">' +
+          '<div class="game-icon-fallback" style="display:none;background:' + item.color + '">' + initial + '</div>' +
+        '</div>' +
+        '<div class="game-info"><h3>' + self.esc(item.name) + '</h3><p>' + self.esc(item.desc) + '</p></div>' +
+      '</div>';
+    }).join('');
   },
 
   getItems() {
-    try {
-      return [].concat(window.GAMES || [], window.DATA_PACKAGES || []);
-    } catch (e) { return []; }
+    try { return [].concat(window.GAMES || [], window.DATA_PACKAGES || []); } catch (e) { return []; }
   },
 
   open(id) {
-    try {
-      var all = this.getItems();
-      var item = all.find(function(i) { return i.id === id; });
-      if (!item) return;
-      this.currentItem = item;
-      var m = document.getElementById('game-modal');
-      var self = this;
-      m.innerHTML = '<div class="modal-content">' +
-        '<div class="modal-header" style="background: ' + item.color + '">' +
-        '<button class="modal-close" onclick="TopUpUI.close()">X</button>' +
-        '<div class="modal-icon-wrap">' +
-          '<img src="' + item.icon + '" class="modal-icon-img" alt="' + self.esc(item.name) + '" ' +
-               'onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">' +
-          '<div class="modal-icon-fallback" style="display:none;background:rgba(0,0,0,0.3)">' + item.name.charAt(0) + '</div>' +
-        '</div>' +
-        '<h2>' + self.esc(item.name) + '</h2><p>' + self.esc(item.desc) + '</p></div>' +
-        '<div class="modal-body">' +
-        (item.fields && item.fields.length > 0 ? '<h3 class="section-title">Data Akun</h3>' +
-          item.fields.map(function(f) { return '<div class="form-group"><label>' + self.esc(f.label) + '</label>' +
-            '<input type="text" id="field-' + f.id + '" placeholder="' + self.esc(f.placeholder) + '"></div>'; }).join('') : '') +
-        '<h3 class="section-title">Pilih Nominal</h3>' +
-        '<div class="products-grid">' +
-        item.products.map(function(p) { return '<div class="product-card" onclick="TopUpUI.pick(\'' + p.id + '\')">' +
-          '<div class="product-name">' + self.esc(p.name) + '</div>' +
-          (p.bonus ? '<div class="product-bonus">' + self.esc(p.bonus) + '</div>' : '') +
-          '<div class="product-price">Rp ' + self.fmt(p.price) + '</div></div>'; }).join('') +
-        '</div></div></div>';
-      m.classList.add('active');
-    } catch (e) { console.error('[TopUpUI] open:', e); }
+    var all = this.getItems();
+    var item = all.find(function(i) { return i.id === id; });
+    if (!item) return;
+    this.currentItem = item;
+    var m = document.getElementById('game-modal');
+    var self = this;
+    m.innerHTML = '<div class="modal-content">' +
+      '<div class="modal-header" style="background: ' + item.color + '">' +
+      '<button class="modal-close" onclick="TopUpUI.close()">X</button>' +
+      '<div class="modal-icon-wrap">' +
+        '<img src="' + item.icon + '" class="modal-icon-img" alt="' + self.esc(item.name) + '" ' +
+             'onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">' +
+        '<div class="modal-icon-fallback" style="display:none;background:rgba(0,0,0,0.2)">' + item.name.charAt(0) + '</div>' +
+      '</div>' +
+      '<h2>' + self.esc(item.name) + '</h2><p>' + self.esc(item.desc) + '</p></div>' +
+      '<div class="modal-body">' +
+      (item.fields && item.fields.length > 0 ? '<h3 class="section-title">Data Akun</h3>' +
+        item.fields.map(function(f) { return '<div class="form-group"><label>' + self.esc(f.label) + '</label>' +
+          '<input type="text" id="field-' + f.id + '" placeholder="' + self.esc(f.placeholder) + '"></div>'; }).join('') : '') +
+      '<h3 class="section-title">Pilih Nominal</h3>' +
+      '<div class="products-grid">' +
+      item.products.map(function(p) { return '<div class="product-card" onclick="TopUpUI.pick(\'' + p.id + '\')">' +
+        '<div class="product-name">' + self.esc(p.name) + '</div>' +
+        (p.bonus ? '<div class="product-bonus">' + self.esc(p.bonus) + '</div>' : '') +
+        '<div class="product-price">Rp ' + self.fmt(p.price) + '</div></div>'; }).join('') +
+      '</div></div></div>';
+    m.classList.add('active');
   },
 
   pick(pid) {

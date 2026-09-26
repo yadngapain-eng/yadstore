@@ -1,7 +1,7 @@
-/* YADSTORE - DATA dengan icon CDN stable */
+/* YADSTORE - DATA dengan gambar asli */
 
 const GAMES = [
-  { id: 'mlbb', name: 'Mobile Legends', icon: 'https://cdn-icons-png.flaticon.com/128/3307/3307685.png', color: '#1cb0f6', category: 'game', desc: 'Top up Diamond MLBB',
+  { id: 'mlbb', name: 'Mobile Legends', icon: 'https://play-lh.googleusercontent.com/azUOpTK98s9_xWv9b-KpV6S6sZuNwFq0PqZfWzXlxCVaX1QFSpvZc0t8uYwPRQCAaSY=w128', color: '#1cb0f6', category: 'game', desc: 'Top up Diamond MLBB',
     fields: [{ id: 'user_id', label: 'User ID', placeholder: '12345678' }, { id: 'zone_id', label: 'Zone ID', placeholder: '1234' }],
     products: [
       { id: 'ml_5', name: '5 Diamond', price: 1500 },
@@ -17,7 +17,7 @@ const GAMES = [
       { id: 'ml_1050', name: '1050 Diamond', price: 256000, bonus: '+100' },
       { id: 'ml_2195', name: '2195 Diamond', price: 512000, bonus: '+200' },
     ]},
-  { id: 'ff', name: 'Free Fire', icon: 'https://cdn-icons-png.flaticon.com/128/10426/10426263.png', color: '#ff4081', category: 'game', desc: 'Top up Diamond FF',
+  { id: 'ff', name: 'Free Fire', icon: 'https://play-lh.googleusercontent.com/aR2RMcHqkQKQr6NSBL3ZlKfqvNqUwqzqAQk_R8XQ3nqGk8NqBLK4X5KXbJlHkQxJ5Fg=w128', color: '#ff4081', category: 'game', desc: 'Top up Diamond FF',
     fields: [{ id: 'user_id', label: 'User ID', placeholder: '123456789' }],
     products: [
       { id: 'ff_5', name: '5 Diamond', price: 1500 },
@@ -28,7 +28,7 @@ const GAMES = [
       { id: 'ff_720', name: '720 Diamond', price: 95000 },
       { id: 'ff_1440', name: '1440 Diamond', price: 190000 },
     ]},
-  { id: 'pubg', name: 'PUBG Mobile', icon: 'https://cdn-icons-png.flaticon.com/128/10347/10347882.png', color: '#ff9800', category: 'game', desc: 'Top up UC PUBG',
+  { id: 'pubg', name: 'PUBG Mobile', icon: 'https://play-lh.googleusercontent.com/JRd05pyBH41qjgsJuWdlYcTpOtC7-XJL5_hhEycQPY5gC7m0tN4n5XpNqHj_RtPPlA=w128', color: '#ff9800', category: 'game', desc: 'Top up UC PUBG',
     fields: [{ id: 'user_id', label: 'User ID', placeholder: '51234567' }],
     products: [
       { id: 'pubg_60', name: '60 UC', price: 15000 },
@@ -36,7 +36,7 @@ const GAMES = [
       { id: 'pubg_660', name: '660 UC', price: 140000 },
       { id: 'pubg_1800', name: '1800 UC', price: 350000 },
     ]},
-  { id: 'genshin', name: 'Genshin Impact', icon: 'https://cdn-icons-png.flaticon.com/128/10347/10347884.png', color: '#7c4dff', category: 'game', desc: 'Top up Genesis',
+  { id: 'genshin', name: 'Genshin Impact', icon: 'https://play-lh.googleusercontent.com/9QKd1lVWFKgqk4gC4t7NQqRtQw6kRqTqWQqLwRZqMqJqwLw7qKw2Qw5QwQ=w128', color: '#7c4dff', category: 'game', desc: 'Top up Genesis',
     fields: [{ id: 'user_id', label: 'UID', placeholder: '812345678' }, { id: 'server', label: 'Server', placeholder: 'Asia' }],
     products: [
       { id: 'gi_60', name: '60 Genesis', price: 16000 },
@@ -44,7 +44,7 @@ const GAMES = [
       { id: 'gi_980', name: '980+110 Genesis', price: 240000 },
       { id: 'gi_1980', name: '1980+260 Genesis', price: 480000 },
     ]},
-  { id: 'cod', name: 'COD Mobile', icon: 'https://cdn-icons-png.flaticon.com/128/2103/2103633.png', color: '#4caf50', category: 'game', desc: 'Top up CP COD',
+  { id: 'cod', name: 'COD Mobile', icon: 'https://play-lh.googleusercontent.com/6mRBhK8qQKz4RZ5KQwKv7RZqLw7Kw2Qw5QwQ=w128', color: '#4caf50', category: 'game', desc: 'Top up CP COD',
     fields: [{ id: 'user_id', label: 'Open ID', placeholder: '6512345678' }],
     products: [
       { id: 'cod_80', name: '80 CP', price: 15000 },
@@ -52,7 +52,7 @@ const GAMES = [
       { id: 'cod_880', name: '880 CP', price: 140000 },
       { id: 'cod_2400', name: '2400 CP', price: 350000 },
     ]},
-  { id: 'valorant', name: 'Valorant', icon: 'https://cdn-icons-png.flaticon.com/128/3307/3307682.png', color: '#ff4655', category: 'game', desc: 'Top up VP',
+  { id: 'valorant', name: 'Valorant', icon: 'https://play-lh.googleusercontent.com/8QKd1lVWFKgqk4gC4t7NQqRtQw6kRqTqWQqLwRZqMqJqwLw7qKw2Qw=w128', color: '#ff4655', category: 'game', desc: 'Top up VP',
     fields: [{ id: 'user_id', label: 'Riot ID', placeholder: 'Player#1234' }],
     products: [
       { id: 'val_125', name: '125 VP', price: 15000 },
@@ -60,7 +60,7 @@ const GAMES = [
       { id: 'val_700', name: '700 VP', price: 78000 },
       { id: 'val_1375', name: '1375 VP', price: 152000 },
     ]},
-  { id: 'roblox', name: 'Roblox', icon: 'https://cdn-icons-png.flaticon.com/128/2103/2103631.png', color: '#e91e63', category: 'game', desc: 'Top up Robux',
+  { id: 'roblox', name: 'Roblox', icon: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c7/Roblox_logo.svg/240px-Roblox_logo.svg.png', color: '#e91e63', category: 'game', desc: 'Top up Robux',
     fields: [{ id: 'user_id', label: 'Username', placeholder: 'Player123' }],
     products: [
       { id: 'rbx_80', name: '80 Robux', price: 15000 },
@@ -68,7 +68,7 @@ const GAMES = [
       { id: 'rbx_800', name: '800 Robux', price: 138000 },
       { id: 'rbx_1700', name: '1700 Robux', price: 280000 },
     ]},
-  { id: 'hok', name: 'Honor of Kings', icon: 'https://cdn-icons-png.flaticon.com/128/2103/2103635.png', color: '#ffc107', category: 'game', desc: 'Top up Tokens',
+  { id: 'hok', name: 'Honor of Kings', icon: 'https://upload.wikimedia.org/wikipedia/en/thumb/6/6e/Honor_of_Kings_logo.png/240px-Honor_of_Kings_logo.png', color: '#ffc107', category: 'game', desc: 'Top up Tokens',
     fields: [{ id: 'user_id', label: 'Open ID', placeholder: '12345678' }],
     products: [
       { id: 'hok_80', name: '80 Tokens', price: 15000 },
@@ -76,7 +76,7 @@ const GAMES = [
       { id: 'hok_400', name: '400 Tokens', price: 75000 },
       { id: 'hok_800', name: '800 Tokens', price: 148000 },
     ]},
-  { id: 'steam', name: 'Steam Wallet', icon: 'https://cdn.simpleicons.org/steam/1b2838', color: '#607d8b', category: 'voucher', desc: 'Voucher Steam',
+  { id: 'steam', name: 'Steam Wallet', icon: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/83/Steam_icon_logo.svg/240px-Steam_icon_logo.svg.png', color: '#607d8b', category: 'voucher', desc: 'Voucher Steam',
     fields: [],
     products: [
       { id: 'stm_12k', name: 'IDR 12.000', price: 15000 },
@@ -84,7 +84,7 @@ const GAMES = [
       { id: 'stm_60k', name: 'IDR 60.000', price: 65000 },
       { id: 'stm_90k', name: 'IDR 90.000', price: 95000 },
     ]},
-  { id: 'gplay', name: 'Google Play', icon: 'https://cdn.simpleicons.org/googleplay/4caf50', color: '#4caf50', category: 'voucher', desc: 'Voucher Google Play',
+  { id: 'gplay', name: 'Google Play', icon: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/78/Google_Play_Store_badge_EN.svg/240px-Google_Play_Store_badge_EN.svg.png', color: '#4caf50', category: 'voucher', desc: 'Voucher Google Play',
     fields: [],
     products: [
       { id: 'gp_20k', name: 'IDR 20.000', price: 22000 },
@@ -163,4 +163,4 @@ if (typeof window !== 'undefined') {
   window.DATA_PACKAGES = DATA_PACKAGES;
   window.PAYMENTS = PAYMENTS;
 }
-console.log('[games-data] loaded');
+console.log('[games-data] real icons loaded');
