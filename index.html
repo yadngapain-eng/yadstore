@@ -6,6 +6,21 @@
 <meta name="theme-color" content="#58cc02">
 <title>YadStore</title>
 <link rel="stylesheet" href="css/style.css">
+
+<script>
+window.__errors = [];
+window.addEventListener('error', function(e) {
+  window.__errors.push(e.message + ' @ ' + e.filename + ':' + e.lineno);
+  var panel = document.getElementById('debug-panel');
+  if (panel) {
+    panel.style.background = '#ffe0e0';
+    panel.insertAdjacentHTML('afterbegin',
+      '<div style="background:#ff4b4b;color:white;padding:8px;border-radius:6px;margin-bottom:8px">' +
+      'GLOBAL ERROR: ' + e.message + '<br><small>' + e.filename + ':' + e.lineno + '</small></div>');
+  }
+});
+console.log('[global handler] ready');
+</script>
 </head>
 <body>
 <header class="app-header">
