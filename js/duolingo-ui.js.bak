@@ -195,72 +195,30 @@ const DuoUI = {
     var q = this.questions[this.currentQuestion];
     var ok = i === q.a;
     var now = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-    var self = this;
 
-    // ====== JAWABAN SALAH → ULANG SAMPAI BENAR ======
-    if (!ok) {
-      this.chatHistory.push({
-        type: 'user-answer',
-        text: q.o[i],
-        correct: false,
-        time: now
-      });
-
-      var wrongMsg = (typeof I18n !== 'undefined' && I18n.t('lesson_try_again'))
-                     || '❌ Belum tepat. Coba lagi ya! 💪';
-      this.chatHistory.push({
-        type: 'bot-reply',
-        text: wrongMsg,
-        correct: false,
-        time: now
-      });
-
-      // TIDAK menambah currentQuestion, TIDAK mengurangi heart
-      this.renderChat();
-      this.scrollChat();
-
-      // Hapus bubble salah setelah 1.5 detik (biar chat tidak penuh)
-      setTimeout(function() {
-        for (var m2 = self.chatHistory.length - 1; m2 >= 0; m2--) {
-          if (self.chatHistory[m2].type === 'bot-reply' && !self.chatHistory[m2].correct) {
-            self.chatHistory.splice(m2, 1);
-            break;
-          }
-        }
-        for (var j = self.chatHistory.length - 1; j >= 0; j--) {
-          if (self.chatHistory[j].type === 'user-answer' && !self.chatHistory[j].correct) {
-            self.chatHistory.splice(j, 1);
-            break;
-          }
-        }
-        self.renderChat();
-        self.scrollChat();
-      }, 1500);
-
-      return;
-    }
-
-    // ====== JAWABAN BENAR → LANJUT ======
+    // Push user answer
     this.chatHistory.push({
       type: 'user-answer',
       text: q.o[i],
-      correct: true,
+      correct: ok,
       time: now
     });
 
-    var reply = (typeof I18n !== 'undefined' && I18n.t('lesson_correct'))
-                || '✅ Benar! 🎉';
+    // Push bot reply
+    var reply = ok ? ((typeof I18n !== 'undefined' ? I18n.t('correct') : 'Benar! 🎉')) : ((typeof I18n !== 'undefined' ? I18n.t('wrong') : 'Salah. Jawaban benar:') + ' ' + q.o[q.a]);
     this.chatHistory.push({
       type: 'bot-reply',
       text: reply,
-      correct: true,
+      correct: ok,
       time: now
     });
 
-    this.score++;
+    if (ok) this.score++; else DL.loseHeart();
+
     this.renderChat();
     this.scrollChat();
 
+    var self = this;
     setTimeout(function() {
       self.currentQuestion++;
       if (self.currentQuestion < self.questions.length) {
