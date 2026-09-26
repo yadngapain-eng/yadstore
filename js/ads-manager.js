@@ -308,11 +308,12 @@ const AdsManager = {
 if (typeof window !== 'undefined') {
   window.AdsManager = AdsManager;
 
-  // Init setelah DOM ready
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => AdsManager.init());
-  } else {
-    setTimeout(() => AdsManager.init(), 1000);
+  // Init LANGSUNG (tidak tunggu DOM)
+  try {
+    AdsManager.init();
+    console.log('[ads-manager] Init immediately');
+  } catch (e) {
+    console.warn('[ads-manager] Init error:', e);
   }
 
   console.log('[ads-manager] loaded');

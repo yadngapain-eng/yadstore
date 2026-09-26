@@ -158,7 +158,7 @@ const Rewards = {
   },
 
   async watchAdFlow() {
-    // ===== CEK BISA NONTON =====
+    // Cek cooldown & limit
     if (!this.canWatchAd()) {
       const cd = this.getAdCooldownRemaining();
       if (cd > 0) {
@@ -169,38 +169,49 @@ const Rewards = {
       return false;
     }
 
-    // ===== CEK MONETAG =====
+    // Tunggu AdsManager siap (max 3 detik)
+    let waited = 0;
+    while (typeof window.AdsManager === 'undefined' && waited < 3000) {
+      await new Promise(r => setTimeout(r, 200));
+      waited += 200;
+    }
+
+    // Fallback kalau AdsManager tetap tidak ada
     if (typeof window.AdsManager === 'undefined') {
-      if (typeof Animate !== 'undefined') Animate.toast('⚠️ Iklan belum siap, coba lagi', 'error');
-      return false;
+      console.warn('[Rewards] AdsManager not found, using direct method');
+
+      if (typeof Animate !== 'undefined') Animate.toast('Membuka iklan...', 'info');
+
+      // Fallback: inject script langsung
+      try {
+        const s = document.createElement('script');
+        s.src = 'https://pl31468159.profitableratecpmnetwork.com/43/b7/10/43b7103677aebe9ac1a73fef2f093d8e.js';
+        s.async = true;
+        s.setAttribute('data-cfasync', 'false');
+        document.head.appendChild(s);
+
+        await new Promise(r => setTimeout(r, 4000));
+      } catch (e) {
+        console.warn('[Rewards] Direct inject error:', e);
+      }
+    } else {
+      // AdsManager ada — pakai normal
+      if (typeof Animate !== 'undefined') Animate.toast('Membuka iklan...', 'info');
+
+      try {
+        const net = window.AdsManager.getActiveNetwork();
+        console.log('[Rewards] Using network:', net);
+
+        // Trigger rotate ke network lain untuk fresh ad
+        window.AdsManager.rotate();
+        await new Promise(r => setTimeout(r, 5000));
+      } catch (e) {
+        console.error('[Rewards] Ad error:', e);
+        await new Promise(r => setTimeout(r, 3000));
+      }
     }
 
-    if (typeof Animate !== 'undefined') Animate.toast('Membuka iklan...', 'info');
-
-    // ===== TRIGGER IKLAN =====
-    let result = { success: false, verified: false };
-    try {
-      // Trigger watch ad via AdsManager
-      const net = window.AdsManager.getActiveNetwork();
-      console.log('[Rewards] Using ad network:', net);
-
-      // Reload network untuk trigger
-      window.AdsManager.loadNetwork(net);
-      await new Promise(r => setTimeout(r, 5000));
-
-      result = { success: true, verified: true };
-    } catch (e) {
-      console.error('[Rewards] Ad error:', e);
-      result = { success: false };
-    }
-
-    // ===== CEK HASIL =====
-    if (!result.success) {
-      if (typeof Animate !== 'undefined') Animate.toast('❌ Iklan gagal dimuat. Coba lagi.', 'error');
-      return false;
-    }
-
-    // ===== KASIH REWARD HANYA KALAU SUKSES =====
+    // Beri reward
     const state = this.getState();
     const today = new Date().toISOString().split('T')[0];
     if (state.lastAdDate !== today) {
@@ -213,7 +224,6 @@ const Rewards = {
 
     this.addCoin(this.CONFIG.MISSION_REWARDS.watch_ad, 'Nonton iklan');
 
-    // Bonus 5 iklan
     if (state.lastAdWatch === 5) {
       this.addCoin(this.CONFIG.MISSION_REWARDS.watch_5_ads, 'Bonus 5 iklan');
     }
