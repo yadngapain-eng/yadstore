@@ -1,21 +1,32 @@
 /* ============================================
-   YADSTORE — ADMIN PANEL v2 + MARKUP
+   YADSTORE — ADMIN PANEL v3
+   Password hash SHA-256 + Cloudflare Access ready
    ============================================ */
 
 const Admin = {
   section: 'dash',
-  password: 'admin123',
+
+  // ============================================
+  // PASSWORD HASH (SHA-256)
+  // Default password: admin123
+  // Untuk ganti: hash password baru dengan SHA-256
+  // Tool: https://emn178.github.io/online-tools/sha256.html
+  // ============================================
+  PASSWORD_HASH: '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9', // = admin123
 
   PRICE_KEY: 'yadstore_prices',
   MARKUP_KEY: 'yadstore_config',
 
-  init() {
-    // Load password
-    try {
-      const savedPwd = localStorage.getItem('yadstore_admin_pwd');
-      if (savedPwd) this.password = savedPwd;
-    } catch(e) {}
+  async hashPassword(pwd) {
+    const buf = new TextEncoder().encode(pwd);
+    const hash = await crypto.subtle.digest('SHA-256', buf);
+    return Array.from(new Uint8Array(hash))
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join('');
+  },
 
+  init() {
+    // Cek login session
     if (sessionStorage.getItem('yadstore_admin') === 'true') {
       document.getElementById('login-modal').classList.remove('active');
       this.render();
@@ -39,22 +50,38 @@ const Admin = {
     });
   },
 
-  // ============================================
-  // LOGIN / LOGOUT
-  // ============================================
-  login() {
+  async login() {
     const pwd = document.getElementById('login-pwd').value;
-    if (pwd === this.password) {
+    if (!pwd) { alert('Masukkan password'); return; }
+
+    const hashed = await this.hashPassword(pwd);
+
+    // Cek dengan hash default
+    if (hashed === this.PASSWORD_HASH) {
       sessionStorage.setItem('yadstore_admin', 'true');
+      sessionStorage.setItem('yadstore_admin_pwd_hash', hashed);
       document.getElementById('login-modal').classList.remove('active');
       this.render();
-    } else {
-      alert('Password salah!');
+      return;
     }
+
+    // Cek dengan hash custom (kalau user pernah ganti password)
+    const savedHash = localStorage.getItem('yadstore_admin_hash');
+    if (savedHash && hashed === savedHash) {
+      sessionStorage.setItem('yadstore_admin', 'true');
+      sessionStorage.setItem('yadstore_admin_pwd_hash', hashed);
+      document.getElementById('login-modal').classList.remove('active');
+      this.render();
+      return;
+    }
+
+    alert('❌ Password salah!');
+    document.getElementById('login-pwd').value = '';
   },
 
   logout() {
     sessionStorage.removeItem('yadstore_admin');
+    sessionStorage.removeItem('yadstore_admin_pwd_hash');
     document.getElementById('login-modal').classList.add('active');
     document.getElementById('login-pwd').value = '';
   },
@@ -73,8 +100,7 @@ const Admin = {
   saveMarkup(m) { localStorage.setItem(this.MARKUP_KEY, JSON.stringify(m)); },
 
   getGlobalMarkup() {
-    const m = this.getMarkup();
-    return m.global_markup || 0;
+    return this.getMarkup().global_markup || 0;
   },
 
   // ============================================
@@ -88,9 +114,6 @@ const Admin = {
     else if (this.section === 'settings') c.innerHTML = this.settings();
   },
 
-  // ============================================
-  // DASHBOARD
-  // ============================================
   getOrders() {
     try { return JSON.parse(localStorage.getItem('yadstore_orders') || '[]'); } catch(e) { return []; }
   },
@@ -116,9 +139,6 @@ const Admin = {
       '</tbody></table>') + '</div>';
   },
 
-  // ============================================
-  // ORDERS
-  // ============================================
   orders() {
     const orders = this.getOrders();
     if (!orders.length) return '<div class="card"><p style="color:#777">Belum ada order</p></div>';
@@ -141,19 +161,14 @@ const Admin = {
     localStorage.setItem('yadstore_orders', JSON.stringify(orders));
   },
 
-  // ============================================
-  // PRODUCTS + MARKUP (FITUR BARU)
-  // ============================================
   products() {
     const globalMarkup = this.getGlobalMarkup();
     const prices = this.getPrices();
     const all = [].concat(window.GAMES || [], window.DATA_PACKAGES || []);
 
-    // ===== PANEL GLOBAL MARKUP =====
     let html = '<div class="card" style="background:linear-gradient(135deg,#f0fff0,#e6ffe6);border:2px solid #89e219">' +
       '<h3 style="color:#2c5a00">⚡ Global Markup — Semua Produk</h3>' +
-      '<p style="color:#555;font-size:13px;margin-bottom:14px">Naikkan harga SEMUA produk sekaligus dengan nominal tertentu</p>' +
-
+      '<p style="color:#555;font-size:13px;margin-bottom:14px">Naikkan harga SEMUA produk sekaligus</p>' +
       '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">' +
       '<button class="btn-preset" onclick="Admin.applyGlobalMarkup(500)">+ Rp 500</button>' +
       '<button class="btn-preset" onclick="Admin.applyGlobalMarkup(1000)">+ Rp 1.000</button>' +
@@ -162,29 +177,22 @@ const Admin = {
       '<button class="btn-preset" onclick="Admin.applyGlobalMarkup(5000)">+ Rp 5.000</button>' +
       '<button class="btn-preset" onclick="Admin.applyGlobalMarkup(10000)">+ Rp 10.000</button>' +
       '</div>' +
-
       '<div style="display:flex;gap:8px;margin-bottom:14px">' +
-      '<input type="number" id="custom-markup" placeholder="Nominal lain (contoh: 1500)" style="flex:1;padding:12px;border:2px solid #e5e5e5;border-radius:8px;font-size:14px;font-weight:700">' +
+      '<input type="number" id="custom-markup" placeholder="Nominal lain" style="flex:1;padding:12px;border:2px solid #e5e5e5;border-radius:8px;font-size:14px;font-weight:700">' +
       '<button class="btn-primary" onclick="Admin.applyCustomMarkup()" style="padding:12px 24px">Terapkan</button>' +
       '</div>' +
-
       '<div style="background:white;padding:12px;border-radius:8px;margin-bottom:12px">' +
-      '<strong style="color:#2c5a00;font-size:14px">💰 Global markup aktif: +Rp ' + globalMarkup.toLocaleString('id-ID') + '</strong>' +
+      '<strong style="color:#2c5a00">💰 Global markup: +Rp ' + globalMarkup.toLocaleString('id-ID') + '</strong>' +
       '</div>' +
-
       '<button class="btn-danger" onclick="Admin.resetAllMarkup()" style="width:100%">🔄 Reset Semua Markup</button>' +
       '</div>';
 
-    // ===== DAFTAR PRODUK =====
     html += '<div class="card"><h3>📋 Daftar Produk & Harga</h3>' +
-      '<p style="color:#666;font-size:13px;margin-bottom:14px">Edit harga per produk atau tambah markup individual</p>' +
       '<div style="max-height:600px;overflow-y:auto">';
 
     all.forEach(item => {
       html += '<div style="margin-bottom:20px;border:1px solid #eee;border-radius:12px;overflow:hidden">' +
-        '<div style="padding:12px;background:#f7f7f7;font-weight:900;font-size:14px">' +
-        (item.icon || '') + ' ' + item.name +
-        '</div>' +
+        '<div style="padding:12px;background:#f7f7f7;font-weight:900">' + (item.icon || '') + ' ' + item.name + '</div>' +
         '<table style="width:100%"><thead><tr style="background:#fafafa">' +
         '<th style="padding:8px;font-size:11px;text-align:left">Produk</th>' +
         '<th style="padding:8px;font-size:11px;text-align:right">Dasar</th>' +
@@ -205,53 +213,41 @@ const Admin = {
           '<td style="padding:8px;font-size:12px">' + p.name + '</td>' +
           '<td style="padding:8px;font-size:12px;text-align:right;color:#888">' + p.price.toLocaleString('id-ID') + '</td>' +
           '<td style="padding:8px;text-align:right">' +
-          '<input type="number" value="' + finalPrice + '" ' +
-          'onchange="Admin.updatePrice(\'' + item.id + '\', \'' + p.id + '\', this.value)" ' +
-          'style="width:90px;padding:6px 8px;border:2px solid #e5e5e5;border-radius:6px;font-size:12px;font-weight:700;text-align:right">' +
+          '<input type="number" value="' + finalPrice + '" onchange="Admin.updatePrice(\'' + item.id + '\', \'' + p.id + '\', this.value)" style="width:90px;padding:6px;border:2px solid #e5e5e5;border-radius:6px;font-size:12px;font-weight:700;text-align:right">' +
           '</td>' +
           '<td style="padding:8px;font-size:11px;font-weight:800;color:' + diffColor + ';text-align:center">' + diffText + '</td>' +
           '<td style="padding:8px;text-align:center">' +
-          '<button onclick="Admin.resetPrice(\'' + item.id + '\', \'' + p.id + '\')" ' +
-          'style="padding:4px 8px;background:#f0f0f0;border:none;border-radius:6px;font-size:10px;font-weight:700;cursor:pointer">Reset</button>' +
-          '</td>' +
-          '</tr>';
+          '<button onclick="Admin.resetPrice(\'' + item.id + '\', \'' + p.id + '\')" style="padding:4px 8px;background:#f0f0f0;border:none;border-radius:6px;font-size:10px;font-weight:700;cursor:pointer">Reset</button>' +
+          '</td></tr>';
       });
 
       html += '</tbody></table></div>';
     });
 
     html += '</div></div>';
-
     return html;
   },
 
-  // ===== UPDATE HARGA 1 PRODUK =====
   updatePrice(itemId, prodId, value) {
     const price = parseInt(value) || 0;
     const prices = this.getPrices();
-    const key = itemId + '_' + prodId;
-    prices[key] = { final: price, updated: new Date().toISOString() };
+    prices[itemId + '_' + prodId] = { final: price, updated: new Date().toISOString() };
     this.savePrices(prices);
-    // Show toast
-    if (typeof Animate !== 'undefined') Animate.toast('Harga diupdate: Rp ' + price.toLocaleString('id-ID'), 'success');
+    if (typeof Animate !== 'undefined') Animate.toast('Harga: Rp ' + price.toLocaleString('id-ID'), 'success');
   },
 
-  // ===== RESET HARGA 1 PRODUK =====
   resetPrice(itemId, prodId) {
     const prices = this.getPrices();
     delete prices[itemId + '_' + prodId];
     this.savePrices(prices);
     this.render();
-    if (typeof Animate !== 'undefined') Animate.toast('Harga direset', 'info');
   },
 
-  // ===== GLOBAL MARKUP =====
   applyGlobalMarkup(amount) {
     const m = this.getMarkup();
     m.global_markup = (m.global_markup || 0) + amount;
     this.saveMarkup(m);
     if (typeof Animate !== 'undefined') Animate.toast('Markup +Rp ' + amount.toLocaleString('id-ID'), 'success');
-    else alert('Markup ditambah +Rp ' + amount.toLocaleString('id-ID'));
     this.render();
   },
 
@@ -264,26 +260,21 @@ const Admin = {
   },
 
   resetAllMarkup() {
-    if (!confirm('⚠️ Reset SEMUA markup ke harga default?')) return;
+    if (!confirm('⚠️ Reset SEMUA markup?')) return;
     localStorage.removeItem(this.PRICE_KEY);
     localStorage.removeItem(this.MARKUP_KEY);
-    alert('✅ Semua markup direset!');
+    alert('✅ Markup direset!');
     this.render();
   },
 
-  // ============================================
-  // SETTINGS
-  // ============================================
   settings() {
-    return '<div class="card"><h3>🔐 Ganti Password</h3>' +
+    return '<div class="card"><h3>🔐 Ganti Password Admin</h3>' +
+      '<p style="color:#777;font-size:13px;margin-bottom:14px">Password akan disimpan sebagai hash (tidak bisa dibaca)</p>' +
       '<div class="form-group"><label>Password Baru</label>' +
-      '<input type="text" id="new-pwd" value="' + this.password + '"></div>' +
+      '<input type="password" id="new-pwd" placeholder="Masukkan password baru"></div>' +
+      '<div class="form-group"><label>Konfirmasi Password</label>' +
+      '<input type="password" id="new-pwd-confirm" placeholder="Ulangi password"></div>' +
       '<button class="btn-primary" onclick="Admin.savePwd()">Simpan</button></div>' +
-
-      '<div class="card"><h3>📞 Nomor WhatsApp Admin</h3>' +
-      '<div class="form-group"><label>Nomor WA</label>' +
-      '<input type="text" id="cfg-wa" placeholder="628xxx" value="' + (localStorage.getItem('yadstore_wa') || '') + '"></div>' +
-      '<button class="btn-primary" onclick="Admin.saveWa()">Simpan</button></div>' +
 
       '<div class="card" style="background:#fff9e6;border:2px solid #ffe58f">' +
       '<h3 style="color:#7a5d00">⚠️ Danger Zone</h3>' +
@@ -292,19 +283,19 @@ const Admin = {
       '</div>';
   },
 
-  savePwd() {
-    const v = document.getElementById('new-pwd').value;
-    if (v) {
-      this.password = v;
-      localStorage.setItem('yadstore_admin_pwd', v);
-      alert('✅ Password diubah!');
-    }
-  },
+  async savePwd() {
+    const pwd = document.getElementById('new-pwd').value;
+    const confirm = document.getElementById('new-pwd-confirm').value;
 
-  saveWa() {
-    const wa = document.getElementById('cfg-wa').value;
-    localStorage.setItem('yadstore_wa', wa);
-    alert('✅ Nomor WA disimpan!');
+    if (!pwd) { alert('Masukkan password'); return; }
+    if (pwd.length < 6) { alert('Minimal 6 karakter'); return; }
+    if (pwd !== confirm) { alert('Password tidak sama'); return; }
+
+    const hash = await this.hashPassword(pwd);
+    localStorage.setItem('yadstore_admin_hash', hash);
+    alert('✅ Password diubah!');
+    document.getElementById('new-pwd').value = '';
+    document.getElementById('new-pwd-confirm').value = '';
   },
 
   resetOrders() {
