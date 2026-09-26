@@ -1,4 +1,4 @@
-name: Deploy to Cloudflare Pages
+name: Deploy + Auto-Purge Cache
 
 on:
   push:
@@ -28,13 +28,40 @@ jobs:
           echo ""
           echo "js/:"
           ls -la js/ 2>/dev/null || echo "No js folder"
-          echo ""
-          echo "css/:"
-          ls -la css/ 2>/dev/null || echo "No css folder"
 
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy . --project-name=learnearn --branch=main
+          command: pages deploy . --project-name=yadstore --branch=main
+
+      - name: Purge Cloudflare Cache
+        if: always()
+        env:
+          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+        run: |
+          echo "Purge Cloudflare cache..."
+          if [ -z "$CF_ZONE_ID" ]; then
+            echo "⚠️  CLOUDFLARE_ZONE_ID tidak diset — skip purge"
+            exit 0
+          fi
+          RESPONSE=$(curl -s -X POST "https://api.cloudflare.com/client/v4/zones/$CF_ZONE_ID/purge_cache" \
+            -H "Authorization: Bearer $CF_TOKEN" \
+            -H "Content-Type: application/json" \
+            --data '{"purge_everything": true}')
+          echo "Response: $RESPONSE"
+          if echo "$RESPONSE" | grep -q '"success":true'; then
+            echo "✅ Cache purged!"
+          else
+            echo "❌ Purge gagal"
+            exit 1
+          fi
+
+      - name: Verify live
+        if: always()
+        run: |
+          sleep 10
+          echo "Verify live site..."
+          curl -s -I "https://duniamu.my.id/?nocache=${{ github.run_id }}" | head -20
