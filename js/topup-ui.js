@@ -1,40 +1,40 @@
 const TopUpUI = {
   currentItem: null, currentProduct: null, userData: {}, proofImage: null,
 
+  esc(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  },
+
   fmt(n) { try { return n.toLocaleString('id-ID'); } catch(e) { return '' + n; } },
 
   render() {
     try {
       var c = document.getElementById('topup-grid');
-      if (!c) { console.error('[TopUpUI] topup-grid not found'); return; }
+      if (!c) return;
       var items = this.getItems();
-      console.log('[TopUpUI] rendering ' + items.length + ' items');
-      if (items.length === 0) {
-        c.innerHTML = '<p class="empty-msg">Tidak ada layanan</p>';
-        return;
-      }
+      if (items.length === 0) { c.innerHTML = '<p class="empty-msg">Tidak ada layanan</p>'; return; }
+      var self = this;
       c.innerHTML = items.map(function(item) {
         var initial = item.name.charAt(0);
         return '<div class="game-card" onclick="TopUpUI.open(\'' + item.id + '\')" style="--game-color: ' + item.color + '">' +
-          '<div class="game-icon-fallback" style="background:' + item.color + '">' + item.icon + '</div>' +
-          '<div class="game-info"><h3>' + item.name + '</h3><p>' + item.desc + '</p></div></div>';
+          '<div class="game-icon-wrap" style="background: ' + item.color + '22">' +
+            '<img src="' + item.icon + '" class="game-icon-img" alt="' + self.esc(item.name) + '" ' +
+                 'onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">' +
+            '<div class="game-icon-fallback" style="display:none;background:' + item.color + '">' + initial + '</div>' +
+          '</div>' +
+          '<div class="game-info"><h3>' + self.esc(item.name) + '</h3><p>' + self.esc(item.desc) + '</p></div>' +
+        '</div>';
       }).join('');
+      console.log('[TopUpUI] rendered ' + items.length + ' items');
     } catch (e) {
       console.error('[TopUpUI] render error:', e);
-      var c2 = document.getElementById('topup-grid');
-      if (c2) c2.innerHTML = '<p class="empty-msg" style="color:#ff4b4b">Error: ' + e.message + '</p>';
     }
   },
 
   getItems() {
     try {
-      var games = window.GAMES || [];
-      var pkgs = window.DATA_PACKAGES || [];
-      return games.concat(pkgs);
-    } catch (e) {
-      console.error('[TopUpUI] getItems error:', e);
-      return [];
-    }
+      return [].concat(window.GAMES || [], window.DATA_PACKAGES || []);
+    } catch (e) { return []; }
   },
 
   open(id) {
@@ -44,24 +44,29 @@ const TopUpUI = {
       if (!item) return;
       this.currentItem = item;
       var m = document.getElementById('game-modal');
+      var self = this;
       m.innerHTML = '<div class="modal-content">' +
         '<div class="modal-header" style="background: ' + item.color + '">' +
         '<button class="modal-close" onclick="TopUpUI.close()">X</button>' +
-        '<div style="font-size:40px;font-weight:900;color:white">' + item.icon + '</div>' +
-        '<h2>' + item.name + '</h2><p>' + item.desc + '</p></div>' +
+        '<div class="modal-icon-wrap">' +
+          '<img src="' + item.icon + '" class="modal-icon-img" alt="' + self.esc(item.name) + '" ' +
+               'onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">' +
+          '<div class="modal-icon-fallback" style="display:none;background:rgba(0,0,0,0.3)">' + item.name.charAt(0) + '</div>' +
+        '</div>' +
+        '<h2>' + self.esc(item.name) + '</h2><p>' + self.esc(item.desc) + '</p></div>' +
         '<div class="modal-body">' +
         (item.fields && item.fields.length > 0 ? '<h3 class="section-title">Data Akun</h3>' +
-          item.fields.map(function(f) { return '<div class="form-group"><label>' + f.label + '</label>' +
-            '<input type="text" id="field-' + f.id + '" placeholder="' + f.placeholder + '"></div>'; }).join('') : '') +
+          item.fields.map(function(f) { return '<div class="form-group"><label>' + self.esc(f.label) + '</label>' +
+            '<input type="text" id="field-' + f.id + '" placeholder="' + self.esc(f.placeholder) + '"></div>'; }).join('') : '') +
         '<h3 class="section-title">Pilih Nominal</h3>' +
         '<div class="products-grid">' +
         item.products.map(function(p) { return '<div class="product-card" onclick="TopUpUI.pick(\'' + p.id + '\')">' +
-          '<div class="product-name">' + p.name + '</div>' +
-          (p.bonus ? '<div class="product-bonus">' + p.bonus + '</div>' : '') +
-          '<div class="product-price">Rp ' + TopUpUI.fmt(p.price) + '</div></div>'; }).join('') +
+          '<div class="product-name">' + self.esc(p.name) + '</div>' +
+          (p.bonus ? '<div class="product-bonus">' + self.esc(p.bonus) + '</div>' : '') +
+          '<div class="product-price">Rp ' + self.fmt(p.price) + '</div></div>'; }).join('') +
         '</div></div></div>';
       m.classList.add('active');
-    } catch (e) { console.error('[TopUpUI] open error:', e); }
+    } catch (e) { console.error('[TopUpUI] open:', e); }
   },
 
   pick(pid) {
@@ -72,8 +77,8 @@ const TopUpUI = {
     if (item.fields) {
       for (var i = 0; i < item.fields.length; i++) {
         var f = item.fields[i];
-        var v = document.getElementById('field-' + f.id);
-        v = v ? v.value.trim() : '';
+        var el = document.getElementById('field-' + f.id);
+        var v = el ? el.value.trim() : '';
         if (!v) { Animate.toast('Isi ' + f.label + '!', 'error'); return; }
         ud[f.id] = v;
       }
@@ -85,21 +90,22 @@ const TopUpUI = {
   showOrder() {
     var item = this.currentItem; var p = this.currentProduct;
     var m = document.getElementById('game-modal');
+    var self = this;
     m.innerHTML = '<div class="modal-content">' +
       '<div class="modal-header" style="background: ' + item.color + '">' +
       '<button class="modal-close" onclick="TopUpUI.close()">X</button>' +
       '<h2>Konfirmasi</h2></div>' +
       '<div class="modal-body">' +
       '<div class="order-summary">' +
-      '<div class="order-row"><span>Layanan</span><strong>' + item.name + '</strong></div>' +
-      '<div class="order-row"><span>Item</span><strong>' + p.name + '</strong></div>' +
-      Object.keys(this.userData).map(function(k) { return '<div class="order-row"><span>' + k + '</span><strong>' + TopUpUI.userData[k] + '</strong></div>'; }).join('') +
-      '<div class="order-row total"><span>Total</span><strong>Rp ' + TopUpUI.fmt(p.price) + '</strong></div></div>' +
+      '<div class="order-row"><span>Layanan</span><strong>' + self.esc(item.name) + '</strong></div>' +
+      '<div class="order-row"><span>Item</span><strong>' + self.esc(p.name) + '</strong></div>' +
+      Object.keys(this.userData).map(function(k) { return '<div class="order-row"><span>' + self.esc(k) + '</span><strong>' + self.esc(self.userData[k]) + '</strong></div>'; }).join('') +
+      '<div class="order-row total"><span>Total</span><strong>Rp ' + self.fmt(p.price) + '</strong></div></div>' +
       '<h3 class="section-title">Pilih Pembayaran</h3>' +
       '<div class="payments-grid">' +
       PAYMENTS.map(function(pay) { return '<div class="payment-card" onclick="TopUpUI.submit(\'' + pay.id + '\')">' +
-        '<div class="payment-name">' + pay.name + '</div>' +
-        (pay.fee > 0 ? '<div class="payment-fee">+Rp ' + TopUpUI.fmt(pay.fee) + '</div>' : '<div class="payment-fee">Gratis</div>') +
+        '<div class="payment-name">' + self.esc(pay.name) + '</div>' +
+        (pay.fee > 0 ? '<div class="payment-fee">+Rp ' + self.fmt(pay.fee) + '</div>' : '<div class="payment-fee">Gratis</div>') +
         '</div>'; }).join('') + '</div>' +
       '<button class="btn-secondary btn-full" onclick="TopUpUI.open(\'' + item.id + '\')">Kembali</button>' +
       '</div></div>';
@@ -123,16 +129,17 @@ const TopUpUI = {
 
   showPayment(order, pay) {
     var m = document.getElementById('game-modal');
+    var self = this;
     m.innerHTML = '<div class="modal-content">' +
       '<div class="modal-header" style="background: #58cc02">' +
       '<button class="modal-close" onclick="TopUpUI.close()">X</button>' +
       '<h2>Pembayaran</h2><p>Order: ' + order.id + '</p></div>' +
       '<div class="modal-body">' +
-      '<div class="order-summary"><div class="order-row"><span>Total Bayar</span><strong style="color:#58cc02;font-size:20px">Rp ' + TopUpUI.fmt(order.total) + '</strong></div></div>' +
-      '<div class="payment-info"><h3 class="section-title">Bayar via ' + pay.name + '</h3>' +
+      '<div class="order-summary"><div class="order-row"><span>Total Bayar</span><strong style="color:#58cc02;font-size:20px">Rp ' + self.fmt(order.total) + '</strong></div></div>' +
+      '<div class="payment-info"><h3 class="section-title">Bayar via ' + self.esc(pay.name) + '</h3>' +
       '<div class="pay-detail">' +
-      '<div class="pay-row"><span>Metode</span><strong>' + pay.name + '</strong></div>' +
-      '<div class="pay-row"><span>Nominal</span><strong>Rp ' + TopUpUI.fmt(order.total) + '</strong></div>' +
+      '<div class="pay-row"><span>Metode</span><strong>' + self.esc(pay.name) + '</strong></div>' +
+      '<div class="pay-row"><span>Nominal</span><strong>Rp ' + self.fmt(order.total) + '</strong></div>' +
       '<div class="pay-row"><span>Tujuan</span><strong>081234567890 a/n YadStore</strong></div></div></div>' +
       '<h3 class="section-title">Upload Bukti Transfer</h3>' +
       '<div class="form-group"><input type="file" id="proof-input" accept="image/*" onchange="TopUpUI.handleProof(this)">' +
@@ -173,25 +180,24 @@ const TopUpUI = {
     Animate.confetti();
   },
 
-  getOrders() {
-    try { return JSON.parse(localStorage.getItem('yadstore_orders') || '[]'); } catch(e) { return []; }
-  },
+  getOrders() { try { return JSON.parse(localStorage.getItem('yadstore_orders') || '[]'); } catch(e) { return []; } },
   saveOrders(o) { try { localStorage.setItem('yadstore_orders', JSON.stringify(o)); } catch(e) {} },
 
   renderOrders() {
     var c = document.getElementById('orders-list');
     if (!c) return;
     var orders = this.getOrders();
+    var self = this;
     if (!orders.length) { c.innerHTML = '<p class="empty-msg">Belum ada pesanan.</p>'; return; }
     c.innerHTML = orders.map(function(o) {
       return '<div class="order-card"><div class="order-card-header">' +
-        '<strong>' + o.item + '</strong>' +
+        '<strong>' + self.esc(o.item) + '</strong>' +
         '<span class="order-status status-' + o.status + '">' + o.status.toUpperCase() + '</span></div>' +
         '<div class="order-card-body">' +
-        '<div class="order-info"><span>Item</span><strong>' + o.product + '</strong></div>' +
-        '<div class="order-info"><span>Order ID</span><strong>' + o.id + '</strong></div>' +
-        '<div class="order-info"><span>Bayar</span><strong>' + o.payment + '</strong></div>' +
-        '<div class="order-info total"><span>Total</span><strong>Rp ' + TopUpUI.fmt(o.total) + '</strong></div>' +
+        '<div class="order-info"><span>Item</span><strong>' + self.esc(o.product) + '</strong></div>' +
+        '<div class="order-info"><span>Order ID</span><strong>' + self.esc(o.id) + '</strong></div>' +
+        '<div class="order-info"><span>Bayar</span><strong>' + self.esc(o.payment) + '</strong></div>' +
+        '<div class="order-info total"><span>Total</span><strong>Rp ' + self.fmt(o.total) + '</strong></div>' +
         (o.proof ? '<img src="' + o.proof + '" style="max-width:100%;border-radius:8px;margin-top:8px">' : '') +
         '</div></div>';
     }).join('');
@@ -203,5 +209,4 @@ const TopUpUI = {
     this.currentItem = null; this.currentProduct = null; this.userData = {}; this.proofImage = null;
   },
 };
-console.log('[topup-ui] loaded');
 if (typeof window !== 'undefined') window.TopUpUI = TopUpUI;
