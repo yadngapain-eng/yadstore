@@ -24,7 +24,7 @@ const Rewards = {
     COIN_TO_RUPIAH: 1,
     MIN_WITHDRAW: 10000,
     AD_WATCH_LIMIT: 5,
-    AD_COOLDOWN_SECONDS: 60,
+    AD_COOLDOWN_SECONDS: 30,
   },
 
   get(key, def) {
@@ -158,7 +158,6 @@ const Rewards = {
   },
 
   async watchAdFlow() {
-    // Cek cooldown & limit
     if (!this.canWatchAd()) {
       const cd = this.getAdCooldownRemaining();
       if (cd > 0) {
@@ -169,55 +168,48 @@ const Rewards = {
       return false;
     }
 
-    // Tunggu AdsManager siap (max 3 detik)
-    let waited = 0;
-    while (typeof window.AdsManager === 'undefined' && waited < 3000) {
-      await new Promise(r => setTimeout(r, 200));
-      waited += 200;
-    }
-
-    // Fallback kalau AdsManager tetap tidak ada
     if (typeof window.AdsManager === 'undefined') {
-      console.warn('[Rewards] AdsManager not found, using direct method');
-
-      if (typeof Animate !== 'undefined') Animate.toast('Membuka iklan...', 'info');
-
-      // Fallback: inject script langsung
-      try {
-        const s = document.createElement('script');
-        s.src = 'https://pl31468159.profitableratecpmnetwork.com/43/b7/10/43b7103677aebe9ac1a73fef2f093d8e.js';
-        s.async = true;
-        s.setAttribute('data-cfasync', 'false');
-        document.head.appendChild(s);
-
-        await new Promise(r => setTimeout(r, 4000));
-      } catch (e) {
-        console.warn('[Rewards] Direct inject error:', e);
-      }
-    } else {
-      // AdsManager ada — pakai normal
-      if (typeof Animate !== 'undefined') Animate.toast('Membuka iklan...', 'info');
-
-      try {
-        const net = window.AdsManager.getActiveNetwork();
-        console.log('[Rewards] Using network:', net);
-
-        // Trigger rotate ke network lain untuk fresh ad
-        window.AdsManager.rotate();
-        await new Promise(r => setTimeout(r, 5000));
-      } catch (e) {
-        console.error('[Rewards] Ad error:', e);
-        await new Promise(r => setTimeout(r, 3000));
-      }
+      if (typeof Animate !== 'undefined') Animate.toast('Iklan belum siap, tunggu sebentar', 'error');
+      return false;
     }
 
-    // Beri reward
+    if (typeof Animate !== 'undefined') {
+      Animate.toast('Membuka iklan di tab baru...', 'info');
+    }
+
+    const result = await window.AdsManager.openRewarded();
+
+    if (!result.success) {
+      if (result.reason === 'cooldown') {
+        if (typeof Animate !== 'undefined') Animate.toast('Tunggu ' + result.remain + ' detik lagi', 'error');
+      } else {
+        if (typeof Animate !== 'undefined') Animate.toast('Iklan gagal dibuka', 'error');
+      }
+      return false;
+    }
+
+    if (result.method === 'redirect') {
+      try { localStorage.setItem('yadstore_ad_pending', Date.now().toString()); } catch (e) {}
+      return true;
+    }
+
+    if (typeof Animate !== 'undefined') {
+      Animate.toast('Nonton iklan dulu, lalu tutup tab-nya ✅', 'info');
+    }
+
+    setTimeout(() => { this.giveAdReward(); }, 8000);
+    return true;
+  },
+
+  giveAdReward() {
     const state = this.getState();
     const today = new Date().toISOString().split('T')[0];
+
     if (state.lastAdDate !== today) {
       state.lastAdWatch = 0;
       state.lastAdDate = today;
     }
+
     state.lastAdWatch += 1;
     state.lastAdTime = Date.now();
     this.save(state);
@@ -233,12 +225,10 @@ const Rewards = {
       Animate.toast('+1 koin! 🪙', 'success');
     }
 
-    // Refresh
     if (typeof App !== 'undefined' && App.currentTab === 'rewards') {
-      document.getElementById('rewards-content').innerHTML = this.renderRewardsPage();
+      const el = document.getElementById('rewards-content');
+      if (el) el.innerHTML = this.renderRewardsPage();
     }
-
-    return true;
   },
 
   // ============================================

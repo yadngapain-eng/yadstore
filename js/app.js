@@ -4,6 +4,7 @@ const App = {
   currentTab: 'learn',
 
   async init() {
+    this.checkPendingAdReward();
     console.log('[App] Initializing...');
     if (typeof I18n !== 'undefined') I18n.init();
     if (typeof Auth !== 'undefined') await Auth.init();
@@ -31,6 +32,22 @@ const App = {
         document.getElementById('rewards-content').innerHTML = Rewards.renderRewardsPage();
       }
     } catch (e) { console.error('[App] onLangChanged:', e); }
+  },
+
+  checkPendingAdReward() {
+    try {
+      const pending = localStorage.getItem('yadstore_ad_pending');
+      if (pending) {
+        const elapsed = Date.now() - parseInt(pending);
+        if (elapsed < 5 * 60 * 1000) {
+          console.log('[App] Processing pending ad reward');
+          setTimeout(() => {
+            if (typeof Rewards !== 'undefined') Rewards.giveAdReward();
+          }, 1500);
+        }
+        localStorage.removeItem('yadstore_ad_pending');
+      }
+    } catch (e) {}
   },
 
   onUserChanged(user) {
