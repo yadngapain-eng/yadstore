@@ -1,49 +1,32 @@
-/* ============================================
-   YADSTORE — REWARDS SYSTEM
-   Hearts, Koin, Saldo, Misi, Level Reward
-   ============================================ */
+/* YADSTORE — REWARD SYSTEM v2 */
 
 const Rewards = {
-  // ============================================
-  // CONFIG
-  // ============================================
   CONFIG: {
-    HEART_REGEN_HOURS: 4,        // Regen 1 heart per 4 jam
     MAX_HEARTS: 5,
-    HEART_FROM_LESSON: 0,        // Lesson tidak dapat heart
-    HEART_COST_GEMS: 50,          // Isi heart pakai gems
+    HEART_REGEN_HOURS: 4,
+    HEART_COST_GEMS: 50,
 
-    // Reward per misi (dalam koin 1 koin = Rp 1)
     MISSION_REWARDS: {
-      daily_login: 10,           // Login harian
-      watch_ad: 1,                // Nonton iklan
-      complete_lesson: 5,         // Selesaikan 1 lesson
-      complete_5_lessons: 50,     // 5 lesson
-      perfect_score: 20,          // Skor 100%
-      topup_any: 100,             // Order top up
-      share_app: 25,              // Share ke sosmed
-      invite_friend: 500,         // Referral (butuh validasi)
-      watch_5_ads: 10,            // Bonus nonton 5 iklan
-      streak_3: 50,               // Streak 3 hari
-      streak_7: 150,              // Streak 7 hari
-      streak_30: 1000,            // Streak 30 hari
+      daily_login: 10,
+      watch_ad: 1,
+      complete_lesson: 5,
+      perfect_score: 20,
+      topup_any: 100,
+      watch_5_ads: 10,
+      streak_3: 50,
+      streak_7: 150,
+      streak_30: 1000,
+      invite_friend: 500,
     },
 
-    // Level reward (naik ke level X dapat koin)
-    LEVEL_REWARDS: function(level) {
-      // Semakin tinggi level, semakin besar reward
-      return level * 50;  // Level 2 = 100 koin, Level 5 = 250 koin
-    },
+    LEVEL_REWARDS: (level) => level * 50,
 
-    // Convert rate
-    COIN_TO_RUPIAH: 1,            // 1 koin = Rp 1 (gampang)
-    MIN_WITHDRAW: 10000,          // Min Rp 10.000 untuk withdraw
-    AD_WATCH_LIMIT: 5,            // Max 5 iklan/hari
+    COIN_TO_RUPIAH: 1,
+    MIN_WITHDRAW: 10000,
+    AD_WATCH_LIMIT: 5,
+    AD_COOLDOWN_SECONDS: 60,
   },
 
-  // ============================================
-  // STORAGE
-  // ============================================
   get(key, def) {
     try {
       const v = localStorage.getItem('yadstore_reward_' + key);
@@ -51,26 +34,24 @@ const Rewards = {
     } catch (e) { return def; }
   },
   set(key, val) {
-    try { localStorage.setItem('yadstore_reward_' + key, JSON.stringify(val)); }
-    catch (e) {}
+    try { localStorage.setItem('yadstore_reward_' + key, JSON.stringify(val)); } catch (e) {}
   },
 
-  // ============================================
-  // GET STATE
-  // ============================================
   getState() {
     const today = new Date().toISOString().split('T')[0];
     return {
-      balance: this.get('balance', 0),           // Saldo koin (bisa di-withdraw)
-      totalEarned: this.get('totalEarned', 0),   // Total koin diperoleh
-      totalSpent: this.get('totalSpent', 0),     // Total koin dibelanjakan
+      balance: this.get('balance', 0),
+      totalEarned: this.get('totalEarned', 0),
+      totalSpent: this.get('totalSpent', 0),
+      totalWithdrawn: this.get('totalWithdrawn', 0),
       lastLogin: this.get('lastLogin', null),
-      lastAdWatch: this.get('lastAdWatch', 0),   // Count hari ini
+      lastAdWatch: this.get('lastAdWatch', 0),
       lastAdDate: this.get('lastAdDate', today),
-      missionsDone: this.get('missionsDone', {}), // { missionId: timestamp }
-      dailyMissions: this.get('dailyMissions', {}), // { date: [missionIds] }
+      lastAdTime: this.get('lastAdTime', 0),
       unlockedRewards: this.get('unlockedRewards', []),
       history: this.get('history', []),
+      referralCode: this.get('referralCode', null),
+      usedReferral: this.get('usedReferral', null),
     };
   },
 
@@ -78,31 +59,21 @@ const Rewards = {
     Object.keys(state).forEach(k => this.set(k, state[k]));
   },
 
-  // ============================================
-  // ADD COIN
-  // ============================================
   addCoin(amount, reason) {
     const state = this.getState();
     state.balance += amount;
     state.totalEarned += amount;
-
-    // Catat history
     state.history.unshift({
       type: 'earn',
-      amount: amount,
+      amount,
       reason: reason || 'Reward',
       date: new Date().toISOString(),
     });
-    if (state.history.length > 100) state.history = state.history.slice(0, 100);
-
+    if (state.history.length > 200) state.history = state.history.slice(0, 200);
     this.save(state);
 
-    if (typeof Animate !== 'undefined') {
-      Animate.toast('+' + amount + ' koin! 🪙', 'success');
-    }
-    if (typeof Auth !== 'undefined' && Auth.saveProfile) {
-      Auth.saveProfile({ balance: state.balance, totalEarned: state.totalEarned });
-    }
+    if (typeof Animate !== 'undefined') Animate.toast('+' + amount + ' koin 🪙', 'success');
+    this.syncToFirestore();
     return state.balance;
   },
 
@@ -116,48 +87,67 @@ const Rewards = {
     state.totalSpent += amount;
     state.history.unshift({
       type: 'spend',
-      amount: amount,
+      amount,
       reason: reason || 'Pembelian',
       date: new Date().toISOString(),
     });
     this.save(state);
+    this.syncToFirestore();
     return true;
   },
 
   // ============================================
-  // DAILY LOGIN REWARD
+  // SYNC TO FIRESTORE
+  // ============================================
+  syncToFirestore() {
+    if (typeof Auth === 'undefined' || !Auth.db || !Auth.user || Auth.user.isLocal) return;
+    try {
+      const state = this.getState();
+      Auth.db.collection('users').doc(Auth.user.uid).set({
+        balance: state.balance,
+        totalEarned: state.totalEarned,
+        totalSpent: state.totalSpent,
+        totalWithdrawn: state.totalWithdrawn,
+        updatedAt: new Date().toISOString(),
+      }, { merge: true });
+    } catch (e) { console.warn('[Rewards] sync error:', e); }
+  },
+
+  // ============================================
+  // DAILY LOGIN
   // ============================================
   checkDailyLogin() {
     const state = this.getState();
     const today = new Date().toISOString().split('T')[0];
-
-    if (state.lastLogin === today) return null;
+    if (state.lastLogin === today) return 0;
 
     state.lastLogin = today;
     this.save(state);
-
-    // Kasih reward
     const reward = this.CONFIG.MISSION_REWARDS.daily_login;
     this.addCoin(reward, 'Login harian');
-
     return reward;
   },
 
   // ============================================
-  // WATCH AD
+  // WATCH AD (dengan Monetag)
   // ============================================
   canWatchAd() {
     const state = this.getState();
     const today = new Date().toISOString().split('T')[0];
+    if (state.lastAdDate !== today) return true;
+    if (state.lastAdWatch >= this.CONFIG.AD_WATCH_LIMIT) return false;
+    // Cooldown check
+    const now = Date.now();
+    if (state.lastAdTime && (now - state.lastAdTime) < this.CONFIG.AD_COOLDOWN_SECONDS * 1000) return false;
+    return true;
+  },
 
-    if (state.lastAdDate !== today) {
-      // Reset counter hari ini
-      state.lastAdDate = today;
-      state.lastAdWatch = 0;
-      this.save(state);
-      return true;
-    }
-    return state.lastAdWatch < this.CONFIG.AD_WATCH_LIMIT;
+  getAdCooldownRemaining() {
+    const state = this.getState();
+    if (!state.lastAdTime) return 0;
+    const elapsed = (Date.now() - state.lastAdTime) / 1000;
+    const remain = this.CONFIG.AD_COOLDOWN_SECONDS - elapsed;
+    return remain > 0 ? Math.ceil(remain) : 0;
   },
 
   getAdWatchedToday() {
@@ -167,82 +157,90 @@ const Rewards = {
     return state.lastAdWatch;
   },
 
-  watchAd() {
+  async watchAdFlow() {
     if (!this.canWatchAd()) {
-      if (typeof Animate !== 'undefined') Animate.toast('Batas iklan harian tercapai (5/hari)', 'error');
+      const cd = this.getAdCooldownRemaining();
+      if (cd > 0) {
+        if (typeof Animate !== 'undefined') Animate.toast('Tunggu ' + cd + ' detik lagi', 'error');
+      } else {
+        if (typeof Animate !== 'undefined') Animate.toast('Batas harian (5 iklan) tercapai', 'error');
+      }
       return false;
     }
+
+    if (typeof Animate !== 'undefined') Animate.toast('Membuka iklan...', 'info');
+
+    // Trigger Monetag popunder
+    let ok = true;
+    if (window.MONETAG_CONFIG && window.MONETAG_CONFIG.triggerRewarded) {
+      try {
+        ok = await window.MONETAG_CONFIG.triggerRewarded();
+      } catch (e) { ok = true; }
+    } else {
+      // Fallback: timer 5 detik
+      await new Promise(r => setTimeout(r, 5000));
+    }
+
+    if (!ok) return false;
+
+    // Beri reward
     const state = this.getState();
+    const today = new Date().toISOString().split('T')[0];
+    if (state.lastAdDate !== today) {
+      state.lastAdWatch = 0;
+      state.lastAdDate = today;
+    }
     state.lastAdWatch += 1;
-    state.lastAdDate = new Date().toISOString().split('T')[0];
+    state.lastAdTime = Date.now();
     this.save(state);
 
-    const reward = this.CONFIG.MISSION_REWARDS.watch_ad;
-    this.addCoin(reward, 'Nonton iklan');
+    this.addCoin(this.CONFIG.MISSION_REWARDS.watch_ad, 'Nonton iklan');
 
-    // Bonus nonton 5 iklan
+    // Bonus 5 iklan
     if (state.lastAdWatch === 5) {
-      this.addCoin(this.CONFIG.MISSION_REWARDS.watch_5_ads, 'Bonus nonton 5 iklan');
+      this.addCoin(this.CONFIG.MISSION_REWARDS.watch_5_ads, 'Bonus 5 iklan');
+    }
+
+    if (typeof Animate !== 'undefined') {
+      Animate.confetti();
+      Animate.toast('+1 koin! 🪙', 'success');
+    }
+
+    // Refresh halaman rewards
+    if (typeof App !== 'undefined' && App.currentTab === 'rewards') {
+      document.getElementById('rewards-content').innerHTML = this.renderRewardsPage();
     }
     return true;
   },
 
   // ============================================
-  // LESSON COMPLETE REWARD
+  // LESSON COMPLETE
   // ============================================
   onLessonComplete(perfect) {
-    const reward = this.CONFIG.MISSION_REWARDS.complete_lesson;
-    this.addCoin(reward, 'Lesson selesai');
-
-    if (perfect) {
-      this.addCoin(this.CONFIG.MISSION_REWARDS.perfect_score, 'Skor sempurna');
-    }
-
-    // Cek total lessons
-    if (typeof DL !== 'undefined') {
-      const total = DL.getState().completedLessons.length;
-      if (total === 5) {
-        this.addCoin(this.CONFIG.MISSION_REWARDS.complete_5_lessons, '5 lesson');
-      }
-    }
+    this.addCoin(this.CONFIG.MISSION_REWARDS.complete_lesson, 'Lesson selesai');
+    if (perfect) this.addCoin(this.CONFIG.MISSION_REWARDS.perfect_score, 'Skor sempurna');
   },
 
   // ============================================
-  // LEVEL UP REWARD
+  // LEVEL UP
   // ============================================
   onLevelUp(newLevel) {
     const state = this.getState();
-    const rewardId = 'level_' + newLevel;
-
-    if (state.unlockedRewards.includes(rewardId)) return 0;
-
-    const reward = this.CONFIG.LEVEL_REWARDS(newLevel);
-    state.unlockedRewards.push(rewardId);
+    const id = 'level_' + newLevel;
+    if (state.unlockedRewards.includes(id)) return 0;
+    state.unlockedRewards.push(id);
     this.save(state);
 
+    const reward = this.CONFIG.LEVEL_REWARDS(newLevel);
     this.addCoin(reward, 'Naik level ' + newLevel);
     return reward;
   },
 
   // ============================================
-  // TOP UP REWARD
+  // TOP UP
   // ============================================
   onTopUp() {
-    const reward = this.CONFIG.MISSION_REWARDS.topup_any;
-    this.addCoin(reward, 'Order Top Up');
-  },
-
-  // ============================================
-  // HEART FROM MISSIONS
-  // ============================================
-  addHeart(amount) {
-    if (typeof DL === 'undefined') return;
-    const state = DL.getState();
-    const max = this.CONFIG.MAX_HEARTS;
-    state.hearts = Math.min(max, state.hearts + amount);
-    state.heartsUpdated = Date.now();
-    DL.saveState(state);
-    if (typeof Animate !== 'undefined') Animate.toast('+' + amount + ' ❤️', 'success');
+    this.addCoin(this.CONFIG.MISSION_REWARDS.topup_any, 'Order Top Up');
   },
 
   // ============================================
@@ -264,7 +262,7 @@ const Rewards = {
     if (!code) return false;
     const used = this.get('usedReferral', null);
     if (used) {
-      if (typeof Animate !== 'undefined') Animate.toast('Kode referral sudah dipakai', 'error');
+      if (typeof Animate !== 'undefined') Animate.toast('Kode sudah dipakai', 'error');
       return false;
     }
     this.set('usedReferral', code);
@@ -273,17 +271,16 @@ const Rewards = {
   },
 
   // ============================================
-  // WITHDRAW (demo only)
+  // WITHDRAW
   // ============================================
   canWithdraw() {
-    const state = this.getState();
-    return state.balance >= this.CONFIG.MIN_WITHDRAW;
+    return this.getState().balance >= this.CONFIG.MIN_WITHDRAW;
   },
 
-  requestWithdraw(amount, method, account) {
+  async requestWithdraw(amount, method, account, name) {
     const state = this.getState();
     if (amount < this.CONFIG.MIN_WITHDRAW) {
-      if (typeof Animate !== 'undefined') Animate.toast('Minimal withdraw Rp ' + this.CONFIG.MIN_WITHDRAW.toLocaleString('id-ID'), 'error');
+      if (typeof Animate !== 'undefined') Animate.toast('Minimal Rp ' + this.CONFIG.MIN_WITHDRAW.toLocaleString('id-ID'), 'error');
       return false;
     }
     if (state.balance < amount) {
@@ -291,95 +288,156 @@ const Rewards = {
       return false;
     }
 
-    // Demo: langsung potong saldo (production: butuh approval admin)
+    const withdrawId = 'WD' + Date.now().toString(36).toUpperCase();
+    const withdraw = {
+      id: withdrawId,
+      userId: typeof Auth !== 'undefined' && Auth.user ? Auth.user.uid : 'anon',
+      userName: typeof Auth !== 'undefined' ? Auth.getName() : 'Guest',
+      amount,
+      method,
+      account,
+      name: name || '',
+      status: 'pending',
+      createdAt: new Date().toISOString(),
+    };
+
+    // Simpan di Firestore
+    if (typeof Auth !== 'undefined' && Auth.db && Auth.user && !Auth.user.isLocal) {
+      try {
+        await Auth.db.collection('users').doc(Auth.user.uid)
+          .collection('withdrawals').doc(withdrawId).set(withdraw);
+        // Juga di global collections untuk admin
+        await Auth.db.collection('withdrawals').doc(withdrawId).set(withdraw);
+      } catch (e) { console.error('[Withdraw] save error:', e); }
+    }
+
+    // Update state (potong saldo langsung)
     state.balance -= amount;
+    state.totalWithdrawn += amount;
     state.history.unshift({
       type: 'withdraw',
-      amount: amount,
-      reason: 'Withdraw ke ' + method + ' - ' + account,
+      amount,
+      reason: 'Withdraw ' + method + ' - ' + account,
       date: new Date().toISOString(),
       status: 'pending',
     });
     this.save(state);
+    this.syncToFirestore();
 
     // Kirim ke Telegram
-    if (typeof TELEGRAM_CONFIG !== 'undefined' && TELEGRAM_CONFIG.ENABLED) {
-      TELEGRAM_CONFIG.sendMessage('💰 <b>WITHDRAW REQUEST</b>\n\n' +
-        'Jumlah: Rp ' + amount.toLocaleString('id-ID') + '\n' +
-        'Metode: ' + method + '\n' +
-        'Akun: ' + account + '\n' +
-        'User: ' + (typeof Auth !== 'undefined' ? Auth.getName() : 'Unknown'));
-    }
+    try {
+      if (typeof window.TELEGRAM_CONFIG !== 'undefined' && window.TELEGRAM_CONFIG.ENABLED) {
+        const msg = '💸 <b>WITHDRAW REQUEST</b>\n\n' +
+          '🆔 ' + withdrawId + '\n' +
+          '👤 ' + withdraw.userName + '\n' +
+          '💰 Rp ' + amount.toLocaleString('id-ID') + '\n' +
+          '💳 ' + method + '\n' +
+          '📱 ' + account + '\n' +
+          '📅 ' + new Date().toLocaleString('id-ID');
+        await window.TELEGRAM_CONFIG.sendMessage(msg);
+      }
+    } catch (e) { console.warn('[Withdraw] telegram error:', e); }
 
     return true;
   },
 
   // ============================================
-  // FORMAT
-  // ============================================
-  formatRp(n) {
-    try { return 'Rp ' + n.toLocaleString('id-ID'); } catch(e) { return 'Rp ' + n; }
-  },
-
-  // ============================================
-  // RENDER REWARDS PAGE
+  // RENDER PAGE
   // ============================================
   renderRewardsPage() {
     const state = this.getState();
-    const balance = state.balance;
-    const rupiah = balance * this.CONFIG.COIN_TO_RUPIAH;
+    const rupiah = state.balance * this.CONFIG.COIN_TO_RUPIAH;
+    const adWatched = this.getAdWatchedToday();
+    const adLeft = this.CONFIG.AD_WATCH_LIMIT - adWatched;
+    const cooldown = this.getAdCooldownRemaining();
 
-    return '<div class="reward-hero">' +
+    let html = '<div class="reward-hero">' +
       '<div class="reward-balance-label">Saldo Kamu</div>' +
       '<div class="reward-balance">' + this.formatRp(rupiah) + '</div>' +
-      '<div class="reward-coin">' + balance.toLocaleString('id-ID') + ' koin 🪙</div>' +
-      '<div class="reward-convert-info">100 koin = Rp 100</div>' +
-      '</div>' +
+      '<div class="reward-coin">' + state.balance.toLocaleString('id-ID') + ' koin 🪙</div>' +
+      '<div class="reward-convert-info">1 koin = Rp 1</div>' +
+      '</div>';
 
-      '<div class="reward-missions">' +
-      '<h3>🎯 Misi Harian</h3>' +
-      this.renderMissions() +
-      '</div>' +
-
-      '<div class="reward-ads-section">' +
+    // Ads Section
+    html += '<div class="reward-ads-section">' +
       '<h3>🎬 Nonton Iklan</h3>' +
-      '<p>Dapat 1 koin per iklan</p>' +
-      '<div class="ad-counter">' + this.getAdWatchedToday() + ' / ' + this.CONFIG.AD_WATCH_LIMIT + ' hari ini</div>' +
-      '<button class="btn-ad" onclick="Rewards.watchAdFlow()" ' + (this.canWatchAd() ? '' : 'disabled') + '>' +
-      (this.canWatchAd() ? '🎬 Nonton Iklan (+1 koin)' : '✅ Batas harian tercapai') +
-      '</button>' +
-      '</div>' +
+      '<p style="color:#666;font-size:13px;margin-bottom:8px">Dapat <b>1 koin</b> per iklan (max 5/hari)</p>' +
+      '<div class="ad-counter">' + adWatched + ' / ' + this.CONFIG.AD_WATCH_LIMIT + ' hari ini' +
+      (adLeft > 0 ? ' • sisa ' + adLeft : ' • batas tercapai') + '</div>' +
+      (cooldown > 0 ?
+        '<button class="btn-ad" disabled>⏱️ Tunggu ' + cooldown + 's</button>' :
+        '<button class="btn-ad" onclick="Rewards.watchAdFlow()" ' + (adLeft > 0 ? '' : 'disabled') + '>' +
+        (adLeft > 0 ? '🎬 Nonton Iklan (+1 koin)' : '✅ Batas tercapai') +
+        '</button>') +
+      '</div>';
 
-      '<div class="reward-history">' +
+    // Missions
+    html += '<div class="reward-missions">' +
+      '<h3>🎯 Misi & Reward</h3>' +
+      this.renderMissions() +
+      '</div>';
+
+    // Level rewards
+    const lv = typeof DL !== 'undefined' ? DL.getLevel().level : 1;
+    const nextReward = this.CONFIG.LEVEL_REWARDS(lv + 1);
+    html += '<div class="reward-missions">' +
+      '<h3>📈 Reward Naik Level</h3>' +
+      '<div class="mission-card">' +
+      '<div class="mission-icon">🎖️</div>' +
+      '<div class="mission-info">' +
+      '<div class="mission-title">Level ' + (lv + 1) + ' = +' + nextReward + ' koin</div>' +
+      '<div class="mission-reward">Semakin tinggi = makin besar</div>' +
+      '</div>' +
+      '</div>' +
+      '</div>';
+
+    // Referral
+    const refCode = this.getReferralCode();
+    html += '<div class="reward-missions">' +
+      '<h3>🎁 Referral</h3>' +
+      '<p style="font-size:13px;color:#666;margin-bottom:8px">Ajak teman, dapat <b>500 koin</b> per referral</p>' +
+      '<div class="referral-box">' +
+      '<input type="text" value="' + refCode + '" readonly id="ref-code">' +
+      '<button class="btn-primary" onclick="Rewards.copyReferral()">📋 Copy</button>' +
+      '</div>' +
+      '</div>';
+
+    // History
+    html += '<div class="reward-history">' +
       '<h3>📜 Riwayat Koin</h3>' +
       this.renderHistory() +
-      '</div>' +
+      '</div>';
 
-      '<div class="reward-withdraw-section">' +
-      '<h3>💸 Withdraw</h3>' +
-      '<p>Minimal ' + this.formatRp(this.CONFIG.MIN_WITHDRAW) + '</p>' +
+    // Withdraw
+    html += '<div class="reward-withdraw-section">' +
+      '<h3>💸 Withdraw ke Uang</h3>' +
+      '<p style="font-size:13px;color:#666;margin-bottom:12px">Minimal ' + this.formatRp(this.CONFIG.MIN_WITHDRAW) + '</p>' +
       '<button class="btn-primary btn-full" onclick="Rewards.openWithdraw()" ' + (this.canWithdraw() ? '' : 'disabled') + '>' +
-      (this.canWithdraw() ? '💸 Withdraw Sekarang' : 'Saldo belum cukup') +
+      (this.canWithdraw() ? '💸 Withdraw Sekarang' : '🔒 Saldo belum cukup') +
       '</button>' +
       '</div>';
+
+    return html;
   },
 
   renderMissions() {
     const missions = [
-      { id: 'daily_login', icon: '📅', title: 'Login Harian', reward: 10, check: () => true },
-      { id: 'complete_lesson', icon: '📚', title: 'Selesaikan 1 Lesson', reward: 5, check: () => true },
-      { id: 'topup_any', icon: '🛒', title: 'Top Up Sekali', reward: 100, check: () => true },
+      { id: 'login', icon: '📅', title: 'Login Harian', reward: 10 },
+      { id: 'lesson', icon: '📚', title: 'Selesaikan Lesson', reward: 5 },
+      { id: 'perfect', icon: '🎯', title: 'Skor 100%', reward: 20 },
+      { id: 'topup', icon: '🛒', title: 'Top Up Sekali', reward: 100 },
+      { id: 'ad5', icon: '🎬', title: 'Nonton 5 Iklan', reward: 10 },
+      { id: 'streak3', icon: '🔥', title: 'Streak 3 Hari', reward: 50 },
+      { id: 'streak7', icon: '🔥', title: 'Streak 7 Hari', reward: 150 },
     ];
 
     return missions.map(m => {
-      const done = this.get('mission_' + m.id + '_' + new Date().toISOString().split('T')[0], false);
-      return '<div class="mission-card ' + (done ? 'done' : '') + '">' +
+      return '<div class="mission-card">' +
         '<div class="mission-icon">' + m.icon + '</div>' +
         '<div class="mission-info">' +
         '<div class="mission-title">' + m.title + '</div>' +
         '<div class="mission-reward">+' + m.reward + ' koin</div>' +
         '</div>' +
-        (done ? '<div class="mission-check">✅</div>' : '') +
         '</div>';
     }).join('');
   },
@@ -388,11 +446,11 @@ const Rewards = {
     const state = this.getState();
     if (!state.history.length) return '<p class="empty-msg">Belum ada transaksi</p>';
 
-    return state.history.slice(0, 10).map(h => {
+    return state.history.slice(0, 15).map(h => {
       const icon = h.type === 'earn' ? '📈' : (h.type === 'spend' ? '📉' : '💸');
       const color = h.type === 'earn' ? '#58cc02' : '#ff4b4b';
       const sign = h.type === 'earn' ? '+' : '-';
-      const date = new Date(h.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+      const date = new Date(h.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
       return '<div class="history-item">' +
         '<div class="history-icon">' + icon + '</div>' +
         '<div class="history-info">' +
@@ -404,29 +462,14 @@ const Rewards = {
     }).join('');
   },
 
-  // ============================================
-  // WATCH AD FLOW
-  // ============================================
-  watchAdFlow() {
-    if (!this.canWatchAd()) return;
-
-    // Trigger ad banner
-    if (typeof Animate !== 'undefined') {
-      Animate.toast('Membuka iklan...', 'info');
-    }
-
-    // Simulasi nonton iklan (production: integrate AdMob/Monetag video)
-    setTimeout(() => {
-      const ok = this.watchAd();
-      if (ok) {
-        if (typeof Animate !== 'undefined') {
-          Animate.confetti();
-          Animate.toast('+1 koin! 🪙', 'success');
-        }
-        // Refresh halaman
-        if (typeof App !== 'undefined') App.switchTab('rewards');
-      }
-    }, 2000);
+  copyReferral() {
+    const input = document.getElementById('ref-code');
+    if (!input) return;
+    input.select();
+    try {
+      document.execCommand('copy');
+      if (typeof Animate !== 'undefined') Animate.toast('Kode dicopy!', 'success');
+    } catch (e) {}
   },
 
   // ============================================
@@ -440,50 +483,58 @@ const Rewards = {
     modal.innerHTML = '<div class="modal-content">' +
       '<div class="modal-header" style="background: linear-gradient(135deg, #58cc02, #89e219)">' +
       '<button class="modal-close" onclick="Rewards.closeModal()">X</button>' +
-      '<h2>💸 Withdraw Saldo</h2>' +
+      '<h2>💸 Withdraw</h2>' +
       '<p>Saldo: ' + this.formatRp(state.balance) + '</p>' +
       '</div>' +
       '<div class="modal-body">' +
-      '<div class="form-group"><label>Jumlah</label>' +
+      '<div class="form-group"><label>Jumlah (min Rp 10.000)</label>' +
       '<input type="number" id="wd-amount" value="' + state.balance + '" min="' + this.CONFIG.MIN_WITHDRAW + '" max="' + state.balance + '"></div>' +
       '<div class="form-group"><label>Metode</label>' +
       '<select id="wd-method">' + methods.map(m => '<option value="' + m + '">' + m + '</option>').join('') + '</select></div>' +
       '<div class="form-group"><label>Nomor Tujuan</label>' +
       '<input type="text" id="wd-account" placeholder="081234567890"></div>' +
-      '<div class="payment-notice"><p><strong>⚠️ Demo:</strong> Withdraw real butuh approval admin + payment gateway.</p></div>' +
+      '<div class="form-group"><label>Nama Pemilik</label>' +
+      '<input type="text" id="wd-name" placeholder="Nama lengkap"></div>' +
+      '<div class="payment-notice"><p><strong>ℹ️ Info:</strong> Withdraw diproses 1-3 hari kerja. Pastikan nomor & nama benar.</p></div>' +
       '<button class="btn-primary btn-full" onclick="Rewards.submitWithdraw()">Ajukan Withdraw</button>' +
       '</div>' +
       '</div>';
     modal.classList.add('active');
   },
 
-  submitWithdraw() {
+  async submitWithdraw() {
     const amount = parseInt(document.getElementById('wd-amount').value);
     const method = document.getElementById('wd-method').value;
     const account = document.getElementById('wd-account').value.trim();
+    const name = document.getElementById('wd-name').value.trim();
 
     if (!amount || amount < this.CONFIG.MIN_WITHDRAW) {
       alert('Minimal ' + this.formatRp(this.CONFIG.MIN_WITHDRAW));
       return;
     }
-    if (!account) {
-      alert('Masukkan nomor tujuan');
-      return;
-    }
+    if (!account) { alert('Masukkan nomor tujuan'); return; }
+    if (!name) { alert('Masukkan nama pemilik'); return; }
 
-    if (this.requestWithdraw(amount, method, account)) {
+    const ok = await this.requestWithdraw(amount, method, account, name);
+    if (ok) {
       this.closeModal();
       if (typeof Animate !== 'undefined') {
         Animate.confetti();
-        Animate.toast('Withdraw diajukan! Tunggu approval admin.', 'success');
+        Animate.toast('Withdraw diajukan! Cek Telegram.', 'success');
       }
-      if (typeof App !== 'undefined') App.switchTab('rewards');
+      if (typeof App !== 'undefined' && App.currentTab === 'rewards') {
+        document.getElementById('rewards-content').innerHTML = this.renderRewardsPage();
+      }
     }
   },
 
   closeModal() {
     const modal = document.getElementById('reward-modal');
     if (modal) { modal.classList.remove('active'); modal.innerHTML = ''; }
+  },
+
+  formatRp(n) {
+    try { return 'Rp ' + n.toLocaleString('id-ID'); } catch (e) { return 'Rp ' + n; }
   },
 };
 
