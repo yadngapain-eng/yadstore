@@ -2,20 +2,29 @@ const App = {
   currentTab: 'learn',
 
   init() {
-    Animate.init();
-    DL.regenHearts();
-    DuoUI.renderStats();
-    DuoUI.renderCategories();
-    DuoUI.renderLessons();
-    DuoUI.renderAch();
-    DuoUI.renderProfile();
-    TopUpUI.render();
-    this.switchTab('learn');
-    DL.updateStreak();
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js').catch(() => {});
+    try {
+      console.log('[App] init...');
+      if (typeof Animate !== 'undefined') Animate.init();
+      if (typeof DL !== 'undefined') DL.regenHearts();
+      if (typeof DuoUI !== 'undefined') {
+        DuoUI.renderStats();
+        DuoUI.renderCategories();
+        DuoUI.renderLessons();
+        DuoUI.renderAch();
+        DuoUI.renderProfile();
+      }
+      if (typeof TopUpUI !== 'undefined') TopUpUI.render();
+      this.switchTab('learn');
+      if (typeof DL !== 'undefined') DL.updateStreak();
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js').catch(function() {});
+      }
+      console.log('[App] ready');
+    } catch (e) {
+      console.error('[App] init error:', e);
     }
   },
+
   switchTab(tab) {
     this.currentTab = tab;
     document.querySelectorAll('.tab-page').forEach(p => p.classList.remove('active'));
@@ -24,19 +33,32 @@ const App = {
     if (p) p.classList.add('active');
     const b = document.querySelector('.nav-btn[data-tab="' + tab + '"]');
     if (b) b.classList.add('active');
-    if (tab === 'learn') { DuoUI.renderStats(); DuoUI.renderLessons(); DuoUI.renderAch(); }
-    else if (tab === 'topup') TopUpUI.render();
-    else if (tab === 'profile') DuoUI.renderProfile();
-    else if (tab === 'orders') TopUpUI.renderOrders();
+    try {
+      if (tab === 'learn' && typeof DuoUI !== 'undefined') {
+        DuoUI.renderStats(); DuoUI.renderLessons(); DuoUI.renderAch();
+      } else if (tab === 'topup' && typeof TopUpUI !== 'undefined') {
+        TopUpUI.render();
+      } else if (tab === 'profile' && typeof DuoUI !== 'undefined') {
+        DuoUI.renderProfile();
+      } else if (tab === 'orders' && typeof TopUpUI !== 'undefined') {
+        TopUpUI.renderOrders();
+      }
+    } catch (e) { console.error('[App] switchTab error:', e); }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   },
+
   resetAll() {
     if (!confirm('Reset SEMUA data?')) return;
-    DL.reset();
+    if (typeof DL !== 'undefined') DL.reset();
     alert('Data direset!');
     location.reload();
   },
 };
-document.addEventListener('DOMContentLoaded', () => App.init());
-setInterval(() => { DL.regenHearts(); DuoUI.renderStats(); }, 60000);
+
+document.addEventListener('DOMContentLoaded', function() { App.init(); });
+setInterval(function() {
+  if (typeof DL !== 'undefined' && typeof DuoUI !== 'undefined') {
+    DL.regenHearts(); DuoUI.renderStats();
+  }
+}, 60000);
 if (typeof window !== 'undefined') window.App = App;
