@@ -1,3 +1,5 @@
+/* YADSTORE — DUOLINGO CORE v2 (Achievement + Coin) */
+
 const DL = {
   get(k, d) {
     try { const v = localStorage.getItem('yadstore_' + k); return v !== null ? JSON.parse(v) : d; }
@@ -24,7 +26,7 @@ const DL = {
   },
   regenHearts() {
     const s = this.getState(); const now = Date.now();
-    const count = Math.floor((now - s.heartsUpdated) / (4 * 60 * 60 * 1000));
+    const count = Math.floor((now - s.heartsUpdated) / (30 * 60 * 1000));
     if (count > 0 && s.hearts < 5) {
       s.hearts = Math.min(5, s.hearts + count); s.heartsUpdated = now; this.save(s);
     }
@@ -42,7 +44,6 @@ const DL = {
     s.xp += n;
     this.save(s);
     const newLevel = this.getLevel().level;
-    // Level up reward
     if (newLevel > oldLevel && typeof Rewards !== 'undefined') {
       try { Rewards.onLevelUp(newLevel); } catch(e) {}
     }
@@ -51,12 +52,9 @@ const DL = {
   addGems(n) { const s = this.getState(); s.gems = Math.max(0, s.gems + n); this.save(s); return s.gems; },
   loseHeart() { const s = this.getState(); if (s.hearts > 0) { s.hearts--; s.heartsUpdated = Date.now(); this.save(s); } return s.hearts; },
   refillHearts() { const s = this.getState(); s.hearts = 5; s.heartsUpdated = Date.now(); this.save(s); },
-
-  // ===== TAMBAH HEART (dari aktivitas) =====
   addHeart(amount) {
     const s = this.getState();
-    const max = 5;
-    s.hearts = Math.min(max, s.hearts + (amount || 1));
+    s.hearts = Math.min(5, s.hearts + (amount || 1));
     s.heartsUpdated = Date.now();
     this.save(s);
     return s.hearts;
@@ -80,45 +78,94 @@ const DL = {
     this.save(s);
     this.updateStreak();
     this.checkAch({ perfect });
-    // Reward koin
     if (typeof Rewards !== 'undefined') {
       try { Rewards.onLessonComplete(perfect); } catch(e) {}
     }
     return { xpEarned, perfect };
   },
   isCompleted(id) { return this.getState().completedLessons.includes(id); },
+
   ACH: [
-    { id: 'first', icon: '1', title: 'First Steps', desc: 'Selesaikan 1 lesson', check: s => s.completedLessons.length >= 1 },
-    { id: 'five', icon: '5', title: 'Getting Started', desc: '5 lesson', check: s => s.completedLessons.length >= 5 },
-    { id: 'ten', icon: '10', title: 'Committed', desc: '10 lesson', check: s => s.completedLessons.length >= 10 },
-    { id: 'twenty', icon: '20', title: 'Scholar', desc: '20 lesson', check: s => s.completedLessons.length >= 20 },
-    { id: 'all', icon: 'A', title: 'Master', desc: '30 lesson', check: s => s.completedLessons.length >= 30 },
-    { id: 's3', icon: 'S3', title: 'On Fire', desc: 'Streak 3 hari', check: s => s.streak >= 3 },
-    { id: 's7', icon: 'S7', title: 'Unstoppable', desc: 'Streak 7 hari', check: s => s.streak >= 7 },
-    { id: 'xp100', icon: 'XP', title: 'Century', desc: '100 XP', check: s => s.xp >= 100 },
-    { id: 'xp500', icon: 'XP', title: 'XP Master', desc: '500 XP', check: s => s.xp >= 500 },
-    { id: 'xp1000', icon: 'XP', title: 'XP Legend', desc: '1000 XP', check: s => s.xp >= 1000 },
-    { id: 'perfect', icon: 'P', title: 'Perfectionist', desc: '100% lesson', check: (s, e) => e && e.perfect },
+    { id: 'first', icon: '🎯', title: 'First Steps', title_en: 'First Steps',
+      desc: 'Selesaikan 1 lesson', desc_en: 'Complete 1 lesson',
+      coin: 50, difficulty: 'easy', check: s => s.completedLessons.length >= 1 },
+    { id: 'five', icon: '🌟', title: 'Getting Started', title_en: 'Getting Started',
+      desc: 'Selesaikan 5 lesson', desc_en: 'Complete 5 lessons',
+      coin: 150, difficulty: 'easy', check: s => s.completedLessons.length >= 5 },
+    { id: 'ten', icon: '💎', title: 'Committed', title_en: 'Committed',
+      desc: 'Selesaikan 10 lesson', desc_en: 'Complete 10 lessons',
+      coin: 300, difficulty: 'medium', check: s => s.completedLessons.length >= 10 },
+    { id: 'twenty', icon: '🧠', title: 'Scholar', title_en: 'Scholar',
+      desc: 'Selesaikan 20 lesson', desc_en: 'Complete 20 lessons',
+      coin: 750, difficulty: 'medium', check: s => s.completedLessons.length >= 20 },
+    { id: 'thirty', icon: '👨‍🎓', title: 'Graduate', title_en: 'Graduate',
+      desc: 'Selesaikan 30 lesson', desc_en: 'Complete 30 lessons',
+      coin: 1500, difficulty: 'hard', check: s => s.completedLessons.length >= 30 },
+    { id: 'all', icon: '👑', title: 'Master', title_en: 'Master',
+      desc: 'Selesaikan 40 lesson', desc_en: 'Complete 40 lessons',
+      coin: 3000, difficulty: 'epic', check: s => s.completedLessons.length >= 40 },
+    { id: 's3', icon: '🔥', title: 'On Fire', title_en: 'On Fire',
+      desc: 'Streak 3 hari', desc_en: '3 days streak',
+      coin: 100, difficulty: 'easy', check: s => s.streak >= 3 },
+    { id: 's7', icon: '🔥', title: 'Unstoppable', title_en: 'Unstoppable',
+      desc: 'Streak 7 hari', desc_en: '7 days streak',
+      coin: 500, difficulty: 'medium', check: s => s.streak >= 7 },
+    { id: 's30', icon: '💪', title: 'Legend', title_en: 'Legend',
+      desc: 'Streak 30 hari', desc_en: '30 days streak',
+      coin: 2500, difficulty: 'hard', check: s => s.streak >= 30 },
+    { id: 'xp100', icon: '⭐', title: 'Century', title_en: 'Century',
+      desc: 'Kumpulkan 100 XP', desc_en: 'Earn 100 XP',
+      coin: 100, difficulty: 'easy', check: s => s.xp >= 100 },
+    { id: 'xp500', icon: '🌠', title: 'XP Master', title_en: 'XP Master',
+      desc: 'Kumpulkan 500 XP', desc_en: 'Earn 500 XP',
+      coin: 500, difficulty: 'medium', check: s => s.xp >= 500 },
+    { id: 'xp1000', icon: '🚀', title: 'XP Legend', title_en: 'XP Legend',
+      desc: 'Kumpulkan 1000 XP', desc_en: 'Earn 1000 XP',
+      coin: 1200, difficulty: 'hard', check: s => s.xp >= 1000 },
+    { id: 'xp5000', icon: '🏅', title: 'XP God', title_en: 'XP God',
+      desc: 'Kumpulkan 5000 XP', desc_en: 'Earn 5000 XP',
+      coin: 5000, difficulty: 'epic', check: s => s.xp >= 5000 },
+    { id: 'perfect', icon: '🏆', title: 'Perfectionist', title_en: 'Perfectionist',
+      desc: 'Skor 100% di 1 lesson', desc_en: 'Perfect score in 1 lesson',
+      coin: 200, difficulty: 'easy', check: (s, e) => e && e.perfect },
   ],
+
   checkAch(extra) {
     extra = extra || {};
     const s = this.getState();
     const unlocked = [...s.achievements];
+    const newUnlocks = [];
+
     this.ACH.forEach(a => {
       if (!unlocked.includes(a.id) && a.check(s, extra)) {
         unlocked.push(a.id);
+        newUnlocks.push(a);
         if (typeof showAchPopup === 'function') showAchPopup(a);
+        if (typeof Rewards !== 'undefined' && a.coin) {
+          setTimeout(() => {
+            Rewards.addCoin(a.coin, '🏆 ' + (a.title || 'Achievement'));
+            if (typeof Animate !== 'undefined') {
+              setTimeout(() => Animate.confetti(), 300);
+            }
+          }, 1000);
+        }
       }
     });
-    s.achievements = unlocked; this.save(s); return unlocked;
+
+    s.achievements = unlocked;
+    this.save(s);
+    return { unlocked, newUnlocks };
   },
+
   getAch() {
     const s = this.getState();
     return this.ACH.map(a => ({ ...a, unlocked: s.achievements.includes(a.id) }));
   },
+
   reset() {
     ['xp','gems','hearts','heartsUpdated','streak','lastStudy','completedLessons','achievements','totalCorrect','totalWrong','orders']
       .forEach(k => localStorage.removeItem('yadstore_' + k));
   },
 };
 if (typeof window !== 'undefined') window.DL = DL;
+console.log('[duolingo-core] v2 — ' + DL.ACH.length + ' achievements with coin rewards');
