@@ -173,15 +173,35 @@ const TopUpUI = {
 
   confirm(id) {
     if (!this.proofImage) { Animate.toast('Upload bukti dulu!', 'error'); return; }
+
     var orders = this.getOrders();
     var o = orders.find(function(x) { return x.id === id; });
-    if (o) { o.proof = this.proofImage; o.status = 'processing'; this.saveOrders(orders); }
+    if (o) {
+      o.proof = this.proofImage;
+      o.status = 'processing';
+      this.saveOrders(orders);
+    }
+
+    // ===== TELEGRAM NOTIFIKASI =====
+    if (o && typeof window.TELEGRAM_CONFIG !== 'undefined' && window.TELEGRAM_CONFIG.ENABLED) {
+      try {
+        var pay = PAYMENTS.find(function(p) { return p.id === o.paymentId; });
+        if (!pay) pay = { name: o.payment };
+        window.TELEGRAM_CONFIG.notifyOrder(o, pay)
+          .then(function() { console.log('[Telegram] Sent!'); })
+          .catch(function(e) { console.warn('[Telegram] Error:', e); });
+      } catch (e) {
+        console.warn('[TopUpUI] Telegram error:', e);
+      }
+    }
+
     this.proofImage = null;
+
     var m = document.getElementById('game-modal');
     m.innerHTML = '<div class="modal-content"><div class="modal-body success-body">' +
       '<div class="success-icon">OK</div><h2>Pesanan Dikirim!</h2>' +
       '<p class="success-sub">Order: ' + id + '</p>' +
-      '<p style="color:#777;margin:16px 0">Admin akan verifikasi segera.</p>' +
+      '<p style="color:#777;margin:16px 0">Admin akan verifikasi segera. Cek status di menu Pesanan.</p>' +
       '<button class="btn-primary btn-full" onclick="TopUpUI.close(); App.switchTab(\'orders\')">Lihat Pesanan</button>' +
       '</div></div>';
     Animate.confetti();
