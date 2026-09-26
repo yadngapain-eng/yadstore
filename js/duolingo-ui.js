@@ -258,10 +258,29 @@ const DuoUI = {
     if (!c) return;
     var achs = DL.getAch();
     var self = this;
+
+    // Sort by tier (mythic → common) untuk user yang belum unlock
+    var tierOrder = { mythic: 0, legendary: 1, epic: 2, rare: 3, common: 4 };
+    achs.sort(function(a, b) {
+      // Unlocked di bawah
+      if (a.unlocked && !b.unlocked) return 1;
+      if (!a.unlocked && b.unlocked) return -1;
+      return (tierOrder[a.tier] || 4) - (tierOrder[b.tier] || 4);
+    });
+
     c.innerHTML = achs.map(function(a) {
-      return '<div class="achievement-card ' + (a.unlocked ? 'unlocked' : 'locked') + '">' +
-        '<div class="achievement-icon">' + (a.unlocked ? a.icon : '🔒') + '</div>' +
-        '<div class="achievement-info"><h4>' + self.esc(a.title) + '</h4><p>' + self.esc(a.desc) + '</p></div></div>';
+      var tier = DL.TIERS[a.tier] || DL.TIERS.common;
+      var cardClass = a.unlocked ? 'unlocked' : 'locked';
+      var iconDisplay = a.unlocked ? a.icon : '🔒';
+
+      return '<div class="achievement-card ' + cardClass + ' achievement-tier-' + (a.tier || 'common') + '">' +
+        '<div class="achievement-icon" style="background:linear-gradient(135deg,' + tier.color + ',' + tier.color + 'cc)">' + iconDisplay + '</div>' +
+        '<div class="achievement-info">' +
+        '<div class="achievement-tier-badge" style="background:' + tier.color + '">' + tier.icon + ' ' + tier.name + '</div>' +
+        '<h4>' + self.esc(a.title) + '</h4>' +
+        '<p>' + self.esc(a.desc) + '</p>' +
+        '<div class="achievement-reward">+' + a.coin + ' 🪙</div>' +
+        '</div></div>';
     }).join('');
   },
 

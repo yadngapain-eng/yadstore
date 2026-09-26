@@ -1602,3 +1602,59 @@ body::before {
   .wa-name { font-size: 14px; }
   .wa-hearts { font-size: 12px; padding: 3px 8px; }
 }
+
+
+/* ===== ACHIEVEMENT TIER STYLING ===== */
+.achievement-tier-common { border-left: 4px solid #94a3b8 !important; }
+.achievement-tier-rare { border-left: 4px solid #3b82f6 !important; }
+.achievement-tier-epic { border-left: 4px solid #a855f7 !important; }
+.achievement-tier-legendary { border-left: 4px solid #f59e0b !important; }
+.achievement-tier-mythic {
+  border-left: 4px solid #ef4444 !important;
+  background: linear-gradient(135deg, #fff1f2, #ffe4e6) !important;
+}
+
+.achievement-tier-rare.unlocked { background: linear-gradient(135deg, #eff6ff, #dbeafe) !important; }
+.achievement-tier-epic.unlocked { background: linear-gradient(135deg, #faf5ff, #f3e8ff) !important; }
+.achievement-tier-legendary.unlocked {
+  background: linear-gradient(135deg, #fffbeb, #fef3c7) !important;
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.3);
+}
+.achievement-tier-mythic.unlocked {
+  background: linear-gradient(135deg, #fef2f2, #fee2e2) !important;
+  box-shadow: 0 0 16px rgba(239, 68, 68, 0.4);
+  animation: mythicPulse 2s infinite;
+}
+
+@keyframes mythicPulse {
+  0%, 100% { box-shadow: 0 0 16px rgba(239, 68, 68, 0.4); }
+  50% { box-shadow: 0 0 24px rgba(239, 68, 68, 0.7); }
+}
+
+.achievement-tier-badge {
+  display: inline-block;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 9px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.achievement-reward {
+  display: inline-block;
+  margin-top: 6px;
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  color: white;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 900;
+}
+
+.achievement-card.locked .achievement-reward {
+  background: #ccc;
+  opacity: 0.6;
+}
