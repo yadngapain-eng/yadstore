@@ -2,6 +2,16 @@ const DuoUI = {
   currentLesson: null, currentQuestion: 0, score: 0, questions: [], currentCat: 'coding',
   chatHistory: [],
 
+  // Escape HTML supaya <h1> jadi teks bukan tag
+  esc(s) {
+    return String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  },
+
   getLessons(cat) {
     if (cat === 'english') return window.ENGLISH_LESSONS || [];
     if (cat === 'math') return window.MATH_LESSONS || [];
@@ -23,7 +33,7 @@ const DuoUI = {
       if (pe) pe.style.width = ((lv.currentXp / lv.neededXp) * 100) + '%';
       var li = document.getElementById('level-info');
       if (li) li.textContent = lv.currentXp + ' / ' + lv.neededXp + ' XP';
-    } catch (e) { console.error('[DuoUI] renderStats:', e); }
+    } catch (e) { console.error('[DuoUI]', e); }
   },
 
   renderCategories() {
@@ -31,9 +41,10 @@ const DuoUI = {
     if (!c) return;
     var cats = this.getCategories();
     var keys = Object.keys(cats);
+    var self = this;
     c.innerHTML = keys.map(function(k) {
       var cat = cats[k];
-      var act = k === DuoUI.currentCat ? 'active' : '';
+      var act = k === self.currentCat ? 'active' : '';
       return '<button class="cat-tab ' + act + '" onclick="DuoUI.switchCat(\'' + k + '\')" style="--cat-color: ' + cat.color + '">' +
         '<span class="cat-icon" style="background:' + cat.color + '">' + cat.icon + '</span>' +
         '<span class="cat-label">' + cat.label + '</span></button>';
@@ -47,12 +58,13 @@ const DuoUI = {
     if (!c) return;
     var lessons = this.getLessons(this.currentCat);
     if (lessons.length === 0) { c.innerHTML = '<p class="empty-msg">Belum ada lesson.</p>'; return; }
+    var self = this;
     c.innerHTML = lessons.map(function(l) {
       var done = DL.isCompleted(l.id);
       return '<div class="lesson-card ' + (done ? 'done' : '') + '" onclick="DuoUI.start(\'' + l.id + '\')">' +
         '<div class="lesson-icon">' + l.icon + '</div>' +
-        '<div class="lesson-info"><h3>' + l.title + (done ? ' ✓' : '') + '</h3>' +
-        '<p>' + l.desc + '</p>' +
+        '<div class="lesson-info"><h3>' + self.esc(l.title) + (done ? ' ✓' : '') + '</h3>' +
+        '<p>' + self.esc(l.desc) + '</p>' +
         '<div class="lesson-meta"><span>' + (l.level || 'Pemula') + '</span>' +
         '<span>+' + (l.xp || 10) + ' XP</span>' +
         '<span>' + l.questions.length + ' soal</span></div></div>' +
@@ -73,11 +85,15 @@ const DuoUI = {
     this.openChatRoom();
   },
 
-  // ===== WA STYLE CHAT ROOM =====
   openChatRoom() {
     var modal = document.getElementById('lesson-modal');
     modal.classList.add('active');
     modal.classList.add('wa-mode');
+    this.renderChat();
+    // Push pertanyaan pertama ke chat
+    var q = this.questions[0];
+    var now = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+    this.chatHistory = [{ type: 'bot-question', text: q.q, time: now }];
     this.renderChat();
   },
 
@@ -89,31 +105,18 @@ const DuoUI = {
 
     modal.innerHTML =
       '<div class="wa-app">' +
-
-      // ===== TOP BAR =====
       '<div class="wa-topbar">' +
         '<button class="wa-back" onclick="DuoUI.exit()">←</button>' +
         '<div class="wa-avatar">' + l.icon + '</div>' +
         '<div class="wa-contact">' +
-          '<div class="wa-name">' + l.title + '</div>' +
-          '<div class="wa-status">online • ' + this.currentQuestion + '/' + total + '</div>' +
+          '<div class="wa-name">' + this.esc(l.title) + '</div>' +
+          '<div class="wa-status">online • ' + Math.min(this.currentQuestion + 1, total) + '/' + total + '</div>' +
         '</div>' +
         '<div class="wa-hearts">❤️ ' + s.hearts + '</div>' +
       '</div>' +
-
-      // ===== PROGRESS BAR =====
       '<div class="wa-progress"><div class="wa-progress-fill" style="width:' + ((this.currentQuestion/total)*100) + '%"></div></div>' +
-
-      // ===== CHAT BODY =====
-      '<div class="wa-chat-body" id="wa-chat-body">' +
-        this.renderChatMessages() +
-      '</div>' +
-
-      // ===== INPUT (OPTIONS) =====
-      '<div class="wa-input-area" id="wa-input-area">' +
-        this.renderOptions() +
-      '</div>' +
-
+      '<div class="wa-chat-body" id="wa-chat-body">' + this.renderChatMessages() + '</div>' +
+      '<div class="wa-input-area" id="wa-input-area">' + this.renderOptions() + '</div>' +
       '</div>';
   },
 
@@ -121,23 +124,24 @@ const DuoUI = {
     var html = '';
     var today = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
     html += '<div class="wa-date">' + today + '</div>';
+    var self = this;
 
     this.chatHistory.forEach(function(msg) {
       if (msg.type === 'bot-question') {
         html += '<div class="wa-row wa-row-bot">' +
-          '<div class="wa-bubble wa-bubble-bot">' + msg.text + '</div>' +
+          '<div class="wa-bubble wa-bubble-bot">' + self.esc(msg.text) + '</div>' +
           '<div class="wa-time">' + msg.time + '</div>' +
         '</div>';
       } else if (msg.type === 'user-answer') {
         html += '<div class="wa-row wa-row-user">' +
           '<div class="wa-bubble wa-bubble-user ' + (msg.correct ? 'correct' : 'wrong') + '">' +
-            msg.text + (msg.correct ? ' ✓' : ' ✗') +
+            self.esc(msg.text) + (msg.correct ? ' ✓' : ' ✗') +
           '</div>' +
           '<div class="wa-time">' + msg.time + '</div>' +
         '</div>';
       } else if (msg.type === 'bot-reply') {
         html += '<div class="wa-row wa-row-bot">' +
-          '<div class="wa-bubble wa-bubble-bot ' + (msg.correct ? 'reply-correct' : 'reply-wrong') + '">' + msg.text + '</div>' +
+          '<div class="wa-bubble wa-bubble-bot ' + (msg.correct ? 'reply-correct' : 'reply-wrong') + '">' + self.esc(msg.text) + '</div>' +
           '<div class="wa-time">' + msg.time + '</div>' +
         '</div>';
       }
@@ -151,9 +155,10 @@ const DuoUI = {
       return '<button class="wa-send-btn" onclick="DuoUI.finish()">Lihat Hasil →</button>';
     }
     var q = this.questions[this.currentQuestion];
+    var self = this;
     return '<div class="wa-options">' +
       q.o.map(function(opt, i) {
-        return '<button class="wa-option-btn" onclick="DuoUI.answer(' + i + ')">' + opt + '</button>';
+        return '<button class="wa-option-btn" onclick="DuoUI.answer(' + i + ')">' + self.esc(opt) + '</button>';
       }).join('') +
     '</div>';
   },
@@ -170,12 +175,7 @@ const DuoUI = {
     var ok = i === q.a;
     var now = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
 
-    // Kalau pertama kali, push pertanyaan dulu
-    if (this.chatHistory.length === 0 || this.chatHistory[this.chatHistory.length-1].type !== 'bot-question') {
-      this.chatHistory.push({ type: 'bot-question', text: q.q, time: now });
-    }
-
-    // Push jawaban user
+    // Push user answer
     this.chatHistory.push({
       type: 'user-answer',
       text: q.o[i],
@@ -183,8 +183,8 @@ const DuoUI = {
       time: now
     });
 
-    // Push balasan bot
-    var reply = ok ? 'Benar! 🎉' : 'Salah. Jawaban: ' + q.o[q.a];
+    // Push bot reply
+    var reply = ok ? 'Benar! 🎉' : 'Salah. Jawaban benar: ' + q.o[q.a];
     this.chatHistory.push({
       type: 'bot-reply',
       text: reply,
@@ -194,11 +194,9 @@ const DuoUI = {
 
     if (ok) this.score++; else DL.loseHeart();
 
-    // Update UI
     this.renderChat();
     this.scrollChat();
 
-    // Siapkan pertanyaan berikutnya
     var self = this;
     setTimeout(function() {
       self.currentQuestion++;
@@ -212,7 +210,7 @@ const DuoUI = {
         self.renderChat();
         self.scrollChat();
       }
-    }, 800);
+    }, 900);
   },
 
   finish() {
@@ -243,10 +241,11 @@ const DuoUI = {
     var c = document.getElementById('achievements-list');
     if (!c) return;
     var achs = DL.getAch();
+    var self = this;
     c.innerHTML = achs.map(function(a) {
       return '<div class="achievement-card ' + (a.unlocked ? 'unlocked' : 'locked') + '">' +
         '<div class="achievement-icon">' + (a.unlocked ? a.icon : '🔒') + '</div>' +
-        '<div class="achievement-info"><h4>' + a.title + '</h4><p>' + a.desc + '</p></div></div>';
+        '<div class="achievement-info"><h4>' + self.esc(a.title) + '</h4><p>' + self.esc(a.desc) + '</p></div></div>';
     }).join('');
   },
 
