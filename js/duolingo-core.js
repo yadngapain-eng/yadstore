@@ -16,7 +16,12 @@ const DL = {
       totalCorrect: this.get('totalCorrect', 0), totalWrong: this.get('totalWrong', 0),
     };
   },
-  save(s) { Object.keys(s).forEach(k => this.set(k, s[k])); },
+  save(s) {
+    Object.keys(s).forEach(k => this.set(k, s[k]));
+    if (typeof Auth !== 'undefined' && Auth.user && !Auth.user.isLocal) {
+      try { Auth.saveProfile(s); } catch(e) {}
+    }
+  },
   regenHearts() {
     const s = this.getState(); const now = Date.now();
     const count = Math.floor((now - s.heartsUpdated) / (4 * 60 * 60 * 1000));

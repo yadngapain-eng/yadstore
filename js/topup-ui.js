@@ -221,7 +221,15 @@ const TopUpUI = {
   },
 
   getOrders() { try { return JSON.parse(localStorage.getItem('yadstore_orders') || '[]'); } catch(e) { return []; } },
-  saveOrders(o) { try { localStorage.setItem('yadstore_orders', JSON.stringify(o)); } catch(e) {} },
+  saveOrders(o) {
+    try { localStorage.setItem('yadstore_orders', JSON.stringify(o)); } catch(e) {}
+    if (typeof Auth !== 'undefined' && Auth.db && Auth.user && !Auth.user.isLocal) {
+      try {
+        const ref = Auth.db.collection('users').doc(Auth.user.uid).collection('orders');
+        o.slice(0, 5).forEach(function(order) { ref.doc(order.id).set(order); });
+      } catch(e) {}
+    }
+  },
 
   renderOrders() {
     var c = document.getElementById('orders-list');
