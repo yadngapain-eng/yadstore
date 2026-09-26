@@ -79,6 +79,17 @@ const I18n = {
       mission_ad5: 'Nonton 5 Iklan',
       mission_streak3: 'Streak 3 Hari',
       mission_streak7: 'Streak 7 Hari',
+      // Daily Spin
+      spin_title: '🎰 Spin Harian',
+      spin_desc: 'Putar sekali sehari, dapat 1-10 heart!',
+      spin_btn: '🎰 SPIN SEKARANG',
+      spin_already: '✅ Sudah spin hari ini',
+      spin_next: 'Kembali besok ya!',
+      spin_win: 'Dapat {n} heart!',
+      spin_spinning: '🎰 Memutar...',
+      spin_result: 'SELAMAT!',
+      ad_reward_coin: '+{n} koin!',
+      ad_reward_jackpot: '🎉 JACKPOT! +{n} koin!',
       mission_coin_suffix: 'koin',
 
       // ===== TOP UP PAGE =====
@@ -234,6 +245,17 @@ const I18n = {
       mission_ad5: 'Watch 5 Ads',
       mission_streak3: 'Streak 3 Days',
       mission_streak7: 'Streak 7 Days',
+      // Daily Spin
+      spin_title: '🎰 Daily Spin',
+      spin_desc: 'Spin once a day, get 1-10 hearts!',
+      spin_btn: '🎰 SPIN NOW',
+      spin_already: '✅ Already spun today',
+      spin_next: 'Come back tomorrow!',
+      spin_win: 'Got {n} hearts!',
+      spin_spinning: '🎰 Spinning...',
+      spin_result: 'CONGRATS!',
+      ad_reward_coin: '+{n} coins!',
+      ad_reward_jackpot: '🎉 JACKPOT! +{n} coins!',
       mission_coin_suffix: 'coins',
 
       // ===== TOP UP PAGE =====

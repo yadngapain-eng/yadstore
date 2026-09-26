@@ -39,16 +39,16 @@ const Rewards = {
     // ====== AD COIN REWARDS (peluang berjenjang) ======
     // Semakin besar coin → semakin kecil peluang
     AD_REWARDS: [
-      { coins: 1,   chance: 30.0 },  // 30%
-      { coins: 2,   chance: 20.0 },  // 20%
-      { coins: 5,   chance: 15.0 },  // 15%
-      { coins: 10,  chance: 12.0 },  // 12%
-      { coins: 20,  chance: 8.0  },  // 8%
-      { coins: 30,  chance: 5.0  },  // 5%
-      { coins: 50,  chance: 5.0  },  // 5%
-      { coins: 75,  chance: 3.0  },  // 3%
-      { coins: 100, chance: 1.5  },  // 1.5%
-      { coins: 200, chance: 0.5  },  // 0.5%
+      { coins: 1,   chance: 45.0 },   // 45%   — paling sering
+      { coins: 2,   chance: 25.0 },   // 25%
+      { coins: 5,   chance: 15.0 },   // 15%
+      { coins: 10,  chance: 8.0  },   // 8%
+      { coins: 20,  chance: 4.0  },   // 4%
+      { coins: 30,  chance: 2.0  },   // 2%
+      { coins: 50,  chance: 0.8  },   // 0.8%
+      { coins: 75,  chance: 0.15 },   // 0.15%
+      { coins: 100, chance: 0.04 },   // 0.04%
+      { coins: 200, chance: 0.01 },   // 0.01% — SUPER JACKPOT
     ],
   },
 
