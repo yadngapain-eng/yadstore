@@ -1065,3 +1065,17 @@ body::before {
 
 .payment-notice p { font-size: 12px; color: #7a5d00; font-weight: 600; line-height: 1.4; }
 .payment-notice strong { color: #5c4600; font-weight: 900; }
+
+
+/* Tanggal di riwayat pesanan */
+.order-info-date {
+  background: #f0fff0;
+  border-radius: 8px;
+  padding: 8px 12px !important;
+  margin: 4px 0;
+  border-left: 4px solid #58cc02;
+}
+.order-info-date strong {
+  color: #2c5a00;
+  font-size: 13px;
+}

@@ -1,4 +1,21 @@
 const TopUpUI = {
+  // ===== Helper: format tanggal Indonesia =====
+  formatDate: function(isoString) {
+    if (!isoString) return '-';
+    try {
+      var d = new Date(isoString);
+      var days = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+      var months = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+      var dayName = days[d.getDay()];
+      var day = d.getDate();
+      var month = months[d.getMonth()];
+      var year = d.getFullYear();
+      var hours = String(d.getHours()).padStart(2, '0');
+      var mins = String(d.getMinutes()).padStart(2, '0');
+      return dayName + ', ' + day + ' ' + month + ' ' + year + ' • ' + hours + ':' + mins;
+    } catch(e) { return isoString; }
+  },
+
   // ===== HELPER: Ambil harga final (dengan markup) =====
   getFinalPrice: function(itemId, prodId, defaultPrice) {
     try {
@@ -236,17 +253,39 @@ const TopUpUI = {
     if (!c) return;
     var orders = this.getOrders();
     var self = this;
-    if (!orders.length) { c.innerHTML = '<p class="empty-msg">Belum ada pesanan.</p>'; return; }
+    if (!orders.length) {
+      c.innerHTML = '<p class="empty-msg">Belum ada pesanan.</p>';
+      return;
+    }
     c.innerHTML = orders.map(function(o) {
-      return '<div class="order-card"><div class="order-card-header">' +
+      // Format tanggal
+      var dateStr = o.date ? self.formatDate(o.date) : '-';
+
+      // Data user (jika ada)
+      var userDataStr = '';
+      if (o.userData) {
+        var keys = Object.keys(o.userData);
+        if (keys.length > 0) {
+          userDataStr = keys.map(function(k) {
+            return '<div class="order-info"><span>' + k.replace(/_/g, ' ') + '</span><strong>' + self.esc(o.userData[k]) + '</strong></div>';
+          }).join('');
+        }
+      }
+
+      // NOTE: Bukti transfer TIDAK ditampilkan (hanya admin yang lihat)
+
+      return '<div class="order-card">' +
+        '<div class="order-card-header">' +
         '<strong>' + self.esc(o.item) + '</strong>' +
-        '<span class="order-status status-' + o.status + '">' + o.status.toUpperCase() + '</span></div>' +
+        '<span class="order-status status-' + o.status + '">' + o.status.toUpperCase() + '</span>' +
+        '</div>' +
         '<div class="order-card-body">' +
-        '<div class="order-info"><span>Item</span><strong>' + self.esc(o.product) + '</strong></div>' +
+        '<div class="order-info" style="color:#58cc02;font-weight:800"><span>📅 Tanggal</span><strong>' + dateStr + '</strong></div>' +
         '<div class="order-info"><span>Order ID</span><strong>' + self.esc(o.id) + '</strong></div>' +
-        '<div class="order-info"><span>Bayar</span><strong>' + self.esc(o.payment) + '</strong></div>' +
+        '<div class="order-info"><span>Produk</span><strong>' + self.esc(o.product) + '</strong></div>' +
+        userDataStr +
+        '<div class="order-info"><span>Metode Bayar</span><strong>' + self.esc(o.payment) + '</strong></div>' +
         '<div class="order-info total"><span>Total</span><strong>Rp ' + self.fmt(o.total) + '</strong></div>' +
-        (o.proof ? '<img src="' + o.proof + '" style="max-width:100%;border-radius:8px;margin-top:8px">' : '') +
         '</div></div>';
     }).join('');
   },
