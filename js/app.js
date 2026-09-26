@@ -8,6 +8,10 @@ const App = {
     if (typeof Auth !== 'undefined') await Auth.init();
     setTimeout(() => {
       this.renderAll();
+      // Rewards: cek login harian
+      if (typeof Rewards !== 'undefined') {
+        Rewards.checkDailyLogin();
+      }
       this.switchTab('learn');
     }, 800);
   },
@@ -15,6 +19,10 @@ const App = {
   onUserChanged(user) {
     console.log('[App] User changed:', user ? user.uid : 'none');
     this.renderAll();
+      // Rewards: cek login harian
+      if (typeof Rewards !== 'undefined') {
+        Rewards.checkDailyLogin();
+      }
   },
 
   renderAll() {
@@ -48,6 +56,8 @@ const App = {
         if (typeof Auth !== 'undefined') Auth.updateUI();
       } else if (tab === 'orders' && typeof TopUpUI !== 'undefined') {
         TopUpUI.renderOrders();
+      } else if (tab === 'rewards' && typeof Rewards !== 'undefined') {
+        document.getElementById('rewards-content').innerHTML = Rewards.renderRewardsPage();
       }
     } catch (e) { console.error('[App] switchTab:', e); }
     window.scrollTo({ top: 0, behavior: 'smooth' });

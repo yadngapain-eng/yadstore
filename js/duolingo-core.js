@@ -36,7 +36,18 @@ const DL = {
     while (xp >= acc + need) { acc += need; lv++; need = Math.round(need * 1.3); }
     return { level: lv, currentXp: xp - acc, neededXp: need, totalXp: xp };
   },
-  addXp(n) { const s = this.getState(); s.xp += n; this.save(s); return this.getLevel(); },
+  addXp(n) {
+    const s = this.getState();
+    const oldLevel = this.getLevel().level;
+    s.xp += n;
+    this.save(s);
+    const newLevel = this.getLevel().level;
+    // Level up reward
+    if (newLevel > oldLevel && typeof Rewards !== 'undefined') {
+      try { Rewards.onLevelUp(newLevel); } catch(e) {}
+    }
+    return this.getLevel();
+  },
   addGems(n) { const s = this.getState(); s.gems = Math.max(0, s.gems + n); this.save(s); return s.gems; },
   loseHeart() { const s = this.getState(); if (s.hearts > 0) { s.hearts--; s.heartsUpdated = Date.now(); this.save(s); } return s.hearts; },
   refillHearts() { const s = this.getState(); s.hearts = 5; s.heartsUpdated = Date.now(); this.save(s); },
@@ -59,6 +70,10 @@ const DL = {
     this.save(s);
     this.updateStreak();
     this.checkAch({ perfect });
+    // Reward koin
+    if (typeof Rewards !== 'undefined') {
+      try { Rewards.onLessonComplete(perfect); } catch(e) {}
+    }
     return { xpEarned, perfect };
   },
   isCompleted(id) { return this.getState().completedLessons.includes(id); },

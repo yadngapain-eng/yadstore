@@ -1079,3 +1079,148 @@ body::before {
   color: #2c5a00;
   font-size: 13px;
 }
+
+
+/* ============================================
+   REWARDS PAGE
+   ============================================ */
+.reward-hero {
+  background: linear-gradient(135deg, #58cc02, #89e219);
+  border-radius: 20px;
+  padding: 28px 20px;
+  text-align: center;
+  color: white;
+  margin-bottom: 20px;
+  box-shadow: 0 12px 32px rgba(88,204,2,0.3);
+  position: relative;
+  overflow: hidden;
+}
+.reward-hero::before {
+  content: '';
+  position: absolute;
+  top: -50%; right: -50%;
+  width: 200%; height: 200%;
+  background: radial-gradient(circle, rgba(255,255,255,0.15), transparent 50%);
+  animation: rotate 20s linear infinite;
+}
+.reward-balance-label {
+  font-size: 13px;
+  font-weight: 700;
+  opacity: 0.9;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 6px;
+  position: relative;
+  z-index: 1;
+}
+.reward-balance {
+  font-size: 40px;
+  font-weight: 900;
+  margin-bottom: 4px;
+  position: relative;
+  z-index: 1;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.15);
+}
+.reward-coin {
+  font-size: 16px;
+  font-weight: 800;
+  opacity: 0.95;
+  margin-bottom: 8px;
+  position: relative;
+  z-index: 1;
+}
+.reward-convert-info {
+  font-size: 11px;
+  font-weight: 700;
+  opacity: 0.85;
+  background: rgba(255,255,255,0.2);
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 999px;
+  position: relative;
+  z-index: 1;
+}
+
+.reward-missions,
+.reward-ads-section,
+.reward-history,
+.reward-withdraw-section {
+  background: white;
+  border: 1.5px solid #e8eaed;
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+.reward-missions h3,
+.reward-ads-section h3,
+.reward-history h3,
+.reward-withdraw-section h3 {
+  font-size: 16px;
+  font-weight: 900;
+  margin-bottom: 12px;
+}
+
+.mission-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: #f7f8fa;
+  border-radius: 12px;
+  margin-bottom: 8px;
+  border: 2px solid transparent;
+}
+.mission-card.done {
+  background: linear-gradient(135deg, #f0fff0, #e6ffe6);
+  border-color: #89e219;
+}
+.mission-icon { font-size: 24px; flex-shrink: 0; }
+.mission-info { flex: 1; }
+.mission-title { font-size: 14px; font-weight: 800; margin-bottom: 2px; }
+.mission-reward { font-size: 12px; color: #58cc02; font-weight: 800; }
+.mission-check { font-size: 20px; color: #58cc02; }
+
+.ad-counter {
+  text-align: center;
+  font-size: 14px;
+  font-weight: 800;
+  color: #666;
+  margin: 10px 0;
+  padding: 8px;
+  background: #f7f8fa;
+  border-radius: 999px;
+}
+.btn-ad {
+  width: 100%;
+  padding: 16px;
+  background: linear-gradient(135deg, #ff9600, #ffb84d);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 4px 0 #cc7800;
+  transition: all 0.2s;
+}
+.btn-ad:active { transform: translateY(2px); box-shadow: 0 2px 0 #cc7800; }
+.btn-ad:disabled {
+  background: #ccc;
+  box-shadow: 0 4px 0 #999;
+  cursor: not-allowed;
+}
+
+.history-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  border-bottom: 1px solid #f0f0f0;
+}
+.history-item:last-child { border-bottom: none; }
+.history-icon { font-size: 20px; flex-shrink: 0; }
+.history-info { flex: 1; min-width: 0; }
+.history-reason { font-size: 13px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.history-date { font-size: 11px; color: #999; font-weight: 500; }
+.history-amount { font-size: 15px; font-weight: 900; flex-shrink: 0; }
