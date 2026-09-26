@@ -1,5 +1,6 @@
 const DuoUI = {
   currentLesson: null, currentQuestion: 0, score: 0, questions: [], currentCat: 'coding',
+  chatHistory: [],
 
   getLessons(cat) {
     if (cat === 'english') return window.ENGLISH_LESSONS || [];
@@ -9,7 +10,7 @@ const DuoUI = {
   },
 
   getCategories() {
-    return window.LESSON_CATEGORIES || { coding: { label: 'Coding', icon: 'C', color: '#1cb0f6' } };
+    return window.LESSON_CATEGORIES || { coding: { label: 'Coding', icon: '💻', color: '#1cb0f6' } };
   },
 
   renderStats() {
@@ -26,94 +27,192 @@ const DuoUI = {
   },
 
   renderCategories() {
-    try {
-      var c = document.getElementById('category-tabs');
-      if (!c) { console.error('[DuoUI] category-tabs not found'); return; }
-      var cats = this.getCategories();
-      var keys = Object.keys(cats);
-      console.log('[DuoUI] render ' + keys.length + ' categories');
-      c.innerHTML = keys.map(function(k) {
-        var cat = cats[k];
-        var act = k === DuoUI.currentCat ? 'active' : '';
-        return '<button class="cat-tab ' + act + '" onclick="DuoUI.switchCat(\'' + k + '\')" style="--cat-color: ' + cat.color + '">' +
-          '<span class="cat-icon" style="background:' + cat.color + '">' + cat.icon + '</span>' +
-          '<span class="cat-label">' + cat.label + '</span></button>';
-      }).join('');
-    } catch (e) { console.error('[DuoUI] renderCategories:', e); }
+    var c = document.getElementById('category-tabs');
+    if (!c) return;
+    var cats = this.getCategories();
+    var keys = Object.keys(cats);
+    c.innerHTML = keys.map(function(k) {
+      var cat = cats[k];
+      var act = k === DuoUI.currentCat ? 'active' : '';
+      return '<button class="cat-tab ' + act + '" onclick="DuoUI.switchCat(\'' + k + '\')" style="--cat-color: ' + cat.color + '">' +
+        '<span class="cat-icon" style="background:' + cat.color + '">' + cat.icon + '</span>' +
+        '<span class="cat-label">' + cat.label + '</span></button>';
+    }).join('');
   },
 
   switchCat(cat) { this.currentCat = cat; this.renderCategories(); this.renderLessons(); },
 
   renderLessons() {
-    try {
-      var c = document.getElementById('lessons-list');
-      if (!c) { console.error('[DuoUI] lessons-list not found'); return; }
-      var lessons = this.getLessons(this.currentCat);
-      console.log('[DuoUI] render ' + lessons.length + ' lessons for ' + this.currentCat);
-      if (lessons.length === 0) { c.innerHTML = '<p class="empty-msg">Belum ada lesson.</p>'; return; }
-      c.innerHTML = lessons.map(function(l) {
-        var done = DL.isCompleted(l.id);
-        return '<div class="lesson-card ' + (done ? 'done' : '') + '" onclick="DuoUI.start(\'' + l.id + '\')">' +
-          '<div class="lesson-icon">' + l.icon + '</div>' +
-          '<div class="lesson-info"><h3>' + l.title + (done ? ' OK' : '') + '</h3>' +
-          '<p>' + l.desc + '</p>' +
-          '<div class="lesson-meta"><span>' + (l.level || 'Pemula') + '</span>' +
-          '<span>+' + (l.xp || 10) + ' XP</span>' +
-          '<span>' + l.questions.length + ' soal</span></div></div>' +
-          '<div class="lesson-status">' + (done ? 'OK' : '>') + '</div></div>';
-      }).join('');
-    } catch (e) { console.error('[DuoUI] renderLessons:', e); }
+    var c = document.getElementById('lessons-list');
+    if (!c) return;
+    var lessons = this.getLessons(this.currentCat);
+    if (lessons.length === 0) { c.innerHTML = '<p class="empty-msg">Belum ada lesson.</p>'; return; }
+    c.innerHTML = lessons.map(function(l) {
+      var done = DL.isCompleted(l.id);
+      return '<div class="lesson-card ' + (done ? 'done' : '') + '" onclick="DuoUI.start(\'' + l.id + '\')">' +
+        '<div class="lesson-icon">' + l.icon + '</div>' +
+        '<div class="lesson-info"><h3>' + l.title + (done ? ' ✓' : '') + '</h3>' +
+        '<p>' + l.desc + '</p>' +
+        '<div class="lesson-meta"><span>' + (l.level || 'Pemula') + '</span>' +
+        '<span>+' + (l.xp || 10) + ' XP</span>' +
+        '<span>' + l.questions.length + ' soal</span></div></div>' +
+        '<div class="lesson-status">' + (done ? '✓' : '›') + '</div></div>';
+    }).join('');
   },
 
   start(id) {
-    try {
-      var all = [].concat(window.CODING_LESSONS||[], window.ENGLISH_LESSONS||[], window.MATH_LESSONS||[], window.SCIENCE_LESSONS||[]);
-      var lesson = all.find(function(l) { return l.id === id; });
-      if (!lesson) return;
-      var hearts = DL.regenHearts();
-      if (hearts <= 0) { Animate.toast('Hearts habis!', 'error'); return; }
-      this.currentLesson = lesson;
-      this.questions = lesson.questions.slice().sort(function() { return Math.random() - 0.5; });
-      this.currentQuestion = 0; this.score = 0;
-      this.renderQuiz();
-    } catch (e) { console.error('[DuoUI] start:', e); }
+    var all = [].concat(window.CODING_LESSONS||[], window.ENGLISH_LESSONS||[], window.MATH_LESSONS||[], window.SCIENCE_LESSONS||[]);
+    var lesson = all.find(function(l) { return l.id === id; });
+    if (!lesson) return;
+    var hearts = DL.regenHearts();
+    if (hearts <= 0) { Animate.toast('Hearts habis!', 'error'); return; }
+    this.currentLesson = lesson;
+    this.questions = lesson.questions.slice().sort(function() { return Math.random() - 0.5; });
+    this.currentQuestion = 0; this.score = 0;
+    this.chatHistory = [];
+    this.openChatRoom();
   },
 
-  renderQuiz() {
-    var m = document.getElementById('lesson-modal');
-    var q = this.questions[this.currentQuestion];
+  // ===== WA STYLE CHAT ROOM =====
+  openChatRoom() {
+    var modal = document.getElementById('lesson-modal');
+    modal.classList.add('active');
+    modal.classList.add('wa-mode');
+    this.renderChat();
+  },
+
+  renderChat() {
+    var modal = document.getElementById('lesson-modal');
+    var l = this.currentLesson;
+    var s = DL.getState();
     var total = this.questions.length;
-    var prog = (this.currentQuestion / total) * 100;
-    m.innerHTML = '<div class="modal-content lesson-modal-content">' +
-      '<div class="lesson-topbar">' +
-      '<button class="lesson-close" onclick="DuoUI.exit()">X</button>' +
-      '<div class="lesson-progress-bar"><div class="lesson-progress-fill" style="width: ' + prog + '%"></div></div>' +
-      '<div class="lesson-hearts">Hearts: ' + DL.getState().hearts + '</div></div>' +
-      '<div class="lesson-body">' +
-      '<p class="question-counter">Soal ' + (this.currentQuestion + 1) + ' / ' + total + '</p>' +
-      '<h2 class="question-text">' + q.q + '</h2>' +
-      '<div class="options-list">' +
-      q.o.map(function(opt, i) { return '<button class="option-btn" onclick="DuoUI.answer(' + i + ')">' + opt + '</button>'; }).join('') +
-      '</div></div></div>';
-    m.classList.add('active');
+
+    modal.innerHTML =
+      '<div class="wa-app">' +
+
+      // ===== TOP BAR =====
+      '<div class="wa-topbar">' +
+        '<button class="wa-back" onclick="DuoUI.exit()">←</button>' +
+        '<div class="wa-avatar">' + l.icon + '</div>' +
+        '<div class="wa-contact">' +
+          '<div class="wa-name">' + l.title + '</div>' +
+          '<div class="wa-status">online • ' + this.currentQuestion + '/' + total + '</div>' +
+        '</div>' +
+        '<div class="wa-hearts">❤️ ' + s.hearts + '</div>' +
+      '</div>' +
+
+      // ===== PROGRESS BAR =====
+      '<div class="wa-progress"><div class="wa-progress-fill" style="width:' + ((this.currentQuestion/total)*100) + '%"></div></div>' +
+
+      // ===== CHAT BODY =====
+      '<div class="wa-chat-body" id="wa-chat-body">' +
+        this.renderChatMessages() +
+      '</div>' +
+
+      // ===== INPUT (OPTIONS) =====
+      '<div class="wa-input-area" id="wa-input-area">' +
+        this.renderOptions() +
+      '</div>' +
+
+      '</div>';
+  },
+
+  renderChatMessages() {
+    var html = '';
+    var today = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+    html += '<div class="wa-date">' + today + '</div>';
+
+    this.chatHistory.forEach(function(msg) {
+      if (msg.type === 'bot-question') {
+        html += '<div class="wa-row wa-row-bot">' +
+          '<div class="wa-bubble wa-bubble-bot">' + msg.text + '</div>' +
+          '<div class="wa-time">' + msg.time + '</div>' +
+        '</div>';
+      } else if (msg.type === 'user-answer') {
+        html += '<div class="wa-row wa-row-user">' +
+          '<div class="wa-bubble wa-bubble-user ' + (msg.correct ? 'correct' : 'wrong') + '">' +
+            msg.text + (msg.correct ? ' ✓' : ' ✗') +
+          '</div>' +
+          '<div class="wa-time">' + msg.time + '</div>' +
+        '</div>';
+      } else if (msg.type === 'bot-reply') {
+        html += '<div class="wa-row wa-row-bot">' +
+          '<div class="wa-bubble wa-bubble-bot ' + (msg.correct ? 'reply-correct' : 'reply-wrong') + '">' + msg.text + '</div>' +
+          '<div class="wa-time">' + msg.time + '</div>' +
+        '</div>';
+      }
+    });
+
+    return html;
+  },
+
+  renderOptions() {
+    if (this.currentQuestion >= this.questions.length) {
+      return '<button class="wa-send-btn" onclick="DuoUI.finish()">Lihat Hasil →</button>';
+    }
+    var q = this.questions[this.currentQuestion];
+    return '<div class="wa-options">' +
+      q.o.map(function(opt, i) {
+        return '<button class="wa-option-btn" onclick="DuoUI.answer(' + i + ')">' + opt + '</button>';
+      }).join('') +
+    '</div>';
+  },
+
+  scrollChat() {
+    setTimeout(function() {
+      var body = document.getElementById('wa-chat-body');
+      if (body) body.scrollTop = body.scrollHeight;
+    }, 50);
   },
 
   answer(i) {
     var q = this.questions[this.currentQuestion];
-    var btns = document.querySelectorAll('.option-btn');
     var ok = i === q.a;
-    btns.forEach(function(b, idx) {
-      b.disabled = true;
-      if (idx === q.a) b.classList.add('correct');
-      if (idx === i && !ok) b.classList.add('wrong');
+    var now = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+
+    // Kalau pertama kali, push pertanyaan dulu
+    if (this.chatHistory.length === 0 || this.chatHistory[this.chatHistory.length-1].type !== 'bot-question') {
+      this.chatHistory.push({ type: 'bot-question', text: q.q, time: now });
+    }
+
+    // Push jawaban user
+    this.chatHistory.push({
+      type: 'user-answer',
+      text: q.o[i],
+      correct: ok,
+      time: now
     });
+
+    // Push balasan bot
+    var reply = ok ? 'Benar! 🎉' : 'Salah. Jawaban: ' + q.o[q.a];
+    this.chatHistory.push({
+      type: 'bot-reply',
+      text: reply,
+      correct: ok,
+      time: now
+    });
+
     if (ok) this.score++; else DL.loseHeart();
+
+    // Update UI
+    this.renderChat();
+    this.scrollChat();
+
+    // Siapkan pertanyaan berikutnya
     var self = this;
     setTimeout(function() {
       self.currentQuestion++;
-      if (self.currentQuestion >= self.questions.length) self.finish();
-      else self.renderQuiz();
-    }, 900);
+      if (self.currentQuestion < self.questions.length) {
+        var nq = self.questions[self.currentQuestion];
+        var t = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+        self.chatHistory.push({ type: 'bot-question', text: nq.q, time: t });
+        self.renderChat();
+        self.scrollChat();
+      } else {
+        self.renderChat();
+        self.scrollChat();
+      }
+    }, 800);
   },
 
   finish() {
@@ -121,9 +220,10 @@ const DuoUI = {
     var total = this.questions.length;
     var score = this.score;
     var r = DL.completeLesson(l.id, score, total, l.xp || 10);
-    var m = document.getElementById('lesson-modal');
-    m.innerHTML = '<div class="modal-content lesson-modal-content"><div class="lesson-result">' +
-      '<div class="result-icon">' + (r.perfect ? 'WIN' : 'DONE') + '</div>' +
+    var modal = document.getElementById('lesson-modal');
+    modal.classList.remove('wa-mode');
+    modal.innerHTML = '<div class="modal-content lesson-modal-content"><div class="lesson-result">' +
+      '<div class="result-icon">' + (r.perfect ? '🏆' : '🎉') + '</div>' +
       '<h2>' + (r.perfect ? 'Sempurna!' : 'Selesai!') + '</h2>' +
       '<p class="result-score">Skor: ' + score + ' / ' + total + '</p>' +
       '<div class="result-stats"><div class="result-stat">+' + r.xpEarned + ' XP</div>' +
@@ -135,34 +235,29 @@ const DuoUI = {
 
   exit() {
     var m = document.getElementById('lesson-modal');
-    if (m) { m.classList.remove('active'); m.innerHTML = ''; }
+    if (m) { m.classList.remove('active'); m.classList.remove('wa-mode'); m.innerHTML = ''; }
     this.renderStats(); this.renderLessons(); this.renderAch(); this.renderProfile();
   },
 
   renderAch() {
-    try {
-      var c = document.getElementById('achievements-list');
-      if (!c) return;
-      var achs = DL.getAch();
-      console.log('[DuoUI] render ' + achs.length + ' achievements');
-      c.innerHTML = achs.map(function(a) {
-        return '<div class="achievement-card ' + (a.unlocked ? 'unlocked' : 'locked') + '">' +
-          '<div class="achievement-icon">' + (a.unlocked ? a.icon : 'L') + '</div>' +
-          '<div class="achievement-info"><h4>' + a.title + '</h4><p>' + a.desc + '</p></div></div>';
-      }).join('');
-    } catch (e) { console.error('[DuoUI] renderAch:', e); }
+    var c = document.getElementById('achievements-list');
+    if (!c) return;
+    var achs = DL.getAch();
+    c.innerHTML = achs.map(function(a) {
+      return '<div class="achievement-card ' + (a.unlocked ? 'unlocked' : 'locked') + '">' +
+        '<div class="achievement-icon">' + (a.unlocked ? a.icon : '🔒') + '</div>' +
+        '<div class="achievement-info"><h4>' + a.title + '</h4><p>' + a.desc + '</p></div></div>';
+    }).join('');
   },
 
   renderProfile() {
-    try {
-      var s = DL.getState(); var lv = DL.getLevel();
-      var set = function(id, v) { var e = document.getElementById(id); if (e) e.textContent = v; };
-      set('profile-level', lv.level); set('profile-xp', s.xp); set('profile-streak', s.streak);
-      set('profile-gems', s.gems); set('profile-lessons', s.completedLessons.length);
-      set('profile-correct', s.totalCorrect); set('profile-wrong', s.totalWrong);
-      var pe = document.getElementById('profile-level-progress');
-      if (pe) pe.style.width = ((lv.currentXp / lv.neededXp) * 100) + '%';
-    } catch (e) { console.error('[DuoUI] renderProfile:', e); }
+    var s = DL.getState(); var lv = DL.getLevel();
+    var set = function(id, v) { var e = document.getElementById(id); if (e) e.textContent = v; };
+    set('profile-level', lv.level); set('profile-xp', s.xp); set('profile-streak', s.streak);
+    set('profile-gems', s.gems); set('profile-lessons', s.completedLessons.length);
+    set('profile-correct', s.totalCorrect); set('profile-wrong', s.totalWrong);
+    var pe = document.getElementById('profile-level-progress');
+    if (pe) pe.style.width = ((lv.currentXp / lv.neededXp) * 100) + '%';
   },
 
   refill() {
@@ -182,5 +277,4 @@ function showAchPopup(a) {
   setTimeout(function() { p.classList.add('show'); }, 100);
   setTimeout(function() { p.classList.remove('show'); setTimeout(function() { p.remove(); }, 300); }, 3000);
 }
-console.log('[duolingo-ui] loaded');
 if (typeof window !== 'undefined') { window.DuoUI = DuoUI; window.showAchPopup = showAchPopup; }
