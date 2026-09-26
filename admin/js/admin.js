@@ -50,6 +50,7 @@ const Admin = {
           limits: 'Min Withdraw Limit',
           products: 'Produk & Markup',
           users: 'Users',
+          debug: '🐛 Debug & Monitor',
           settings: 'Pengaturan'
         };
         document.getElementById('sec-title').textContent = titles[this.section] || this.section;
@@ -114,6 +115,7 @@ const Admin = {
     else if (this.section === 'limits') this.renderLimits(c);
     else if (this.section === 'products') this.renderProducts(c);
     else if (this.section === 'users') this.renderUsers(c);
+    else if (this.section === 'debug') this.renderDebug(c);
     else if (this.section === 'settings') this.renderSettings(c);
   },
 
@@ -582,9 +584,247 @@ const Admin = {
     }
   },
 
+// ============================================
+  // DEBUG & MONITOR — Aktivitas Live duniamu.my.id
+  // ============================================
+  _debugTimer: null,
+  _debugT0: 0,
+
+  async renderDebug(c) {
+    // Bersihkan timer lama kalau ada
+    if (this._debugTimer) { clearInterval(this._debugTimer); this._debugTimer = null; }
+
+    c.innerHTML =
+      '<div class="card" style="background:linear-gradient(135deg,#0d1117,#161b22);border:2px solid #58cc02;color:#c9d1d9">' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">' +
+          '<h3 style="color:#58cc02;margin:0">🐛 Live Monitor — duniamu.my.id</h3>' +
+          '<div style="font-size:12px">' +
+            '<span id="dbg-status" style="color:#3fb950">● LIVE</span> ' +
+            '<span style="color:#8b949e">| refresh tiap 10s</span>' +
+          '</div>' +
+        '</div>' +
+        '<div style="font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;color:#8b949e">' +
+          'Terakhir update: <span id="dbg-last-update">-</span>' +
+        '</div>' +
+      '</div>' +
+
+      '<div class="stats-grid" id="dbg-stats">' +
+        '<div class="loading-inline">Memuat statistik...</div>' +
+      '</div>' +
+
+      '<div class="card"><h3>🟢 User Online (aktif < 5 menit)</h3>' +
+        '<div id="dbg-online"><div class="loading-inline">Memuat...</div></div>' +
+      '</div>' +
+
+      '<div class="card"><h3>🛒 Order Terbaru (10 menit terakhir)</h3>' +
+        '<div id="dbg-orders"><div class="loading-inline">Memuat...</div></div>' +
+      '</div>' +
+
+      '<div class="card"><h3>💸 Withdraw Terbaru (pending)</h3>' +
+        '<div id="dbg-withdrawals"><div class="loading-inline">Memuat...</div></div>' +
+      '</div>' +
+
+      '<div class="card"><h3>🏆 Aktivitas Belajar (top user hari ini)</h3>' +
+        '<div id="dbg-learn"><div class="loading-inline">Memuat...</div></div>' +
+      '</div>' +
+
+      '<div class="card"><h3>📊 Statistik Global</h3>' +
+        '<div id="dbg-global"><div class="loading-inline">Memuat...</div></div>' +
+      '</div>';
+
+    // Panggil sekali, lalu auto-refresh tiap 10 detik
+    await this._refreshDebug();
+    this._debugTimer = setInterval(() => {
+      // Stop kalau user pindah section
+      if (this.section !== 'debug') {
+        clearInterval(this._debugTimer);
+        this._debugTimer = null;
+        return;
+      }
+      this._refreshDebug();
+    }, 10000);
+  },
+
+  async _refreshDebug() {
+    const db = this.db;
+    const now = Date.now();
+    const FIVE_MIN  = 5 * 60 * 1000;
+    const TEN_MIN   = 10 * 60 * 1000;
+
+    try {
+      // ===== 1. Semua user (limit 500) =====
+      const usersSnap = await db.collection('users').limit(500).get();
+      const users = usersSnap.docs.map(d => ({ uid: d.id, ...d.data() }));
+
+      // ===== 2. Orders terbaru =====
+      const ordersSnap = await db.collection('orders').orderBy('date','desc').limit(50).get();
+      const orders = ordersSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+      // ===== 3. Withdrawals pending =====
+      const wdSnap = await db.collection('withdrawals').orderBy('createdAt','desc').limit(50).get();
+      const wds = wdSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+      // ===== HITUNG STATISTIK =====
+      // Online: user yang updatedAt < 5 menit lalu
+      const online = users.filter(u => {
+        if (!u.updatedAt) return false;
+        const t = new Date(u.updatedAt).getTime();
+        return (now - t) < FIVE_MIN;
+      }).sort((a,b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+
+      // Order 10 menit terakhir
+      const recentOrders = orders.filter(o => {
+        if (!o.date) return false;
+        return (now - new Date(o.date).getTime()) < TEN_MIN;
+      });
+
+      // Withdraw pending
+      const wdPending = wds.filter(w => w.status === 'pending');
+
+      // Top learner hari ini (dari xp; asumsi xp global, tidak per-hari. Kita pakai total xp)
+      const topLearners = users
+        .filter(u => (u.xp || 0) > 0)
+        .sort((a,b) => (b.xp || 0) - (a.xp || 0))
+        .slice(0, 10);
+
+      // Total stats
+      const totalUser  = users.length;
+      const totalBal   = users.reduce((s,u) => s + (u.balance || 0), 0);
+      const totalOrder = orders.length;
+      const totalRevenue = orders.reduce((s,o) => s + (o.total || 0), 0);
+
+      // ===== UPDATE UI =====
+      // Stats cards
+      document.getElementById('dbg-stats').innerHTML =
+        this._statCard('👥', totalUser, 'Total User') +
+        this._statCard('🟢', online.length, 'Online Sekarang') +
+        this._statCard('🛒', totalOrder, 'Total Order') +
+        this._statCard('💰', 'Rp ' + totalRevenue.toLocaleString('id-ID'), 'Revenue') +
+        this._statCard('💳', 'Rp ' + totalBal.toLocaleString('id-ID'), 'Saldo User') +
+        this._statCard('💸', wdPending.length, 'Withdraw Pending');
+
+      // User online
+      if (online.length === 0) {
+        document.getElementById('dbg-online').innerHTML = '<p class="empty-msg">Tidak ada user online saat ini</p>';
+      } else {
+        document.getElementById('dbg-online').innerHTML =
+          '<div class="table-wrap"><table><thead><tr><th>User</th><th>Email</th><th>Level</th><th>Terakhir Aktif</th><th>Saldo</th></tr></thead><tbody>' +
+          online.map(u => {
+            const t = new Date(u.updatedAt);
+            const ago = Math.round((now - t.getTime()) / 1000);
+            const agoStr = ago < 60 ? ago + 's lalu' : Math.round(ago/60) + 'm lalu';
+            return '<tr>' +
+              '<td>' + (u.avatar || '👤') + ' ' + (u.displayName || '-') + '</td>' +
+              '<td style="font-size:11px">' + (u.email || 'anon') + '</td>' +
+              '<td>Lv ' + (u.level || 1) + '</td>' +
+              '<td><span style="color:#3fb950;font-weight:800">' + agoStr + '</span></td>' +
+              '<td>Rp ' + (u.balance || 0).toLocaleString('id-ID') + '</td>' +
+              '</tr>';
+          }).join('') +
+          '</tbody></table></div>';
+      }
+
+      // Order terbaru
+      if (recentOrders.length === 0) {
+        document.getElementById('dbg-orders').innerHTML = '<p class="empty-msg">Tidak ada order 10 menit terakhir</p>';
+      } else {
+        document.getElementById('dbg-orders').innerHTML =
+          '<div class="table-wrap"><table><thead><tr><th>ID</th><th>User</th><th>Produk</th><th>Total</th><th>Status</th></tr></thead><tbody>' +
+          recentOrders.map(o => {
+            const userData = o.userData ? Object.values(o.userData).join(' / ') : '-';
+            return '<tr>' +
+              '<td><strong>' + o.id + '</strong></td>' +
+              '<td style="font-size:11px">' + userData + '</td>' +
+              '<td>' + (o.product || '-') + '</td>' +
+              '<td>Rp ' + (o.total || 0).toLocaleString('id-ID') + '</td>' +
+              '<td><span class="badge badge-' + (o.status || 'pending') + '">' + (o.status || 'pending') + '</span></td>' +
+              '</tr>';
+          }).join('') +
+          '</tbody></table></div>';
+      }
+
+      // Withdraw pending
+      if (wdPending.length === 0) {
+        document.getElementById('dbg-withdrawals').innerHTML = '<p class="empty-msg">Tidak ada withdraw pending</p>';
+      } else {
+        document.getElementById('dbg-withdrawals').innerHTML =
+          '<div class="table-wrap"><table><thead><tr><th>ID</th><th>User</th><th>Amount</th><th>Metode</th><th>Akun</th><th>Aksi</th></tr></thead><tbody>' +
+          wdPending.map(w => {
+            return '<tr>' +
+              '<td>' + (w.id || '').slice(0,10) + '</td>' +
+              '<td>' + (w.userName || '-') + '</td>' +
+              '<td><strong>Rp ' + (w.amount || 0).toLocaleString('id-ID') + '</strong></td>' +
+              '<td>' + (w.method || '-') + '</td>' +
+              '<td><code>' + (w.account || '-') + '</code></td>' +
+              '<td><button class="btn-sm btn-success" onclick="Admin.approveWd(\'' + w.id + '\')">✅</button> ' +
+                  '<button class="btn-sm btn-danger" onclick="Admin.rejectWd(\'' + w.id + '\')">❌</button></td>' +
+              '</tr>';
+          }).join('') +
+          '</tbody></table></div>';
+      }
+
+      // Top learner
+      if (topLearners.length === 0) {
+        document.getElementById('dbg-learn').innerHTML = '<p class="empty-msg">Belum ada yang belajar</p>';
+      } else {
+        document.getElementById('dbg-learn').innerHTML =
+          '<div class="table-wrap"><table><thead><tr><th>#</th><th>User</th><th>Level</th><th>XP</th><th>Streak</th><th>Lesson Selesai</th></tr></thead><tbody>' +
+          topLearners.map((u, i) => {
+            const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '#' + (i+1);
+            return '<tr>' +
+              '<td>' + medal + '</td>' +
+              '<td>' + (u.avatar || '👤') + ' ' + (u.displayName || '-') + '</td>' +
+              '<td>Lv ' + (u.level || 1) + '</td>' +
+              '<td><strong>' + (u.xp || 0) + '</strong></td>' +
+              '<td>🔥 ' + (u.streak || 0) + '</td>' +
+              '<td>' + ((u.completedLessons || []).length) + '</td>' +
+              '</tr>';
+          }).join('') +
+          '</tbody></table></div>';
+      }
+
+      // Global stats
+      const totalLessons = users.reduce((s,u) => s + ((u.completedLessons || []).length), 0);
+      const totalAch     = users.reduce((s,u) => s + ((u.achievements || []).length), 0);
+      const totalAds     = users.reduce((s,u) => s + (u.adWatchTotal || 0), 0);
+      document.getElementById('dbg-global').innerHTML =
+        '<div class="stats-grid">' +
+          this._statCard('📚', totalLessons, 'Total Lesson Selesai') +
+          this._statCard('🏆', totalAch, 'Total Achievement Unlocked') +
+          this._statCard('🎬', totalAds, 'Total Iklan Ditonton') +
+          this._statCard('💰', users.reduce((s,u) => s + (u.totalEarned || 0), 0).toLocaleString('id-ID'), 'Total Koin Earned') +
+        '</div>';
+
+      // Update timestamp
+      const lu = document.getElementById('dbg-last-update');
+      if (lu) lu.textContent = new Date().toLocaleTimeString('id-ID');
+      const st = document.getElementById('dbg-status');
+      if (st) {
+        st.style.color = '#3fb950';
+        st.textContent = '● LIVE';
+      }
+
+    } catch (e) {
+      console.error('[Admin Debug] error:', e);
+      const st = document.getElementById('dbg-status');
+      if (st) { st.style.color = '#f85149'; st.textContent = '● ERROR'; }
+      ['dbg-online','dbg-orders','dbg-withdrawals','dbg-learn','dbg-global'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = '<p style="color:red">Error: ' + e.message + '</p>';
+      });
+    }
+  },
+
+  _statCard(icon, value, label) {
+    return '<div class="stat-card">' +
+      '<div class="stat-icon">' + icon + '</div>' +
+      '<div class="stat-val">' + value + '</div>' +
+      '<div class="stat-label">' + label + '</div>' +
+    '</div>';
+  },
+
   // ============================================
   // SETTINGS
-  // ============================================
   renderSettings(c) {
     c.innerHTML = '<div class="card"><h3>🔐 Admin Info</h3>' +
       '<p><strong>Email:</strong> ' + (this.user.email || '-') + '</p>' +
