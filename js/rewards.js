@@ -395,14 +395,47 @@ const Rewards = {
   // ============================================
   // WITHDRAW
   // ============================================
+  // ============================================
+  // GET USER MIN WITHDRAW (support custom)
+  // ============================================
+  getUserMinWithdraw() {
+    // Cek custom limit dari Auth profile
+    if (typeof Auth !== 'undefined' && Auth.profile) {
+      const custom = Auth.profile.custom_min_withdraw;
+      if (custom !== undefined && custom !== null && custom > 0) {
+        return custom;
+      }
+    }
+    // Cek default dari config (cache)
+    try {
+      const cfg = JSON.parse(localStorage.getItem('yadstore_withdraw_config') || '{}');
+      if (cfg.default_min_withdraw) return cfg.default_min_withdraw;
+    } catch (e) {}
+    // Fallback ke CONFIG
+    return this.CONFIG.MIN_WITHDRAW;
+  },
+
+  // Sync withdraw config dari Firestore
+  async syncWithdrawConfig() {
+    if (typeof Auth === 'undefined' || !Auth.db) return;
+    try {
+      const doc = await Auth.db.collection('config').doc('withdraw_config').get();
+      if (doc.exists) {
+        localStorage.setItem('yadstore_withdraw_config', JSON.stringify(doc.data()));
+      }
+    } catch (e) {}
+  },
+
   canWithdraw() {
-    return this.getState().balance >= this.CONFIG.MIN_WITHDRAW;
+    const min = this.getUserMinWithdraw();
+    return this.getState().balance >= min;
   },
 
   async requestWithdraw(amount, method, account, name) {
     const state = this.getState();
-    if (amount < this.CONFIG.MIN_WITHDRAW) {
-      if (typeof Animate !== 'undefined') Animate.toast('Minimal Rp ' + this.CONFIG.MIN_WITHDRAW.toLocaleString('id-ID'), 'error');
+    const minWd = this.getUserMinWithdraw();
+    if (amount < minWd) {
+      if (typeof Animate !== 'undefined') Animate.toast('Minimal Rp ' + minWd.toLocaleString('id-ID'), 'error');
       return false;
     }
     if (state.balance < amount) {
@@ -534,7 +567,7 @@ const Rewards = {
     // Withdraw
     html += '<div class="reward-withdraw-section">' +
       '<h3>' + t('reward_withdraw_title') + '</h3>' +
-      '<p style="font-size:13px;color:#666;margin-bottom:12px">' + t('reward_withdraw_min') + '</p>' +
+      '<p style="font-size:13px;color:#666;margin-bottom:12px">Minimal Rp ' + this.getUserMinWithdraw().toLocaleString('id-ID') + '</p>' +
       '<button class="btn-primary btn-full" onclick="Rewards.openWithdraw()" ' + (this.canWithdraw() ? '' : 'disabled') + '>' +
       (this.canWithdraw() ? t('reward_withdraw_btn') : t('reward_withdraw_locked')) +
       '</button>' +
@@ -610,8 +643,8 @@ const Rewards = {
       '<p>Saldo: ' + this.formatRp(state.balance) + '</p>' +
       '</div>' +
       '<div class="modal-body">' +
-      '<div class="form-group"><label>Jumlah (min Rp 10.000)</label>' +
-      '<input type="number" id="wd-amount" value="' + state.balance + '" min="' + this.CONFIG.MIN_WITHDRAW + '" max="' + state.balance + '"></div>' +
+      '<div class="form-group"><label>Jumlah (min Rp ' + this.getUserMinWithdraw().toLocaleString('id-ID') + ')</label>' +
+      '<input type="number" id="wd-amount" value="' + state.balance + '" min="' + this.getUserMinWithdraw() + '" max="' + state.balance + '"></div>' +
       '<div class="form-group"><label>Metode</label>' +
       '<select id="wd-method">' + methods.map(m => '<option value="' + m + '">' + m + '</option>').join('') + '</select></div>' +
       '<div class="form-group"><label>Nomor Tujuan</label>' +
@@ -631,8 +664,9 @@ const Rewards = {
     const account = document.getElementById('wd-account').value.trim();
     const name = document.getElementById('wd-name').value.trim();
 
-    if (!amount || amount < this.CONFIG.MIN_WITHDRAW) {
-      alert('Minimal ' + this.formatRp(this.CONFIG.MIN_WITHDRAW));
+    const minWd = this.getUserMinWithdraw();
+    if (!amount || amount < minWd) {
+      alert('Minimal ' + this.formatRp(minWd));
       return;
     }
     if (!account) { alert('Masukkan nomor tujuan'); return; }

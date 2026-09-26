@@ -67,6 +67,7 @@ const Admin = {
           dash: 'Dashboard',
           orders: 'Pesanan',
           withdrawals: 'Withdraw Request',
+          limits: 'Min Withdraw Limit',
           products: 'Produk & Markup',
           users: 'Users',
           settings: 'Pengaturan'
@@ -143,6 +144,7 @@ const Admin = {
     if (this.section === 'dash') this.renderDash(c);
     else if (this.section === 'orders') this.renderOrders(c);
     else if (this.section === 'withdrawals') this.renderWithdrawals(c);
+    else if (this.section === 'limits') this.renderLimits(c);
     else if (this.section === 'products') this.renderProducts(c);
     else if (this.section === 'users') this.renderUsers(c);
     else if (this.section === 'settings') this.renderSettings(c);
