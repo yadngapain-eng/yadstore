@@ -1,4 +1,4 @@
-/* LEARN EARN — i18n v2 (Full Translation) */
+/* Learn Earn — i18n v3 (Full Translation, Clean UTF-8) */
 
 const I18n = {
   currentLang: 'id',
@@ -8,6 +8,7 @@ const I18n = {
     id: {
       // Header
       brand: 'Learn Earn',
+
       // Tabs
       tab_learn: 'Learn',
       tab_topup: 'Top Up',
@@ -15,6 +16,7 @@ const I18n = {
       tab_profile: 'Profile',
       tab_reward: 'Reward',
       tab_help: 'Bantuan',
+
       // Page headers
       learn_title: '📚 Belajar',
       learn_subtitle: 'Selesaikan lesson untuk dapat XP & Gems',
@@ -37,24 +39,24 @@ const I18n = {
       help_q2: 'Cara top up?',
       help_a2: 'Pilih game/pulsa → isi data → pilih nominal → bayar → upload bukti.',
       help_q3: 'Metode bayar?',
-      help_a3: 'QRIS, DANA, GoPay, OVO, ShopeePay, BCA, BNI, BRI, Mandiri.',
+      help_a3: 'DANA, GoPay, OVO, ShopeePay, SEABANK.',
       help_q4: 'Bagaimana cara dapat koin?',
       help_a4: 'Login harian, selesaikan lesson, nonton iklan, atau top up. Setiap aktivitas dapat koin!',
       help_q5: 'Bagaimana cara withdraw?',
-      help_a5: 'Kumpulkan koin minimal Rp 10.000, lalu withdraw ke DANA/OVO/GoPay/ShopeePay/SEABANK.',
+      help_a5: 'Kumpulkan koin minimal Rp 1.000, lalu withdraw ke DANA/OVO/GoPay/ShopeePay/SEABANK.',
       help_q6: 'Apakah website ini aman?',
-      help_a6: 'Ya. Kami pakai Firebase + server-side validation. Data kamu terenkripsi dan aman.',
+      help_a6: 'Ya. Data kamu terenkripsi dan aman.',
 
       // ===== REWARD PAGE =====
       reward_balance_label: 'SALDO KAMU',
       reward_coin_unit: 'koin',
       reward_coin_rate: '1 koin = Rp 1',
       reward_watch_ad_title: '🎬 Nonton Iklan',
-      reward_watch_ad_desc: 'Dapat 1-100 koin per iklan (max 5/hari)',
+      reward_watch_ad_desc: 'Dapat koin setiap nonton (max 5/hari)',
       reward_ad_counter: 'hari ini',
       reward_ad_remaining: 'sisa',
       reward_ad_limit_reached: 'batas tercapai',
-      reward_ad_btn: '🎬 Nonton Iklan (+1-100 koin)',
+      reward_ad_btn: '🎬 Nonton Iklan',
       reward_ad_cooldown: 'Tunggu',
       reward_missions_title: '🎯 Misi & Reward',
       reward_level_title: '📈 Reward Naik Level',
@@ -67,7 +69,7 @@ const I18n = {
       reward_history_title: '📜 Riwayat Koin',
       reward_history_empty: 'Belum ada transaksi',
       reward_withdraw_title: '💸 Withdraw ke Uang',
-      reward_withdraw_min: 'Minimal Rp 10.000',
+      reward_withdraw_min: 'Minimal Rp 1.000',
       reward_withdraw_btn: '💸 Withdraw Sekarang',
       reward_withdraw_locked: '🔒 Saldo belum cukup',
 
@@ -79,6 +81,8 @@ const I18n = {
       mission_ad5: 'Nonton 5 Iklan',
       mission_streak3: 'Streak 3 Hari',
       mission_streak7: 'Streak 7 Hari',
+      mission_coin_suffix: 'koin',
+
       // Daily Spin
       spin_title: '🎰 Spin Harian',
       spin_desc: 'Putar sekali sehari, dapat 1-10 heart!',
@@ -90,7 +94,6 @@ const I18n = {
       spin_result: 'SELAMAT!',
       ad_reward_coin: '+{n} koin!',
       ad_reward_jackpot: '🎉 JACKPOT! +{n} koin!',
-      mission_coin_suffix: 'koin',
 
       // ===== TOP UP PAGE =====
       topup_select_game: 'Pilih Game / Layanan',
@@ -161,7 +164,7 @@ const I18n = {
       toast_ad_opening: 'Membuka iklan...',
       toast_ad_failed: '❌ Iklan gagal dimuat',
       toast_ad_not_ready: '⚠️ Iklan belum siap, coba lagi',
-      toast_withdraw_success: 'Withdraw diajukan! Cek Telegram.',
+      toast_withdraw_success: 'Withdraw diajukan!',
       toast_hearts_full: 'Hearts penuh!',
       toast_gems_low: 'Gems tidak cukup',
 
@@ -174,6 +177,7 @@ const I18n = {
     en: {
       // Header
       brand: 'Learn Earn',
+
       // Tabs
       tab_learn: 'Learn',
       tab_topup: 'Top Up',
@@ -181,11 +185,12 @@ const I18n = {
       tab_profile: 'Profile',
       tab_reward: 'Reward',
       tab_help: 'Help',
+
       // Page headers
       learn_title: '📚 Learn',
       learn_subtitle: 'Complete lessons to earn XP & Gems',
       achievements_title: '🏆 Achievements',
-      achievements_subtitle: 'Kumpulkan achievement, dapat koin!',
+      achievements_subtitle: 'Collect achievements, earn coins!',
       topup_title: '🛒 Instant Top Up',
       topup_subtitle: 'Games, Pulsa & Data - 1 second process',
       orders_title: '📦 Orders',
@@ -203,24 +208,24 @@ const I18n = {
       help_q2: 'How to top up?',
       help_a2: 'Choose game/pulsa → fill data → pick nominal → pay → upload proof.',
       help_q3: 'Payment methods?',
-      help_a3: 'QRIS, DANA, GoPay, OVO, ShopeePay, BCA, BNI, BRI, Mandiri.',
+      help_a3: 'DANA, GoPay, OVO, ShopeePay, SEABANK.',
       help_q4: 'How to earn coins?',
       help_a4: 'Daily login, complete lessons, watch ads, or top up. Every activity earns coins!',
       help_q5: 'How to withdraw?',
-      help_a5: 'Collect at least Rp 10.000, then withdraw to DANA/OVO/GoPay/ShopeePay/SEABANK.',
+      help_a5: 'Collect at least Rp 1.000, then withdraw to DANA/OVO/GoPay/ShopeePay/SEABANK.',
       help_q6: 'Is this website safe?',
-      help_a6: 'Yes. We use Firebase + server-side validation. Your data is encrypted and safe.',
+      help_a6: 'Yes. Your data is encrypted and safe.',
 
       // ===== REWARD PAGE =====
       reward_balance_label: 'YOUR BALANCE',
       reward_coin_unit: 'coins',
       reward_coin_rate: '1 coin = Rp 1',
       reward_watch_ad_title: '🎬 Watch Ads',
-      reward_watch_ad_desc: 'Get 1-100 coins per ad (max 5/day)',
+      reward_watch_ad_desc: 'Get coins per ad (max 5/day)',
       reward_ad_counter: 'today',
       reward_ad_remaining: 'left',
       reward_ad_limit_reached: 'limit reached',
-      reward_ad_btn: '🎬 Watch Ad (+1-100 coins)',
+      reward_ad_btn: '🎬 Watch Ad',
       reward_ad_cooldown: 'Wait',
       reward_missions_title: '🎯 Missions & Rewards',
       reward_level_title: '📈 Level Up Reward',
@@ -233,7 +238,7 @@ const I18n = {
       reward_history_title: '📜 Coin History',
       reward_history_empty: 'No transactions yet',
       reward_withdraw_title: '💸 Withdraw to Money',
-      reward_withdraw_min: 'Minimum Rp 10.000',
+      reward_withdraw_min: 'Minimum Rp 1.000',
       reward_withdraw_btn: '💸 Withdraw Now',
       reward_withdraw_locked: '🔒 Balance not enough',
 
@@ -245,6 +250,8 @@ const I18n = {
       mission_ad5: 'Watch 5 Ads',
       mission_streak3: 'Streak 3 Days',
       mission_streak7: 'Streak 7 Days',
+      mission_coin_suffix: 'coins',
+
       // Daily Spin
       spin_title: '🎰 Daily Spin',
       spin_desc: 'Spin once a day, get 1-10 hearts!',
@@ -256,7 +263,6 @@ const I18n = {
       spin_result: 'CONGRATS!',
       ad_reward_coin: '+{n} coins!',
       ad_reward_jackpot: '🎉 JACKPOT! +{n} coins!',
-      mission_coin_suffix: 'coins',
 
       // ===== TOP UP PAGE =====
       topup_select_game: 'Choose Game / Service',
@@ -327,7 +333,7 @@ const I18n = {
       toast_ad_opening: 'Opening ad...',
       toast_ad_failed: '❌ Ad failed to load',
       toast_ad_not_ready: '⚠️ Ad not ready, try again',
-      toast_withdraw_success: 'Withdraw requested! Check Telegram.',
+      toast_withdraw_success: 'Withdraw requested!',
       toast_hearts_full: 'Hearts full!',
       toast_gems_low: 'Not enough gems',
 
@@ -340,7 +346,7 @@ const I18n = {
 
   init() {
     try {
-      const saved = localStorage.getItem('learnearn_lang');
+      const saved = localStorage.getItem('yadstore_lang');
       if (saved && this.SUPPORTED.includes(saved)) this.currentLang = saved;
     } catch (e) {}
     console.log('[i18n] Lang:', this.currentLang);
@@ -359,7 +365,7 @@ const I18n = {
   setLang(lang) {
     if (!this.SUPPORTED.includes(lang)) return;
     this.currentLang = lang;
-    try { localStorage.setItem('learnearn_lang', lang); } catch (e) {}
+    try { localStorage.setItem('yadstore_lang', lang); } catch (e) {}
     console.log('[i18n] Switched to:', lang);
     this.applyAll();
     this.notifyApp();
@@ -368,21 +374,16 @@ const I18n = {
   getLang() { return this.currentLang; },
 
   applyAll() {
-    // Update semua elemen dengan data-i18n
     document.querySelectorAll('[data-i18n]').forEach(el => {
       const key = el.getAttribute('data-i18n');
       const text = this.t(key);
       if (text) el.textContent = text;
     });
-
-    // Placeholder
     document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
       const key = el.getAttribute('data-i18n-placeholder');
       const text = this.t(key);
       if (text) el.placeholder = text;
     });
-
-    // Update lang selector
     const sel = document.getElementById('lang-selector');
     if (sel) sel.value = this.currentLang;
   },
@@ -393,4 +394,4 @@ const I18n = {
 };
 
 if (typeof window !== 'undefined') window.I18n = I18n;
-console.log('[i18n] v2 loaded');
+console.log('[i18n] v3 loaded — Learn Earn');
