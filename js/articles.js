@@ -1,6 +1,6 @@
 /* ============================================
-   YADSTORE — ARTICLES v3
-   39 artikel iframe-friendly + banner ads
+   YADSTORE — ARTICLES v4 (Wikipedia Style)
+   Tampilan seperti baca Wikipedia
    ============================================ */
 
 const Articles = {
@@ -106,6 +106,39 @@ const Articles = {
     return state.todayArticles.indexOf(articleUrl) !== -1;
   },
 
+  // ============================================
+  // KATEGORI ARTIKEL
+  // ============================================
+  getCategories: function() {
+    var cats = {
+      'pendidikan': { label: 'Pendidikan', icon: '📚', color: '#0369a1' },
+      'teknologi': { label: 'Teknologi', icon: '💻', color: '#7c3aed' },
+      'umum': { label: 'Umum', icon: '🌍', color: '#059669' },
+      'coding': { label: 'Coding', icon: '⌨️', color: '#dc2626' },
+      'tutorial': { label: 'Tutorial', icon: '💡', color: '#ea580c' },
+    };
+    return cats;
+  },
+
+  getArticleCategory: function(url) {
+    if (url.includes('developer.mozilla.org')) return 'coding';
+    if (url.includes('wikihow.com')) return 'tutorial';
+    if (url.includes('wikipedia.org')) {
+      var lower = url.toLowerCase();
+      if (lower.includes('komputer') || lower.includes('internet') ||
+          lower.includes('kecerdasan') || lower.includes('pemrograman') ||
+          lower.includes('teknologi')) return 'teknologi';
+      if (lower.includes('matematika') || lower.includes('fisika') ||
+          lower.includes('biologi') || lower.includes('kimia') ||
+          lower.includes('sains') || lower.includes('astronomi')) return 'pendidikan';
+      return 'umum';
+    }
+    return 'umum';
+  },
+
+  // ============================================
+  // OPEN ARTICLE — WIKIPEDIA STYLE
+  // ============================================
   open: function(index) {
     var article = this.LIST[index];
     if (!article) return;
@@ -122,66 +155,58 @@ const Articles = {
     this.currentArticleIndex = index;
     this.secondsRead = 0;
     this.isReading = true;
-    this.showIframeModal(article);
+    this.showWikipediaModal(article);
   },
 
-  showIframeModal: function(article) {
+  // ============================================
+  // MODAL WIKIPEDIA STYLE
+  // ============================================
+  showWikipediaModal: function(article) {
     var modal = document.getElementById('reward-modal');
     if (!modal) return;
 
     modal.innerHTML = 
-      '<div class="modal-content" style="max-width:100%;width:100%;height:100vh;max-height:100vh;border-radius:0;padding:0;display:flex;flex-direction:column;background:#f0f0f0">' +
+      '<div class="modal-content" style="max-width:100%;width:100%;height:100vh;max-height:100vh;border-radius:0;padding:0;display:flex;flex-direction:column;background:#fff">' +
         
-        '<div style="background:linear-gradient(135deg,#a855f7,#7c3aed);padding:12px 16px;display:flex;align-items:center;gap:12px;flex-shrink:0">' +
-          '<button onclick="Articles.cancelRead()" style="background:rgba(255,255,255,0.2);border:none;color:white;width:36px;height:36px;border-radius:50%;font-size:18px;font-weight:900;cursor:pointer;flex-shrink:0">✕</button>' +
-          '<div style="flex:1;min-width:0">' +
-            '<div style="color:white;font-size:14px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + article.icon + ' ' + this.esc(article.title) + '</div>' +
-            '<div id="article-timer-text" style="color:white;font-size:12px;font-weight:700;opacity:0.9;margin-top:2px">⏱️ 60 detik</div>' +
+        // ===== TOP BAR (Wikipedia style) =====
+        '<div style="background:#fff;border-bottom:1px solid #a2a9b1;padding:10px 16px;display:flex;align-items:center;gap:12px;flex-shrink:0;box-shadow:0 1px 3px rgba(0,0,0,0.05)">' +
+          '<button onclick="Articles.cancelRead()" style="background:#f8f9fa;border:1px solid #a2a9b1;color:#54595d;width:36px;height:36px;border-radius:2px;font-size:18px;font-weight:900;cursor:pointer;flex-shrink:0">←</button>' +
+          '<div style="flex:1;min-width:0;display:flex;align-items:center;gap:10px">' +
+            '<div style="width:36px;height:36px;background:linear-gradient(135deg,#636466,#202122);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;font-weight:900;flex-shrink:0">W</div>' +
+            '<div style="flex:1;min-width:0">' +
+              '<div style="font-size:15px;font-weight:700;color:#202122;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + this.esc(article.title) + '</div>' +
+              '<div style="font-size:11px;color:#54595d;font-weight:400">Wikipedia Indonesia</div>' +
+            '</div>' +
           '</div>' +
-          '<div style="background:white;color:#a855f7;padding:6px 12px;border-radius:999px;font-size:13px;font-weight:900;flex-shrink:0">+' + article.reward + ' 🪙</div>' +
+          '<div style="background:#f8f9fa;border:1px solid #a2a9b1;color:#202122;padding:6px 12px;border-radius:2px;font-size:13px;font-weight:700;flex-shrink:0" id="article-timer-text">⏱️ 60</div>' +
         '</div>' +
 
-        '<div style="height:4px;background:rgba(168,85,247,0.2);flex-shrink:0">' +
-          '<div id="article-progress-bar" style="height:100%;width:0%;background:#a855f7;transition:width 1s linear"></div>' +
+        // ===== PROGRESS BAR =====
+        '<div style="height:3px;background:#eaecf0;flex-shrink:0">' +
+          '<div id="article-progress-bar" style="height:100%;width:0%;background:#36c;transition:width 1s linear"></div>' +
         '</div>' +
 
-        // Banner ad atas
-        '<div id="article-banner-top" style="background:white;border-bottom:2px solid #ffc800;padding:0;text-align:center;flex-shrink:0;min-height:50px;display:flex;align-items:center;justify-content:center;overflow:hidden">' +
-          '<div style="font-size:11px;color:#999;font-weight:700;padding:16px">📢 Iklan (banner)</div>' +
-        '</div>' +
-
-        // Iframe
-        '<div style="flex:1;overflow:hidden;position:relative">' +
+        // ===== IFRAME WIKIPEDIA =====
+        '<div style="flex:1;overflow:hidden;position:relative;background:#fff">' +
           '<iframe id="article-iframe" src="' + article.url + '" ' +
-            'style="width:100%;height:100%;border:none;background:white" ' +
+            'style="width:100%;height:100%;border:none;background:#fff" ' +
             'sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-popups-to-escape-sandbox" ' +
             'referrerpolicy="no-referrer" ' +
           '></iframe>' +
         '</div>' +
 
-        // Banner ad bawah
-        '<div id="article-banner-bottom" style="background:white;border-top:2px solid #ffc800;padding:0;text-align:center;flex-shrink:0;min-height:50px;display:flex;align-items:center;justify-content:center;overflow:hidden">' +
-          '<div style="font-size:11px;color:#999;font-weight:700;padding:16px">📢 Iklan (banner)</div>' +
-        '</div>' +
-
-        '<div style="background:white;padding:10px 16px;display:flex;align-items:center;gap:10px;flex-shrink:0;border-top:2px solid #e5e5e5">' +
-          '<div style="font-size:12px;color:#666;font-weight:700;flex:1">💡 Baca sampai timer selesai untuk dapat koin</div>' +
-          '<div id="article-coin-badge" style="background:#a855f7;color:white;padding:6px 12px;border-radius:999px;font-size:12px;font-weight:900">+' + article.reward + ' 🪙</div>' +
+        // ===== BOTTOM BAR (Wikipedia style) =====
+        '<div style="background:#f8f9fa;border-top:1px solid #a2a9b1;padding:10px 16px;display:flex;align-items:center;gap:10px;flex-shrink:0">' +
+          '<div style="flex:1;min-width:0">' +
+            '<div style="font-size:11px;color:#54595d;font-weight:400">💰 Hadiah baca</div>' +
+            '<div style="font-size:15px;font-weight:700;color:#202122">+' + article.reward + ' koin</div>' +
+          '</div>' +
+          '<button onclick="Articles.cancelRead()" style="background:#f8f9fa;border:1px solid #a2a9b1;color:#202122;padding:8px 16px;border-radius:2px;font-size:13px;font-weight:700;cursor:pointer">Tutup</button>' +
         '</div>' +
       '</div>';
 
     modal.classList.add('active');
-    this.injectBannerAds();
     this.startTimer();
-  },
-
-  injectBannerAds: function() {
-    // Kalau user sudah punya AdsManager banner, trigger refresh
-    if (typeof AdsManager !== 'undefined') {
-      try {
-        if (AdsManager.refreshBanners) AdsManager.refreshBanners();
-      } catch (e) {}
-    }
   },
 
   startTimer: function() {
@@ -198,7 +223,7 @@ const Articles = {
       var textEl = document.getElementById('article-timer-text');
       var progressEl = document.getElementById('article-progress-bar');
 
-      if (textEl) textEl.textContent = remain > 0 ? '⏱️ ' + remain + ' detik' : '✅ Selesai!';
+      if (textEl) textEl.textContent = remain > 0 ? '⏱️ ' + remain : '✓';
       if (progressEl) progressEl.style.width = ((self.secondsRead / totalTime) * 100) + '%';
 
       if (self.secondsRead >= totalTime) {
@@ -233,14 +258,12 @@ const Articles = {
 
     var modal = document.getElementById('reward-modal');
     if (modal) {
-      modal.innerHTML = '<div class="modal-content" style="max-width:420px;margin:auto;padding:0">' +
-        '<div class="modal-header" style="background:linear-gradient(135deg,#10b981,#059669)">' +
-          '<button class="modal-close" onclick="Articles.closeModal()">X</button>' +
-          '<h2 style="color:white">🎉 Berhasil!</h2>' +
+      modal.innerHTML = '<div class="modal-content" style="max-width:420px;margin:auto;padding:0;border-radius:8px;overflow:hidden">' +
+        '<div style="background:linear-gradient(135deg,#10b981,#059669);padding:20px;text-align:center;color:#fff">' +
+          '<div style="font-size:60px;margin-bottom:8px">🏆</div>' +
+          '<h2 style="font-size:20px;font-weight:900;margin:0">+' + article.reward + ' Koin!</h2>' +
         '</div>' +
-        '<div class="modal-body" style="text-align:center;padding:24px">' +
-          '<div style="font-size:80px;margin-bottom:16px">🏆</div>' +
-          '<h3 style="font-size:20px;font-weight:900;color:#10b981;margin-bottom:8px">+' + article.reward + ' Koin!</h3>' +
+        '<div style="padding:20px;text-align:center;background:#fff">' +
           '<p style="font-size:14px;color:#666;margin-bottom:16px">Kamu berhasil baca artikel</p>' +
           '<div style="background:#f0fdf4;border:2px solid #10b981;border-radius:12px;padding:12px;margin-bottom:16px">' +
             '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">' +
@@ -279,65 +302,151 @@ const Articles = {
     if (iframe) iframe.src = 'about:blank';
   },
 
+  // ============================================
+  // RENDER LIST — WIKIPEDIA STYLE
+  // ============================================
   render: function() {
     var c = document.getElementById('articles-content');
     if (!c) return;
 
     var state = this.getState();
     var self = this;
+    var cats = this.getCategories();
 
     var html = '';
 
-    // Stats
-    html += '<div style="background:linear-gradient(135deg,#a855f7,#7c3aed);border-radius:16px;padding:16px;color:white;margin-bottom:16px;box-shadow:0 8px 24px rgba(168,85,247,0.3)">' +
-      '<div style="display:flex;justify-content:space-between;align-items:center">' +
-        '<div>' +
-          '<div style="font-size:11px;opacity:0.9;font-weight:700;text-transform:uppercase">Artikel Hari Ini</div>' +
-          '<div style="font-size:28px;font-weight:900;margin-top:4px">' + state.todayCount + ' / ' + this.CONFIG.MAX_PER_DAY + '</div>' +
-        '</div>' +
-        '<div style="text-align:right">' +
-          '<div style="font-size:11px;opacity:0.9;font-weight:700;text-transform:uppercase">Total Koin</div>' +
-          '<div style="font-size:28px;font-weight:900;margin-top:4px">+' + state.totalEarned + ' 🪙</div>' +
+    // ===== WIKIPEDIA HEADER =====
+    html += '<div style="background:#fff;border:1px solid #a2a9b1;border-radius:2px;margin-bottom:16px;overflow:hidden">' +
+      // Top strip (like Wikipedia main page)
+      '<div style="background:#eaecf0;border-bottom:1px solid #a2a9b1;padding:8px 12px;display:flex;align-items:center;gap:10px">' +
+        '<div style="width:40px;height:40px;background:linear-gradient(135deg,#636466,#202122);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:22px;font-weight:900;font-family:Georgia,serif">W</div>' +
+        '<div style="flex:1">' +
+          '<div style="font-family:Georgia,serif;font-size:18px;font-weight:700;color:#202122;line-height:1.2">Wikipedia</div>' +
+          '<div style="font-family:Georgia,serif;font-size:11px;color:#54595d;font-style:italic">Ensiklopedia Bebas</div>' +
         '</div>' +
       '</div>' +
-    '</div>';
-
-    // Info
-    html += '<div style="background:#faf5ff;border:2px solid #a855f7;border-radius:12px;padding:12px;margin-bottom:16px;text-align:center">' +
-      '<div style="font-size:13px;color:#6b21a8;font-weight:800;line-height:1.6">' +
-        '📖 Baca artikel <strong>' + this.CONFIG.READ_TIME + ' detik</strong> → <strong>+' + this.CONFIG.REWARD_DEFAULT + ' koin</strong><br>' +
-        '📚 Total <strong>' + this.LIST.length + ' artikel</strong> tersedia<br>' +
-        '⏰ Max <strong>' + this.CONFIG.MAX_PER_DAY + '/hari</strong>' +
+      
+      // Title section
+      '<div style="padding:16px 20px;background:#fff;border-bottom:1px solid #a2a9b1">' +
+        '<h1 style="font-family:Georgia,serif;font-size:24px;font-weight:400;color:#000;margin:0 0 4px 0;border-bottom:1px solid #a2a9b1;padding-bottom:8px">Baca Artikel</h1>' +
+        '<div style="font-family:Georgia,serif;font-size:13px;color:#54595d;font-style:italic">Baca artikel selama 1 menit dan dapatkan koin</div>' +
       '</div>' +
-    '</div>';
-
-    var check = this.canRead();
-    if (!check.ok && check.cooldown) {
-      html = '<div style="background:#fff3cd;border:2px solid #ffc800;border-radius:12px;padding:12px;margin-bottom:16px;text-align:center;font-size:13px;font-weight:800;color:#7a5d00">⏰ ' + check.reason + '</div>' + html;
-    }
-
-    // List artikel
-    html += '<div style="display:flex;flex-direction:column;gap:10px">';
-    this.LIST.forEach(function(article, i) {
-      var read = self.hasRead(article.url);
-      html += '<div onclick="Articles.open(' + i + ')" style="' +
-        'background:white;border:2px solid ' + (read ? '#10b981' : '#e5e5e5') + ';' +
-        'border-radius:12px;padding:14px;cursor:pointer;display:flex;align-items:center;gap:12px;' +
-        (read ? 'opacity:0.6;' : '') +
-        '">' +
-        '<div style="width:48px;height:48px;background:linear-gradient(135deg,#a855f7,#7c3aed);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0">' + article.icon + '</div>' +
-        '<div style="flex:1;min-width:0">' +
-          '<div style="font-size:14px;font-weight:800;margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">' + article.title + '</div>' +
-          '<div style="font-size:12px;color:#a855f7;font-weight:800">' +
-            (read ? '✅ Sudah dibaca' : '💰 +' + article.reward + ' koin') +
+      
+      // Stats section (like Wikipedia infobox)
+      '<div style="padding:14px 20px;background:#f8f9fa">' +
+        '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;font-family:Georgia,serif">' +
+          '<div style="text-align:center">' +
+            '<div style="font-size:22px;font-weight:700;color:#36c">' + state.todayCount + '</div>' +
+            '<div style="font-size:11px;color:#54595d;text-transform:uppercase;letter-spacing:0.5px">Hari Ini</div>' +
+          '</div>' +
+          '<div style="text-align:center">' +
+            '<div style="font-size:22px;font-weight:700;color:#36c">' + state.totalRead + '</div>' +
+            '<div style="font-size:11px;color:#54595d;text-transform:uppercase;letter-spacing:0.5px">Total Baca</div>' +
+          '</div>' +
+          '<div style="text-align:center">' +
+            '<div style="font-size:22px;font-weight:700;color:#14866d">+' + state.totalEarned + '</div>' +
+            '<div style="font-size:11px;color:#54595d;text-transform:uppercase;letter-spacing:0.5px">Koin</div>' +
           '</div>' +
         '</div>' +
-        '<div style="font-size:20px;color:' + (read ? '#10b981' : '#a855f7') + ';font-weight:900">' + (read ? '✓' : '›') + '</div>' +
-      '</div>';
+      '</div>' +
+    '</div>';
+
+    // ===== COOLDOWN WARNING =====
+    var check = this.canRead();
+    if (!check.ok && check.cooldown) {
+      html += '<div style="background:#fef6e7;border:1px solid #fc3;border-radius:2px;padding:12px;margin-bottom:16px;font-family:Georgia,serif;font-size:13px;color:#ac6600;text-align:center">⏰ ' + check.reason + '</div>';
+    }
+
+    // ===== KATEGORI TABS =====
+    html += '<div style="background:#fff;border:1px solid #a2a9b1;border-radius:2px;margin-bottom:16px;overflow:hidden">' +
+      '<div style="padding:8px 12px;background:#eaecf0;border-bottom:1px solid #a2a9b1;font-family:Georgia,serif;font-size:13px;font-weight:700;color:#202122">Daftar Artikel</div>' +
+      '<div style="padding:12px 16px;display:flex;flex-wrap:wrap;gap:6px">';
+    
+    var catKeys = Object.keys(cats);
+    var allCatActive = this.currentCategory === 'all' ? 'background:#eaecf0;border-color:#a2a9b1;color:#202122' : 'background:#fff;border-color:#c8ccd1;color:#36c';
+    html += '<button onclick="Articles.setCategory(\'all\')" style="padding:6px 12px;border:1px solid #c8ccd1;border-radius:2px;font-family:Georgia,serif;font-size:12px;font-weight:700;cursor:pointer;' + allCatActive + '">🎯 Semua</button>';
+
+    catKeys.forEach(function(k) {
+      var cat = cats[k];
+      var active = self.currentCategory === k ? 'background:#eaecf0;border-color:#a2a9b1;color:#202122' : 'background:#fff;border-color:#c8ccd1;color:#36c';
+      var count = self.LIST.filter(function(a) { return self.getArticleCategory(a.url) === k; }).length;
+      html += '<button onclick="Articles.setCategory(\'' + k + '\')" style="padding:6px 12px;border:1px solid #c8ccd1;border-radius:2px;font-family:Georgia,serif;font-size:12px;font-weight:700;cursor:pointer;' + active + '">' + cat.icon + ' ' + cat.label + ' (' + count + ')</button>';
     });
+
+    html += '</div></div>';
+
+    // ===== FILTER ARTIKEL =====
+    var filtered = this.LIST;
+    if (this.currentCategory !== 'all') {
+      filtered = this.LIST.filter(function(a) {
+        return self.getArticleCategory(a.url) === self.currentCategory;
+      });
+    }
+
+    // ===== LIST ARTIKEL (WIKIPEDIA STYLE) =====
+    html += '<div style="background:#fff;border:1px solid #a2a9b1;border-radius:2px;overflow:hidden">';
+    html += '<div style="padding:8px 12px;background:#eaecf0;border-bottom:1px solid #a2a9b1;font-family:Georgia,serif;font-size:13px;font-weight:700;color:#202122">' + filtered.length + ' Artikel Tersedia</div>';
+
+    if (filtered.length === 0) {
+      html += '<div style="padding:24px;text-align:center;color:#54595d;font-family:Georgia,serif;font-size:13px">Tidak ada artikel di kategori ini</div>';
+    } else {
+      filtered.forEach(function(article) {
+        var index = self.LIST.indexOf(article);
+        var read = self.hasRead(article.url);
+        var cat = self.getArticleCategory(article.url);
+        var catInfo = cats[cat] || cats.umum;
+        
+        html += '<div onclick="Articles.open(' + index + ')" style="' +
+          'padding:12px 16px;' +
+          'border-bottom:1px solid #eaecf0;' +
+          'cursor:pointer;' +
+          'display:flex;align-items:flex-start;gap:12px;' +
+          (read ? 'background:#f8f9fa;' : '') +
+          'transition:background 0.15s' +
+          '" onmouseover="this.style.background=\'#f8f9fa\'" onmouseout="this.style.background=\'' + (read ? '#f8f9fa' : '#fff') + '\'">' +
+          
+          // Icon
+          '<div style="width:40px;height:40px;background:#f8f9fa;border:1px solid #c8ccd1;border-radius:2px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">' + article.icon + '</div>' +
+          
+          // Info
+          '<div style="flex:1;min-width:0">' +
+            // Title (Wikipedia blue link style)
+            '<div style="font-family:Georgia,serif;font-size:15px;font-weight:400;color:' + (read ? '#72777d' : '#36c') + ';margin-bottom:2px;line-height:1.3">' + self.esc(article.title) + '</div>' +
+            
+            // Meta info
+            '<div style="font-family:Georgia,serif;font-size:11px;color:#54595d;font-style:italic;margin-bottom:4px">' + catInfo.icon + ' ' + catInfo.label + ' • Wikipedia Indonesia</div>' +
+            
+            // Reward/Status
+            '<div style="font-family:Georgia,serif;font-size:11px;font-weight:700">' +
+              (read 
+                ? '<span style="color:#14866d">✓ Sudah dibaca hari ini</span>' 
+                : '<span style="color:#ac6600">💰 +' + article.reward + ' koin</span>') +
+            '</div>' +
+          '</div>' +
+          
+          // Arrow
+          '<div style="color:#36c;font-size:16px;font-weight:900;align-self:center">' + (read ? '' : '›') + '</div>' +
+        '</div>';
+      });
+    }
+    
     html += '</div>';
 
+    // ===== INFO BACA (Wikipedia style) =====
+    html += '<div style="background:#f8f9fa;border:1px solid #a2a9b1;border-radius:2px;padding:12px 16px;margin-top:16px;font-family:Georgia,serif;font-size:12px;color:#54595d;line-height:1.6">' +
+      '<div style="font-weight:700;color:#202122;margin-bottom:6px">ℹ️ Cara Kerja</div>' +
+      '• Baca artikel selama <strong>' + this.CONFIG.READ_TIME + ' detik</strong><br>' +
+      '• Dapat <strong>+' + this.CONFIG.REWARD_DEFAULT + ' koin</strong> per artikel<br>' +
+      '• Max <strong>' + this.CONFIG.MAX_PER_DAY + ' artikel</strong> per hari<br>' +
+      '• Tidak bisa baca artikel yang sama 2x dalam 1 hari' +
+    '</div>';
+
     c.innerHTML = html;
+  },
+
+  setCategory: function(cat) {
+    this.currentCategory = cat;
+    this.render();
   },
 
   esc: function(s) {
@@ -370,5 +479,5 @@ const Articles = {
 
 if (typeof window !== 'undefined') {
   window.Articles = Articles;
-  console.log('[articles] v3 loaded — ' + Articles.LIST.length + ' artikel');
+  console.log('[articles] v4 loaded (Wikipedia style) — ' + Articles.LIST.length + ' artikel');
 }
