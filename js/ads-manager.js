@@ -1,65 +1,71 @@
-/* LEARN EARN — ADS MANAGER v9 (aggressive inject) */
+/* YADSTORE — ADS MANAGER v10 (MONETAG PRIORITY) */
 
 window.AdsManager = {
   NETWORKS: {
+    monetag: {
+      name: 'Monetag',
+      enabled: true,
+      priority: 1,        // ← MONETAG UTAMA
+      swDomain: '5gvci.com',
+      zones: {
+        push: 11893259,
+        vignette: 11893258,      // ← CPM tertinggi
+        inpage: 11893257,
+        popunder: 11893256,
+      },
+      swZone: 11886708,
+      // Link untuk rewarded (vignette direct)
+      rewardedUrl: 'https://5gvci.com/400/11893258',
+      rewardedUrl2: 'https://5gvci.com/400/11893257',
+      rewardedUrl3: 'https://5gvci.com/400/11893256',
+    },
     adsterra: {
       name: 'Adsterra',
       enabled: true,
+      priority: 2,        // ← FALLBACK
       scripts: {
         popunder: 'https://pl31468159.profitableratecpmnetwork.com/43/b7/10/43b7103677aebe9ac1a73fef2f093d8e.js',
         socialbar: 'https://pl31468161.profitableratecpmnetwork.com/5a/74/05/5a7405d3227ef77d3f28c27fb6024aa6.js',
       },
       smartlink: 'https://www.profitableratecpmnetwork.com/hs7rgc2qv?key=ee5218af9bd180dc813a71fe59ddb5dd',
     },
-    monetag: {
-      name: 'Monetag',
-      enabled: true,
-      swDomain: '5gvci.com',
-      zones: {
-        push: 11893259,
-        vignette: 11893258,
-        inpage: 11893257,
-        popunder: 11893256,
-      },
-      swZone: 11886708,
-    },
   },
 
-  VERSION: 'v9',
+  VERSION: 'v10',
 
-  currentRotation: 'adsterra',
+  currentRotation: 'monetag',
   lastRotation: 0,
   ROTATION_INTERVAL: 60 * 1000,
   lastSmartlinkOpen: 0,
+  lastMonetagOpen: 0,
   SMARTLINK_COOLDOWN: 30 * 1000,
+  MONETAG_COOLDOWN: 30 * 1000,
   loadedScripts: {},
-  injected: {},   // cegah double inject
+  injected: {},
   initialized: false,
 
+  // ============================================
+  // INIT
+  // ============================================
   init() {
-    if (this.initialized) {
-      console.log('[AdsManager] already initialized');
-      return;
-    }
+    if (this.initialized) return;
     this.initialized = true;
-    console.log('[AdsManager] ' + this.VERSION + ' init');
+    console.log('[AdsManager] ' + this.VERSION + ' init (Monetag Priority)');
 
-    // 1. Register service worker (dengan cache bust)
+    // Register SW
     this.registerSW();
 
-    // 2. Inject ads SEKARANG (tidak tunggu lama)
-    this.loadBackgroundAds();
+    // Inject Monetag DULU (prioritas)
+    this.loadMonetagAds();
 
-    // 3. Inject ulang setelah 5 detik (backup)
-    setTimeout(() => this.loadBackgroundAds(true), 5000);
+    // Adsterra sebagai fallback (delay lebih lama)
+    setTimeout(() => this.loadAdsterraAds(), 3000);
 
-    // 4. Inject ulang setelah 15 detik (backup kedua)
-    setTimeout(() => this.loadBackgroundAds(true), 15000);
+    // Re-inject backup
+    setTimeout(() => this.loadMonetagAds(true), 8000);
+    setTimeout(() => this.loadAdsterraAds(true), 15000);
 
-    // 5. Rotasi tiap menit
-    setInterval(() => this.rotateBackground(), this.ROTATION_INTERVAL);
-
-    // 6. Cek script yang gagal load
+    // Reinject failed
     setInterval(() => this.reinjectFailed(), 30000);
 
     console.log('[AdsManager] Ready');
@@ -67,18 +73,12 @@ window.AdsManager = {
 
   registerSW() {
     if ('serviceWorker' in navigator) {
-      // Unregister SW lama dulu biar fresh
       navigator.serviceWorker.getRegistrations().then(regs => {
-        regs.forEach(reg => {
-          console.log('[AdsManager] Unregistering old SW:', reg.scope);
-          reg.unregister();
-        });
-
-        // Register ulang dengan cache bust
+        regs.forEach(reg => reg.unregister());
         const swUrl = '/sw.js?v=' + Date.now();
         navigator.serviceWorker.register(swUrl)
           .then(reg => {
-            console.log('[AdsManager] SW registered (fresh):', reg.scope);
+            console.log('[AdsManager] SW registered');
             if (reg.update) reg.update();
           })
           .catch(e => console.warn('[AdsManager] SW fail:', e.message));
@@ -86,96 +86,141 @@ window.AdsManager = {
     }
   },
 
-  loadBackgroundAds(force) {
-    console.log('[AdsManager] Loading ads...' + (force ? ' (force re-inject)' : ''));
-    const cb = Date.now(); // cache buster untuk URL iklan
-
-    // ====== ADSTERRA ======
-    const a = this.NETWORKS.adsterra;
-    if (a.enabled) {
-      // Popunder — inject langsung
-      if (force || !this.injected['adsterra-popunder']) {
-        this.injectScript(a.scripts.popunder + '?cb=' + cb, 'adsterra-popunder');
-        this.injected['adsterra-popunder'] = true;
-        console.log('[AdsManager] ✓ adsterra-popunder injected');
-      }
-
-      // Social bar — delay 1 detik
-      setTimeout(() => {
-        if (force || !this.injected['adsterra-socialbar']) {
-          this.injectScript(a.scripts.socialbar + '?cb=' + cb, 'adsterra-socialbar');
-          this.injected['adsterra-socialbar'] = true;
-          console.log('[AdsManager] ✓ adsterra-socialbar injected');
-        }
-      }, 1000);
-    }
-
-    // ====== MONETAG ======
+  // ============================================
+  // LOAD MONETAG ADS (PRIORITAS)
+  // ============================================
+  loadMonetagAds(force) {
+    console.log('[AdsManager] Loading MONETAG ads...' + (force ? ' (force)' : ''));
     const m = this.NETWORKS.monetag;
-    if (m.enabled) {
-      const d = m.swDomain;
-      const z = m.zones;
+    if (!m.enabled) return;
 
-      // Vignette — 500ms
-      setTimeout(() => {
-        if (force || !this.injected['monetag-vignette']) {
-          this.injectScript('https://' + d + '/act/files/tag.min.js?z=' + z.vignette + '&cb=' + cb, 'monetag-vignette');
-          this.injected['monetag-vignette'] = true;
-          console.log('[AdsManager] ✓ monetag-vignette injected');
-        }
-      }, 500);
+    const d = m.swDomain;
+    const z = m.zones;
+    const cb = Date.now();
 
-      // In-Page Push — 1500ms
-      setTimeout(() => {
-        if (force || !this.injected['monetag-inpage']) {
-          this.injectScript('https://' + d + '/act/files/tag.min.js?z=' + z.inpage + '&cb=' + cb, 'monetag-inpage');
-          this.injected['monetag-inpage'] = true;
-          console.log('[AdsManager] ✓ monetag-inpage injected');
-        }
-      }, 1500);
+    // Vignette — PRIORITAS 1 (CPM tertinggi)
+    setTimeout(() => {
+      if (force || !this.injected['monetag-vignette']) {
+        this.injectScript('https://' + d + '/act/files/tag.min.js?z=' + z.vignette + '&cb=' + cb, 'monetag-vignette');
+        this.injected['monetag-vignette'] = true;
+        console.log('[AdsManager] ✓ monetag-vignette (P1)');
+      }
+    }, 300);
 
-      // Push Notification — 2500ms
-      setTimeout(() => {
-        if (force || !this.injected['monetag-push']) {
-          this.injectScript('https://' + d + '/act/files/tag.min.js?z=' + z.push + '&cb=' + cb, 'monetag-push');
-          this.injected['monetag-push'] = true;
-          console.log('[AdsManager] ✓ monetag-push injected');
-        }
-      }, 2500);
+    // In-Page Push — PRIORITAS 2
+    setTimeout(() => {
+      if (force || !this.injected['monetag-inpage']) {
+        this.injectScript('https://' + d + '/act/files/tag.min.js?z=' + z.inpage + '&cb=' + cb, 'monetag-inpage');
+        this.injected['monetag-inpage'] = true;
+        console.log('[AdsManager] ✓ monetag-inpage (P2)');
+      }
+    }, 1200);
 
-      // Popunder — 3500ms
-      setTimeout(() => {
-        if (force || !this.injected['monetag-popunder']) {
-          this.injectScript('https://' + d + '/act/files/tag.min.js?z=' + z.popunder + '&cb=' + cb, 'monetag-popunder');
-          this.injected['monetag-popunder'] = true;
-          console.log('[AdsManager] ✓ monetag-popunder injected');
-        }
-      }, 3500);
-    }
+    // Popunder — PRIORITAS 3
+    setTimeout(() => {
+      if (force || !this.injected['monetag-popunder']) {
+        this.injectScript('https://' + d + '/act/files/tag.min.js?z=' + z.popunder + '&cb=' + cb, 'monetag-popunder');
+        this.injected['monetag-popunder'] = true;
+        console.log('[AdsManager] ✓ monetag-popunder (P3)');
+      }
+    }, 2000);
 
-    console.log('[AdsManager] All ads injected');
+    // Push — PRIORITAS 4 (optional)
+    setTimeout(() => {
+      if (force || !this.injected['monetag-push']) {
+        this.injectScript('https://' + d + '/act/files/tag.min.js?z=' + z.push + '&cb=' + cb, 'monetag-push');
+        this.injected['monetag-push'] = true;
+        console.log('[AdsManager] ✓ monetag-push (P4)');
+      }
+    }, 2800);
+
+    console.log('[AdsManager] Monetag ads injected');
   },
 
-  // Re-inject script yang gagal load
+  // ============================================
+  // LOAD ADSTERRA (FALLBACK)
+  // ============================================
+  loadAdsterraAds(force) {
+    console.log('[AdsManager] Loading Adsterra (fallback)...');
+    const a = this.NETWORKS.adsterra;
+    if (!a.enabled) return;
+
+    const cb = Date.now();
+
+    if (force || !this.injected['adsterra-popunder']) {
+      this.injectScript(a.scripts.popunder + '?cb=' + cb, 'adsterra-popunder');
+      this.injected['adsterra-popunder'] = true;
+    }
+
+    setTimeout(() => {
+      if (force || !this.injected['adsterra-socialbar']) {
+        this.injectScript(a.scripts.socialbar + '?cb=' + cb, 'adsterra-socialbar');
+        this.injected['adsterra-socialbar'] = true;
+      }
+    }, 1500);
+
+    console.log('[AdsManager] Adsterra ads injected');
+  },
+
   reinjectFailed() {
     Object.keys(this.loadedScripts).forEach(id => {
       if (this.loadedScripts[id] === false) {
-        console.log('[AdsManager] Re-injecting failed:', id);
-        this.injected[id] = false; // reset flag biar bisa inject ulang
+        console.log('[AdsManager] Re-inject failed:', id);
+        this.injected[id] = false;
       }
     });
   },
 
-  rotateBackground() {
-    const networks = ['adsterra', 'monetag'];
-    const currentIdx = networks.indexOf(this.currentRotation);
-    const nextIdx = (currentIdx + 1) % networks.length;
-    this.currentRotation = networks[nextIdx];
-    console.log('[AdsManager] Rotation:', this.currentRotation);
-    this.lastRotation = Date.now();
+  // ============================================
+  // OPEN REWARDED — MONETAG UTAMA
+  // ============================================
+  async openRewarded() {
+    const now = Date.now();
+
+    // Cek cooldown
+    if (now - this.lastMonetagOpen < this.MONETAG_COOLDOWN) {
+      const remain = Math.ceil((this.MONETAG_COOLDOWN - (now - this.lastMonetagOpen)) / 1000);
+      return { success: false, reason: 'cooldown', remain: remain };
+    }
+
+    console.log('[AdsManager] Opening MONETAG rewarded...');
+
+    const m = this.NETWORKS.monetag;
+
+    // Pilih salah satu URL (rotasi antara 3 zone)
+    const urls = [m.rewardedUrl, m.rewardedUrl2, m.rewardedUrl3];
+    const pickedUrl = urls[Math.floor(Math.random() * urls.length)];
+    console.log('[AdsManager] Monetag URL:', pickedUrl);
+
+    // Buka di tab baru
+    let popup = null;
+    try {
+      popup = window.open(pickedUrl, '_blank', 'width=800,height=600');
+    } catch (e) {
+      console.warn('[AdsManager] popup error:', e);
+    }
+
+    if (!popup || popup.closed) {
+      console.log('[AdsManager] Popup blocked → redirect');
+      try {
+        localStorage.setItem('yadstore_ad_pending', Date.now().toString());
+        window.location.href = pickedUrl;
+        return { success: true, method: 'redirect', network: 'monetag' };
+      } catch (e) {
+        // Fallback ke Adsterra
+        console.log('[AdsManager] Monetag failed, trying Adsterra fallback...');
+        return this.openAdsterraRewarded();
+      }
+    }
+
+    this.lastMonetagOpen = Date.now();
+    return { success: true, method: 'popup', network: 'monetag' };
   },
 
-  async openRewarded() {
+  // ============================================
+  // ADSTERRA REWARDED (FALLBACK)
+  // ============================================
+  async openAdsterraRewarded() {
     const now = Date.now();
     if (now - this.lastSmartlinkOpen < this.SMARTLINK_COOLDOWN) {
       const remain = Math.ceil((this.SMARTLINK_COOLDOWN - (now - this.lastSmartlinkOpen)) / 1000);
@@ -185,34 +230,30 @@ window.AdsManager = {
     const smartlink = this.NETWORKS.adsterra.smartlink;
     if (!smartlink) return { success: false, reason: 'no_smartlink' };
 
-    console.log('[AdsManager] Opening smartlink');
+    console.log('[AdsManager] Opening Adsterra (fallback)...');
 
     let popup = null;
     try {
       popup = window.open(smartlink, '_blank', 'width=800,height=600');
-    } catch (e) {
-      console.warn('[AdsManager] popup error:', e);
-    }
+    } catch (e) {}
 
     if (!popup || popup.closed) {
-      console.log('[AdsManager] Popup blocked → redirect');
       try {
-        localStorage.setItem('learnearn_ad_pending', Date.now().toString());
+        localStorage.setItem('yadstore_ad_pending', Date.now().toString());
         window.location.href = smartlink;
-        return { success: true, method: 'redirect' };
+        return { success: true, method: 'redirect', network: 'adsterra' };
       } catch (e) {
         return { success: false, reason: 'popup_blocked' };
       }
     }
 
     this.lastSmartlinkOpen = Date.now();
-    return { success: true, method: 'popup' };
+    return { success: true, method: 'popup', network: 'adsterra' };
   },
 
   injectScript(src, id) {
     return new Promise((resolve) => {
       try {
-        // Hapus script lama kalau ada (biar re-inject fresh)
         const old = document.getElementById(id);
         if (old) old.remove();
 
@@ -228,7 +269,7 @@ window.AdsManager = {
           if (resolved) return;
           resolved = true;
           this.loadedScripts[id] = ok;
-          console.log('[AdsManager] ' + (ok ? '✓' : '✗') + ' ' + id + ' loaded=' + ok);
+          console.log('[AdsManager] ' + (ok ? '✓' : '✗') + ' ' + id + ' = ' + ok);
           resolve(ok);
         };
 
@@ -237,7 +278,6 @@ window.AdsManager = {
         setTimeout(() => done(true), 8000);
         document.head.appendChild(s);
       } catch (e) {
-        console.warn('[AdsManager] inject error:', e);
         resolve(false);
       }
     });
@@ -247,14 +287,13 @@ window.AdsManager = {
 };
 
 // ============================================
-// AUTO INIT — panggil SEKARANG, bukan tunggu DOMContentLoaded
+// AUTO INIT
 // ============================================
 if (typeof window !== 'undefined') {
-  // Panggil langsung
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => window.AdsManager.init());
   } else {
     window.AdsManager.init();
   }
 }
-console.log('[ads-manager] v9 loaded');
+console.log('[ads-manager] v10 loaded (Monetag Priority)');
