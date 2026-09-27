@@ -126,6 +126,10 @@ body {
   } catch (e) {}
 })();
 </script>
+<link rel="manifest" href="/manifest.json">
+<link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
+<link rel="apple-touch-icon" href="/icons/icon-192.png">
+<meta name="apple-mobile-web-app-title" content="Learn Earn">
 </head>
 <body>
 <div id="app-splash">
@@ -390,6 +394,16 @@ body {
     document.addEventListener('gesturestart', function(e) { e.preventDefault(); });
     document.addEventListener('dblclick', function(e) { e.preventDefault(); }, { passive: false });
 })();
+</script>
+<script>
+// PWA Service Worker registration
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('/sw.js?v=1')
+      .then(function(reg) { console.log('[SW] Registered:', reg.scope); })
+      .catch(function(err) { console.warn('[SW] Register failed:', err); });
+  });
+}
 </script>
 </body>
 </html>
