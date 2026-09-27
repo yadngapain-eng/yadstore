@@ -49,6 +49,7 @@ const Admin = {
           withdrawals: 'Withdraw Request',
           limits: 'Min Withdraw Limit',
           products: 'Produk & Markup',
+          massboost: '💰 Mass Boost',
           users: 'Users',
           debug: '🐛 Debug & Monitor',
           settings: 'Pengaturan'
@@ -114,6 +115,7 @@ const Admin = {
     else if (this.section === 'withdrawals') this.renderWithdrawals(c);
     else if (this.section === 'limits') this.renderLimits(c);
     else if (this.section === 'products') this.renderProducts(c);
+    else if (this.section === 'massboost') this.renderMassBoost(c);
     else if (this.section === 'users') this.renderUsers(c);
     else if (this.section === 'debug') this.renderDebug(c);
     else if (this.section === 'settings') this.renderSettings(c);
@@ -822,6 +824,274 @@ const Admin = {
       '<div class="stat-val">' + value + '</div>' +
       '<div class="stat-label">' + label + '</div>' +
     '</div>';
+  },
+
+  // ============================================
+  // MASS BOOST
+  // ============================================
+  massboostSelectedUsers: {},
+
+  async renderMassBoost(c) {
+    c.innerHTML = '<div class="loading-inline">Memuat data user...</div>';
+    this.massboostSelectedUsers = {};
+    try {
+      const snap = await this.db.collection('users').limit(500).get();
+      const users = snap.docs.map(d => ({ uid: d.id, ...d.data() }));
+      const totalBalance = users.reduce((s, u) => s + (u.balance || 0), 0);
+      const totalXp = users.reduce((s, u) => s + (u.xp || 0), 0);
+
+      let html = '<div class="stats-grid">' +
+        this._statCard('👥', users.length, 'Total User') +
+        this._statCard('💰', 'Rp ' + totalBalance.toLocaleString('id-ID'), 'Total Koin') +
+        this._statCard('⭐', totalXp.toLocaleString('id-ID'), 'Total XP') +
+        '</div>';
+
+      html += '<div class="card" style="background:linear-gradient(135deg,#fff9e6,#fff4cc);border:2px solid #ffc800">' +
+        '<h3 style="color:#7a5d00">💰 Mass Boost</h3>' +
+        '<p style="color:#7a5d00;font-size:13px;margin-bottom:14px">Pilih user, lalu naikkan coin/XP</p>' +
+        '<div style="display:flex;gap:8px;align-items:center;margin-bottom:14px;flex-wrap:wrap">' +
+        '<label style="display:flex;align-items:center;gap:8px;font-weight:800;font-size:13px;cursor:pointer">' +
+        '<input type="checkbox" id="massboost-select-all" onchange="Admin.massboostToggleAll(this)" style="width:20px;height:20px">' +
+        '<span>Pilih Semua</span></label>' +
+        '<span id="massboost-selected-count" style="margin-left:auto;background:#fff;padding:4px 12px;border-radius:999px;font-weight:900;font-size:12px;color:#7a5d00">0 dipilih</span>' +
+        '</div>';
+
+      html += '<div style="background:white;border-radius:12px;padding:14px;margin-bottom:10px">' +
+        '<h4 style="font-size:13px;font-weight:900;margin-bottom:8px">💰 Naikkan Koin</h4>' +
+        '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">' +
+        '<button class="btn-preset" onclick="Admin.massboostCoin(1000)">+1K</button>' +
+        '<button class="btn-preset" onclick="Admin.massboostCoin(5000)">+5K</button>' +
+        '<button class="btn-preset" onclick="Admin.massboostCoin(10000)">+10K</button>' +
+        '<button class="btn-preset" onclick="Admin.massboostCoin(50000)">+50K</button>' +
+        '<button class="btn-preset" onclick="Admin.massboostCoin(100000)">+100K</button>' +
+        '</div><div style="display:flex;gap:8px">' +
+        '<input type="number" id="massboost-coin-input" placeholder="Nominal lain" style="flex:1;padding:10px;border:2px solid #e5e5e5;border-radius:8px;font-weight:700">' +
+        '<button class="btn-primary" onclick="Admin.massboostCoin(null)">Boost</button></div></div>';
+
+      html += '<div style="background:white;border-radius:12px;padding:14px;margin-bottom:10px">' +
+        '<h4 style="font-size:13px;font-weight:900;margin-bottom:8px">⭐ Naikkan XP</h4>' +
+        '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">' +
+        '<button class="btn-preset" onclick="Admin.massboostXp(100)">+100</button>' +
+        '<button class="btn-preset" onclick="Admin.massboostXp(500)">+500</button>' +
+        '<button class="btn-preset" onclick="Admin.massboostXp(1000)">+1K</button>' +
+        '<button class="btn-preset" onclick="Admin.massboostXp(5000)">+5K</button>' +
+        '</div><div style="display:flex;gap:8px">' +
+        '<input type="number" id="massboost-xp-input" placeholder="Nominal lain" style="flex:1;padding:10px;border:2px solid #e5e5e5;border-radius:8px;font-weight:700">' +
+        '<button class="btn-primary" onclick="Admin.massboostXp(null)">Boost</button></div></div>';
+
+      html += '<div style="background:white;border-radius:12px;padding:14px;margin-bottom:10px">' +
+        '<h4 style="font-size:13px;font-weight:900;margin-bottom:8px">💎 Naikkan Gems</h4>' +
+        '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">' +
+        '<button class="btn-preset" onclick="Admin.massboostGems(10)">+10</button>' +
+        '<button class="btn-preset" onclick="Admin.massboostGems(50)">+50</button>' +
+        '<button class="btn-preset" onclick="Admin.massboostGems(100)">+100</button>' +
+        '<button class="btn-preset" onclick="Admin.massboostGems(500)">+500</button>' +
+        '</div><div style="display:flex;gap:8px">' +
+        '<input type="number" id="massboost-gems-input" placeholder="Nominal lain" style="flex:1;padding:10px;border:2px solid #e5e5e5;border-radius:8px;font-weight:700">' +
+        '<button class="btn-primary" onclick="Admin.massboostGems(null)">Boost</button></div></div>';
+
+      html += '<div style="background:white;border-radius:12px;padding:14px;margin-bottom:10px">' +
+        '<h4 style="font-size:13px;font-weight:900;margin-bottom:8px">🎁 Bonus</h4>' +
+        '<div style="display:flex;gap:8px;flex-wrap:wrap">' +
+        '<button class="btn-primary" onclick="Admin.massboostHearts()" style="background:#ff4b4b">❤️ Hearts → 5</button>' +
+        '<button class="btn-primary" onclick="Admin.massboostUnlockAllAch()" style="background:#f59e0b">🏆 Unlock Semua</button>' +
+        '</div></div>';
+
+      html += '<div style="background:linear-gradient(135deg,#ffebee,#ffcdd2);border:2px solid #ff4b4b;border-radius:12px;padding:14px;margin-bottom:10px">' +
+        '<h4 style="font-size:13px;font-weight:900;color:#c62828;margin-bottom:8px">⚠️ DANGER</h4>' +
+        '<div style="display:flex;gap:8px;flex-wrap:wrap">' +
+        '<button class="btn-preset" onclick="Admin.massboostResetBalance()" style="border-color:#ff4b4b;color:#ff4b4b">💸 Reset Koin</button>' +
+        '<button class="btn-preset" onclick="Admin.massboostResetAll()" style="border-color:#ff4b4b;color:#ff4b4b">☠️ Reset Semua</button>' +
+        '</div></div>';
+
+      html += '<div class="card"><h3>👥 Pilih User (' + users.length + ')</h3>' +
+        '<div class="table-wrap"><table><thead><tr>' +
+        '<th style="width:40px"><input type="checkbox" onchange="Admin.massboostToggleAll(this)" style="width:18px;height:18px"></th>' +
+        '<th>User</th><th>Saldo</th><th>XP</th><th>Gems</th><th>Ach</th></tr></thead><tbody>';
+
+      users.forEach(u => {
+        const ach = (u.achievements || []).length;
+        html += '<tr>' +
+          '<td><input type="checkbox" class="massboost-user-cb" data-uid="' + u.uid + '" onchange="Admin.massboostToggleUser(this)" style="width:18px;height:18px;cursor:pointer"></td>' +
+          '<td>' + (u.avatar || '👤') + ' ' + (u.displayName || '-') + '</td>' +
+          '<td>Rp ' + (u.balance || 0).toLocaleString('id-ID') + '</td>' +
+          '<td>' + (u.xp || 0).toLocaleString('id-ID') + '</td>' +
+          '<td>' + (u.gems || 0) + '</td>' +
+          '<td>' + ach + '</td></tr>';
+      });
+      html += '</tbody></table></div></div>';
+      c.innerHTML = html;
+    } catch (e) {
+      console.error('[Admin] renderMassBoost error:', e);
+      c.innerHTML = '<div class="card"><p style="color:red">Error: ' + e.message + '</p></div>';
+    }
+  },
+
+  massboostToggleAll(cb) {
+    const checked = cb.checked;
+    document.querySelectorAll('.massboost-user-cb').forEach(c => {
+      c.checked = checked;
+      const uid = c.getAttribute('data-uid');
+      if (checked) this.massboostSelectedUsers[uid] = true;
+      else delete this.massboostSelectedUsers[uid];
+    });
+    const top = document.getElementById('massboost-select-all');
+    if (top) top.checked = checked;
+    this.massboostUpdateCount();
+  },
+
+  massboostToggleUser(cb) {
+    const uid = cb.getAttribute('data-uid');
+    if (cb.checked) this.massboostSelectedUsers[uid] = true;
+    else delete this.massboostSelectedUsers[uid];
+    this.massboostUpdateCount();
+  },
+
+  massboostUpdateCount() {
+    const n = Object.keys(this.massboostSelectedUsers).length;
+    const el = document.getElementById('massboost-selected-count');
+    if (el) el.textContent = n + ' dipilih';
+  },
+
+  massboostGetUIDs() {
+    const uids = Object.keys(this.massboostSelectedUsers);
+    if (uids.length === 0) { alert('Pilih user dulu!'); return []; }
+    return uids;
+  },
+
+  async massboostCoin(amount) {
+    if (amount === null) amount = parseInt(document.getElementById('massboost-coin-input').value) || 0;
+    if (amount <= 0) { alert('Nominal > 0'); return; }
+    const uids = this.massboostGetUIDs(); if (!uids.length) return;
+    if (!confirm('Boost Koin +' + amount.toLocaleString('id-ID') + ' untuk ' + uids.length + ' user?')) return;
+    try {
+      let ok = 0;
+      for (const uid of uids) {
+        const ref = this.db.collection('users').doc(uid);
+        const doc = await ref.get();
+        if (!doc.exists) continue;
+        const d = doc.data();
+        await ref.update({
+          balance: (d.balance || 0) + amount,
+          totalEarned: (d.totalEarned || 0) + amount,
+          updatedAt: new Date().toISOString(),
+          lastBoostBy: this.user.email,
+        });
+        ok++;
+      }
+      alert('✅ ' + ok + ' user di-boost +' + amount.toLocaleString('id-ID'));
+      this.renderMassBoost(document.getElementById('content'));
+    } catch (e) { alert('Error: ' + e.message); }
+  },
+
+  async massboostXp(amount) {
+    if (amount === null) amount = parseInt(document.getElementById('massboost-xp-input').value) || 0;
+    if (amount <= 0) { alert('Nominal > 0'); return; }
+    const uids = this.massboostGetUIDs(); if (!uids.length) return;
+    if (!confirm('Boost XP +' + amount + ' untuk ' + uids.length + ' user?')) return;
+    try {
+      let ok = 0;
+      for (const uid of uids) {
+        const ref = this.db.collection('users').doc(uid);
+        const doc = await ref.get();
+        if (!doc.exists) continue;
+        const d = doc.data();
+        await ref.update({ xp: (d.xp || 0) + amount, updatedAt: new Date().toISOString() });
+        ok++;
+      }
+      alert('✅ ' + ok + ' user di-boost XP +' + amount);
+      this.renderMassBoost(document.getElementById('content'));
+    } catch (e) { alert('Error: ' + e.message); }
+  },
+
+  async massboostGems(amount) {
+    if (amount === null) amount = parseInt(document.getElementById('massboost-gems-input').value) || 0;
+    if (amount <= 0) { alert('Nominal > 0'); return; }
+    const uids = this.massboostGetUIDs(); if (!uids.length) return;
+    if (!confirm('Boost Gems +' + amount + ' untuk ' + uids.length + ' user?')) return;
+    try {
+      let ok = 0;
+      for (const uid of uids) {
+        const ref = this.db.collection('users').doc(uid);
+        const doc = await ref.get();
+        if (!doc.exists) continue;
+        const d = doc.data();
+        await ref.update({ gems: (d.gems || 0) + amount, updatedAt: new Date().toISOString() });
+        ok++;
+      }
+      alert('✅ ' + ok + ' user di-boost Gems +' + amount);
+      this.renderMassBoost(document.getElementById('content'));
+    } catch (e) { alert('Error: ' + e.message); }
+  },
+
+  async massboostHearts() {
+    const uids = this.massboostGetUIDs(); if (!uids.length) return;
+    if (!confirm('Reset hearts ke 5 untuk ' + uids.length + ' user?')) return;
+    try {
+      let ok = 0;
+      for (const uid of uids) {
+        await this.db.collection('users').doc(uid).update({
+          hearts: 5, heartsUpdated: Date.now(), updatedAt: new Date().toISOString(),
+        });
+        ok++;
+      }
+      alert('✅ ' + ok + ' user di-reset hearts');
+      this.renderMassBoost(document.getElementById('content'));
+    } catch (e) { alert('Error: ' + e.message); }
+  },
+
+  async massboostUnlockAllAch() {
+    const uids = this.massboostGetUIDs(); if (!uids.length) return;
+    if (!confirm('Unlock SEMUA achievement untuk ' + uids.length + ' user?')) return;
+    try {
+      const allIds = (window.DL && window.DL.ACH) ? window.DL.ACH.map(a => a.id) : [];
+      if (!allIds.length) { alert('⚠️ Tidak bisa akses list achievement'); return; }
+      let ok = 0;
+      for (const uid of uids) {
+        await this.db.collection('users').doc(uid).update({
+          achievements: allIds, updatedAt: new Date().toISOString(),
+        });
+        ok++;
+      }
+      alert('✅ ' + ok + ' user di-unlock ' + allIds.length + ' achievement');
+      this.renderMassBoost(document.getElementById('content'));
+    } catch (e) { alert('Error: ' + e.message); }
+  },
+
+  async massboostResetBalance() {
+    const uids = this.massboostGetUIDs(); if (!uids.length) return;
+    if (!confirm('⚠️ Reset Koin ke 0 untuk ' + uids.length + ' user?')) return;
+    if (!confirm('Yakin? Tidak bisa dibalik!')) return;
+    try {
+      let ok = 0;
+      for (const uid of uids) {
+        await this.db.collection('users').doc(uid).update({
+          balance: 0, updatedAt: new Date().toISOString(),
+        });
+        ok++;
+      }
+      alert('✅ ' + ok + ' user di-reset koin');
+      this.renderMassBoost(document.getElementById('content'));
+    } catch (e) { alert('Error: ' + e.message); }
+  },
+
+  async massboostResetAll() {
+    const uids = this.massboostGetUIDs(); if (!uids.length) return;
+    if (!confirm('☠️ Reset SEMUA stats untuk ' + uids.length + ' user?')) return;
+    if (!confirm('Yakin BANGET? Semua progress hilang!')) return;
+    try {
+      let ok = 0;
+      for (const uid of uids) {
+        await this.db.collection('users').doc(uid).update({
+          balance: 0, totalEarned: 0, xp: 0, gems: 0, hearts: 5, streak: 0,
+          completedLessons: [], achievements: [], totalCorrect: 0, totalWrong: 0,
+          updatedAt: new Date().toISOString(),
+        });
+        ok++;
+      }
+      alert('✅ ' + ok + ' user di-reset total');
+      this.renderMassBoost(document.getElementById('content'));
+    } catch (e) { alert('Error: ' + e.message); }
   },
 
   // ============================================
