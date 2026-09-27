@@ -1,13 +1,11 @@
-/* LEARN EARN — REWARD SYSTEM v2 */
+/* ============================================
+   YADSTORE — REWARD SYSTEM v3 (CLEAN)
+   ============================================ */
 
-const Rewards = {
+var Rewards = {
   CONFIG: {
-    MAX_HEARTS: 5,
-    HEART_REGEN_HOURS: 4,
-    HEART_COST_GEMS: 50,
-
     MISSION_REWARDS: {
-      daily_login: 15,   // naik dari 10 → 15
+      daily_login: 15,
       watch_ad: 1,
       complete_lesson: 5,
       perfect_score: 20,
@@ -18,145 +16,27 @@ const Rewards = {
       streak_30: 1000,
       invite_friend: 500,
     },
-
-    LEVEL_REWARDS: (level) => level * 50,
-
+    LEVEL_REWARDS: function(level) { return level * 50; },
     COIN_TO_RUPIAH: 1,
-    MIN_WITHDRAW: 10000,
+    MIN_WITHDRAW: 1000,
     AD_WATCH_LIMIT: 5,
     AD_COOLDOWN_SECONDS: 30,
-
-    // ====== DAILY SPIN HEART (peluang berjenjang) ======
-    SPIN_REWARDS: [
-      { hearts: 1,  chance: 45 },   // 45%
-      { hearts: 2,  chance: 25 },   // 25%
-      { hearts: 3,  chance: 15 },   // 15%
-      { hearts: 5,  chance: 8  },   // 8%
-      { hearts: 8,  chance: 5  },   // 5%
-      { hearts: 10, chance: 2  },   // 2%
-    ],
-
-    // ====== AD COIN REWARDS (peluang berjenjang) ======
-    // Semakin besar coin → semakin kecil peluang
-    AD_REWARDS: [
-      { coins: 1,   chance: 45.0 },   // 45%   — paling sering
-      { coins: 2,   chance: 25.0 },   // 25%
-      { coins: 5,   chance: 15.0 },   // 15%
-      { coins: 10,  chance: 8.0  },   // 8%
-      { coins: 20,  chance: 4.0  },   // 4%
-      { coins: 30,  chance: 2.0  },   // 2%
-      { coins: 50,  chance: 0.8  },   // 0.8%
-      { coins: 75,  chance: 0.15 },   // 0.15%
-      { coins: 100, chance: 0.04 },   // 0.04%
-      { coins: 200, chance: 0.01 },   // 0.01% — SUPER JACKPOT
-    ],
   },
 
-  // ============================================
-  // SISTEM PELUANG BERJENJANG
-  // ============================================
-  _rollReward: function(rewardsList) {
-    // Total chance harus 100 (kalau tidak, normalisasi otomatis)
-    var total = 0;
-    for (var i = 0; i < rewardsList.length; i++) total += rewardsList[i].chance;
-
-    // Ambil angka random 0-100
-    var roll = Math.random() * total;
-    var cumulative = 0;
-
-    for (var j = 0; j < rewardsList.length; j++) {
-      cumulative += rewardsList[j].chance;
-      if (roll < cumulative) return rewardsList[j];
-    }
-    return rewardsList[rewardsList.length - 1]; // fallback: hadiah terakhir
-  },
-
-  // ============================================
-  // DAILY SPIN HEART (1x/hari)
-  // ============================================
-  canSpinToday: function() {
-    var today = new Date().toISOString().split('T')[0];
-    var lastSpin = this.get('lastSpinDate', null);
-    return lastSpin !== today;
-  },
-
-  getLastSpinDate: function() {
-    return this.get('lastSpinDate', null);
-  },
-
-  async doSpin() {
-    if (!this.canSpinToday()) {
-      return { success: false, reason: 'already_spun' };
-    }
-    var today = new Date().toISOString().split('T')[0];
-    this.set('lastSpinDate', today);
-
-    // Roll reward
-    var reward = this._rollReward(this.CONFIG.SPIN_REWARDS);
-    var hearts = reward.hearts;
-
-    // Tambah heart ke player
-    if (typeof DL !== 'undefined' && DL.addHeart) {
-      // addHeart max 5 default. Bypass limit untuk spin reward
-      var s = DL.getState();
-      s.hearts = Math.min(5, (s.hearts || 0) + hearts);
-      s.heartsUpdated = Date.now();
-      DL.save(s);
-    }
-
-    // Simpan history
-    var state = this.getState();
-    state.history = state.history || [];
-    state.history.unshift({
-      type: 'spin',
-      amount: hearts,
-      reason: 'Daily Spin (+' + hearts + ' heart)',
-      date: new Date().toISOString(),
-    });
-    if (state.history.length > 200) state.history = state.history.slice(0, 200);
-    this.save(state);
-
-    // Sync ke Firestore
-    this.syncToFirestore();
-
-    // Update UI stats
-    if (typeof DuoUI !== 'undefined' && DuoUI.renderStats) {
-      try { DuoUI.renderStats(); } catch(e) {}
-    }
-
-    return { success: true, hearts: hearts };
-  },
-
-  // ============================================
-  // GET AD REWARD (pakai peluang berjenjang)
-  // ============================================
-  _getAdRewardCoin: function() {
-    var reward = this._rollReward(this.CONFIG.AD_REWARDS);
-    return reward.coins;
-  },
-
-  get(key, def) {
+  // ===== STORAGE =====
+  get: function(key, def) {
     try {
-      const v = localStorage.getItem('learnearn_reward_' + key);
+      var v = localStorage.getItem('yadstore_reward_' + key);
       return v !== null ? JSON.parse(v) : def;
     } catch (e) { return def; }
   },
-  set(key, val) {
-    try { localStorage.setItem('learnearn_reward_' + key, JSON.stringify(val)); } catch (e) {}
+  set: function(key, val) {
+    try { localStorage.setItem('yadstore_reward_' + key, JSON.stringify(val)); } catch (e) {}
   },
 
-  getState() {
-    const today = new Date().toISOString().split('T')[0];
-    var lastAdDate = this.get('lastAdDate', null);
-
-    // Kalau lastAdDate berbeda dari hari ini → reset counter (hari baru)
-    if (lastAdDate !== today) {
-      this.set('lastAdWatch', 0);
-      this.set('lastAdDate', today);
-      this.set('lastAdTime', 0);
-      lastAdDate = today;
-    }
-
+  // ===== STATE =====
+  getState: function() {
+    var today = new Date().toISOString().split('T')[0];
     return {
       balance: this.get('balance', 0),
       totalEarned: this.get('totalEarned', 0),
@@ -165,7 +45,7 @@ const Rewards = {
       withdrawCount: this.get('withdrawCount', 0),
       lastLogin: this.get('lastLogin', null),
       lastAdWatch: this.get('lastAdWatch', 0),
-      lastAdDate: lastAdDate,
+      lastAdDate: this.get('lastAdDate', today),
       lastAdTime: this.get('lastAdTime', 0),
       unlockedRewards: this.get('unlockedRewards', []),
       history: this.get('history', []),
@@ -174,30 +54,31 @@ const Rewards = {
     };
   },
 
-  save(state) {
-    Object.keys(state).forEach(k => this.set(k, state[k]));
+  save: function(state) {
+    var self = this;
+    Object.keys(state).forEach(function(k) { self.set(k, state[k]); });
   },
 
-  addCoin(amount, reason) {
-    const state = this.getState();
+  // ===== ADD COIN =====
+  addCoin: function(amount, reason) {
+    var state = this.getState();
     state.balance += amount;
     state.totalEarned += amount;
     state.history.unshift({
       type: 'earn',
-      amount,
+      amount: amount,
       reason: reason || 'Reward',
       date: new Date().toISOString(),
     });
     if (state.history.length > 200) state.history = state.history.slice(0, 200);
     this.save(state);
-
     if (typeof Animate !== 'undefined') Animate.toast('+' + amount + ' koin 🪙', 'success');
     this.syncToFirestore();
     return state.balance;
   },
 
-  spendCoin(amount, reason) {
-    const state = this.getState();
+  spendCoin: function(amount, reason) {
+    var state = this.getState();
     if (state.balance < amount) {
       if (typeof Animate !== 'undefined') Animate.toast('Saldo tidak cukup', 'error');
       return false;
@@ -206,7 +87,7 @@ const Rewards = {
     state.totalSpent += amount;
     state.history.unshift({
       type: 'spend',
-      amount,
+      amount: amount,
       reason: reason || 'Pembelian',
       date: new Date().toISOString(),
     });
@@ -215,117 +96,82 @@ const Rewards = {
     return true;
   },
 
-  // ============================================
-  // SYNC TO FIRESTORE
-  // ============================================
-  syncToFirestore() {
+  // ===== SYNC TO FIRESTORE =====
+  syncToFirestore: function() {
     if (typeof Auth === 'undefined' || !Auth.db || !Auth.user || Auth.user.isLocal) return;
     try {
-      const state = this.getState();
+      var state = this.getState();
       Auth.db.collection('users').doc(Auth.user.uid).set({
         balance: state.balance,
         totalEarned: state.totalEarned,
         totalSpent: state.totalSpent,
         totalWithdrawn: state.totalWithdrawn,
-        // ===== AD COUNTER (sync biar tidak reset) =====
-        lastAdWatch: state.lastAdWatch || 0,
-        lastAdDate: state.lastAdDate || null,
-        lastAdTime: state.lastAdTime || 0,
-        // ===== DAILY SPIN =====
-        lastSpinDate: this.get('lastSpinDate', null),
+        withdrawCount: state.withdrawCount || 0,
         updatedAt: new Date().toISOString(),
       }, { merge: true });
     } catch (e) { console.warn('[Rewards] sync error:', e); }
   },
 
-  // ============================================
-  // SYNC FROM FIRESTORE (dipanggil saat app load)
-  // Ambil data ad counter dari Firestore ke localStorage
-  // ============================================
-  async syncFromFirestore() {
-    if (typeof Auth === 'undefined' || !Auth.db || !Auth.user || Auth.user.isLocal) return;
-    try {
-      const doc = await Auth.db.collection('users').doc(Auth.user.uid).get();
-      if (!doc.exists) return;
-      const data = doc.data();
-
-      const today = new Date().toISOString().split('T')[0];
-      const lastAdDate = data.lastAdDate || null;
-      const lastAdWatch = data.lastAdWatch || 0;
-
-      // Kalau lastAdDate di Firestore = hari ini, pakai jumlahnya
-      // Kalau lastAdDate hari lain, reset ke 0 (hari baru)
-      if (lastAdDate === today) {
-        this.set('lastAdWatch', lastAdWatch);
-        this.set('lastAdDate', lastAdDate);
-        this.set('lastAdTime', data.lastAdTime || 0);
-        console.log('[Rewards] Ad counter synced from Firestore:', lastAdWatch, '/', this.CONFIG.AD_WATCH_LIMIT);
-      } else {
-        // Hari baru → reset
-        this.set('lastAdWatch', 0);
-        this.set('lastAdDate', today);
-        this.set('lastAdTime', 0);
-        console.log('[Rewards] New day, ad counter reset to 0');
-        // Sync balik ke Firestore
-        this.syncToFirestore();
-      }
-    } catch (e) {
-      console.warn('[Rewards] syncFromFirestore error:', e);
-    }
-  },
-
-  // ============================================
-  // DAILY LOGIN
-  // ============================================
-  checkDailyLogin() {
-    const state = this.getState();
-    const today = new Date().toISOString().split('T')[0];
+  // ===== DAILY LOGIN =====
+  checkDailyLogin: function() {
+    var state = this.getState();
+    var today = new Date().toISOString().split('T')[0];
     if (state.lastLogin === today) return 0;
-
     state.lastLogin = today;
     this.save(state);
-    const reward = this.CONFIG.MISSION_REWARDS.daily_login;
+    var reward = this.CONFIG.MISSION_REWARDS.daily_login;
     this.addCoin(reward, 'Login harian');
-
-    // Bonus hearts
-    if (typeof DL !== 'undefined' && DL.addHeart) {
-      DL.addHeart(1);
-    }
+    if (typeof DL !== 'undefined' && DL.addHeart) DL.addHeart(1);
     return reward;
   },
 
-  // ============================================
-  // WATCH AD (dengan Monetag)
-  // ============================================
-  canWatchAd() {
-    const state = this.getState();
-    const today = new Date().toISOString().split('T')[0];
+  // ===== RANDOM COIN =====
+  getRandomRange: function(min, max) {
+    var range = max - min + 1;
+    try {
+      if (window.crypto && window.crypto.getRandomValues) {
+        var arr = new Uint32Array(1);
+        window.crypto.getRandomValues(arr);
+        return min + (arr[0] % range);
+      }
+    } catch (e) {}
+    return min + Math.floor(Math.random() * range);
+  },
+
+  getRandomCoin: function() {
+    return this.getRandomRange(1, 100);
+  },
+
+  // ===== WATCH AD =====
+  canWatchAd: function() {
+    var state = this.getState();
+    var today = new Date().toISOString().split('T')[0];
     if (state.lastAdDate !== today) return true;
     if (state.lastAdWatch >= this.CONFIG.AD_WATCH_LIMIT) return false;
-    // Cooldown check
-    const now = Date.now();
+    var now = Date.now();
     if (state.lastAdTime && (now - state.lastAdTime) < this.CONFIG.AD_COOLDOWN_SECONDS * 1000) return false;
     return true;
   },
 
-  getAdCooldownRemaining() {
-    const state = this.getState();
+  getAdCooldownRemaining: function() {
+    var state = this.getState();
     if (!state.lastAdTime) return 0;
-    const elapsed = (Date.now() - state.lastAdTime) / 1000;
-    const remain = this.CONFIG.AD_COOLDOWN_SECONDS - elapsed;
+    var elapsed = (Date.now() - state.lastAdTime) / 1000;
+    var remain = this.CONFIG.AD_COOLDOWN_SECONDS - elapsed;
     return remain > 0 ? Math.ceil(remain) : 0;
   },
 
-  getAdWatchedToday() {
-    const state = this.getState();
-    const today = new Date().toISOString().split('T')[0];
+  getAdWatchedToday: function() {
+    var state = this.getState();
+    var today = new Date().toISOString().split('T')[0];
     if (state.lastAdDate !== today) return 0;
     return state.lastAdWatch;
   },
 
-  async watchAdFlow() {
+  watchAdFlow: function() {
+    var self = this;
     if (!this.canWatchAd()) {
-      const cd = this.getAdCooldownRemaining();
+      var cd = this.getAdCooldownRemaining();
       if (cd > 0) {
         if (typeof Animate !== 'undefined') Animate.toast('Tunggu ' + cd + ' detik lagi', 'error');
       } else {
@@ -335,105 +181,63 @@ const Rewards = {
     }
 
     if (typeof window.AdsManager === 'undefined') {
-      if (typeof Animate !== 'undefined') Animate.toast('Iklan belum siap, tunggu sebentar', 'error');
+      if (typeof Animate !== 'undefined') Animate.toast('Iklan belum siap, coba lagi', 'error');
       return false;
     }
 
-    if (typeof Animate !== 'undefined') {
-      Animate.toast('Membuka iklan di tab baru...', 'info');
-    }
+    if (typeof Animate !== 'undefined') Animate.toast('Membuka iklan di tab baru...', 'info');
 
-    // Buka smartlink
-    const result = await window.AdsManager.openRewarded();
-
-    if (!result.success) {
-      if (result.reason === 'cooldown') {
-        if (typeof Animate !== 'undefined') Animate.toast('Tunggu ' + result.remain + ' detik lagi', 'error');
-      } else {
-        if (typeof Animate !== 'undefined') Animate.toast('Iklan gagal dibuka', 'error');
+    window.AdsManager.openRewarded().then(function(result) {
+      if (!result.success) {
+        if (result.reason === 'cooldown') {
+          if (typeof Animate !== 'undefined') Animate.toast('Tunggu ' + result.remain + ' detik lagi', 'error');
+        } else {
+          if (typeof Animate !== 'undefined') Animate.toast('Iklan gagal dibuka', 'error');
+        }
+        return;
       }
-      return false;
-    }
 
-    // Kalau redirect — proses reward saat balik
-    if (result.method === 'redirect') {
-      try { localStorage.setItem('learnearn_ad_pending', Date.now().toString()); } catch (e) {}
-      return true;
-    }
+      if (result.method === 'redirect') {
+        try { localStorage.setItem('yadstore_ad_pending', Date.now().toString()); } catch (e) {}
+        return;
+      }
 
-    // Kalau popup — kasih reward setelah delay
-    if (typeof Animate !== 'undefined') {
-      Animate.toast('Nonton iklan dulu, lalu tutup tab-nya ✅', 'info');
-    }
+      if (typeof Animate !== 'undefined') {
+        Animate.toast('Nonton iklan dulu, lalu tutup tab-nya ✅', 'info');
+      }
+      setTimeout(function() { self.giveAdReward(); }, 8000);
+    });
 
-    setTimeout(() => { this.giveAdReward(); }, 8000);
     return true;
   },
 
-  // ============================================
-  // RANDOM COIN GENERATOR (crypto-grade)
-  // ============================================
-  getRandomCoin() {
-    // Pakai crypto.getRandomValues untuk random yang BENAR-BENAR random
-    try {
-      if (window.crypto && window.crypto.getRandomValues) {
-        const arr = new Uint32Array(1);
-        window.crypto.getRandomValues(arr);
-        // Modulo 100 + 1 → range 1-100
-        return (arr[0] % 100) + 1;
-      }
-    } catch (e) {}
-
-    // Fallback: Math.random
-    return Math.floor(Math.random() * 100) + 1;
-  },
-
-  // ============================================
-  // GIVE AD REWARD (Random 1-100)
-  // ============================================
-  giveAdReward() {
-    const state = this.getState();
-    const today = new Date().toISOString().split('T')[0];
+  giveAdReward: function() {
+    var state = this.getState();
+    var today = new Date().toISOString().split('T')[0];
 
     if (state.lastAdDate !== today) {
       state.lastAdWatch = 0;
       state.lastAdDate = today;
     }
-
     state.lastAdWatch += 1;
     state.lastAdTime = Date.now();
     this.save(state);
 
-    // ====== RANDOM COIN 1-100 ======
-    const randomCoin = this.getRandomCoin();
-
-    // Bonus kalau dapat 100 (jackpot!)
-    const isJackpot = randomCoin === 100;
-
-    // Kirim reward
+    var randomCoin = this.getRandomCoin();
     this.addCoin(randomCoin, 'Nonton iklan (random ' + randomCoin + ')');
 
-    // Bonus 5 iklan
     if (state.lastAdWatch === 5) {
       this.addCoin(this.CONFIG.MISSION_REWARDS.watch_5_ads, 'Bonus 5 iklan');
     }
 
-    // ====== TAMBAH HEART (bonus kecil) ======
-    // Setiap nonton iklan, 30% chance dapat +1 heart
     if (Math.random() < 0.3) {
-      if (typeof DL !== 'undefined' && DL.addHeart) {
-        DL.addHeart(1);
-      }
+      if (typeof DL !== 'undefined' && DL.addHeart) DL.addHeart(1);
     }
 
-    // Popup efek keren
     if (typeof Animate !== 'undefined') {
       Animate.confetti();
-
-      if (isJackpot) {
-        Animate.toast('🎉 JACKPOT! +100 koin! 🪙', 'success');
-        // Extra confetti
-        setTimeout(() => Animate.confetti(), 500);
+      if (randomCoin >= 90) {
+        Animate.toast('🎉 JACKPOT! +' + randomCoin + ' koin! 🪙', 'success');
       } else if (randomCoin >= 50) {
         Animate.toast('🎊 +' + randomCoin + ' koin! 🪙', 'success');
       } else {
@@ -441,83 +245,80 @@ const Rewards = {
       }
     }
 
-    // ===== SYNC KE FIRESTORE (biar tidak reset saat refresh) =====
-    this.syncToFirestore();
-
-    // Refresh halaman reward
     if (typeof App !== 'undefined' && App.currentTab === 'rewards') {
-      const el = document.getElementById('rewards-content');
+      var el = document.getElementById('rewards-content');
       if (el) el.innerHTML = this.renderRewardsPage();
     }
   },
 
+  // ===== LESSON COMPLETE =====
+  onLessonComplete: function(perfect) {
+    var randomCoin;
+    if (perfect) {
+      randomCoin = this.getRandomRange(250, 500);
+    } else {
+      randomCoin = this.getRandomRange(50, 250);
+    }
+    this.addCoin(randomCoin, 'Lesson selesai (random ' + randomCoin + ')');
 
-  // ============================================
-  // LESSON COMPLETE
-  // ============================================
-  onLessonComplete(perfect) {
-    this.addCoin(this.CONFIG.MISSION_REWARDS.complete_lesson, 'Lesson selesai');
-    if (perfect) this.addCoin(this.CONFIG.MISSION_REWARDS.perfect_score, 'Skor sempurna');
-
-    // BONUS HEART: Setiap selesai lesson, 50% chance dapat +1 heart
     if (Math.random() < 0.5) {
       if (typeof DL !== 'undefined' && DL.addHeart) {
         DL.addHeart(1);
-        if (typeof Animate !== 'undefined') {
-          setTimeout(() => Animate.toast('❤️ +1 heart bonus!', 'success'), 800);
-        }
+        var self = this;
+        setTimeout(function() {
+          if (typeof Animate !== 'undefined') Animate.toast('❤️ +1 heart bonus!', 'success');
+        }, 800);
       }
     }
+
+    if (randomCoin >= 300) {
+      setTimeout(function() {
+        if (typeof Animate !== 'undefined') Animate.confetti();
+      }, 500);
+    }
+
+    return randomCoin;
   },
 
-  // ============================================
-  // LEVEL UP
-  // ============================================
-  onLevelUp(newLevel) {
-    const state = this.getState();
-    const id = 'level_' + newLevel;
-    if (state.unlockedRewards.includes(id)) return 0;
+  // ===== LEVEL UP =====
+  onLevelUp: function(newLevel) {
+    var state = this.getState();
+    var id = 'level_' + newLevel;
+    if (state.unlockedRewards.indexOf(id) !== -1) return 0;
     state.unlockedRewards.push(id);
     this.save(state);
-
-    const reward = this.CONFIG.LEVEL_REWARDS(newLevel);
+    var reward = this.CONFIG.LEVEL_REWARDS(newLevel);
     this.addCoin(reward, 'Naik level ' + newLevel);
     return reward;
   },
 
-  // ============================================
-  // TOP UP
-  // ============================================
-  onTopUp() {
+  // ===== TOP UP =====
+  onTopUp: function() {
     this.addCoin(this.CONFIG.MISSION_REWARDS.topup_any, 'Order Top Up');
-
-    // Bonus: Top up = +2 hearts
     if (typeof DL !== 'undefined' && DL.addHeart) {
       DL.addHeart(2);
-      if (typeof Animate !== 'undefined') {
-        setTimeout(() => Animate.toast('❤️ +2 hearts dari top up!', 'success'), 500);
-      }
+      setTimeout(function() {
+        if (typeof Animate !== 'undefined') Animate.toast('❤️ +2 hearts dari top up!', 'success');
+      }, 500);
     }
   },
 
-  // ============================================
-  // REFERRAL
-  // ============================================
-  generateReferralCode() {
-    const code = 'YAD' + Math.random().toString(36).substr(2, 6).toUpperCase();
+  // ===== REFERRAL =====
+  generateReferralCode: function() {
+    var code = 'YAD' + Math.random().toString(36).substr(2, 6).toUpperCase();
     this.set('referralCode', code);
     return code;
   },
 
-  getReferralCode() {
-    let code = this.get('referralCode', null);
+  getReferralCode: function() {
+    var code = this.get('referralCode', null);
     if (!code) code = this.generateReferralCode();
     return code;
   },
 
-  applyReferral(code) {
+  applyReferral: function(code) {
     if (!code) return false;
-    const used = this.get('usedReferral', null);
+    var used = this.get('usedReferral', null);
     if (used) {
       if (typeof Animate !== 'undefined') Animate.toast('Kode sudah dipakai', 'error');
       return false;
@@ -528,181 +329,150 @@ const Rewards = {
   },
 
   // ============================================
-  // WITHDRAW
+  // MIN WITHDRAW — AUTO INCREMENT
   // ============================================
-  // ============================================
-  // GET USER MIN WITHDRAW (support custom)
-  // ============================================
-  getUserMinWithdraw() {
-    // ============================================
-    // AUTO-INCREMENT MIN WITHDRAW
-    // ============================================
-    // Withdraw ke-1 : Rp 1.000
-    // Withdraw ke-2 : Rp 2.500
-    // Withdraw ke-3 : Rp 4.000
-    // Withdraw ke-4 : Rp 5.500
-    // Formula: 1000 + (withdrawCount * 1500)
-    // ============================================
-
-    // Cek custom limit dari admin (prioritas tertinggi)
+  getUserMinWithdraw: function() {
+    // Cek custom limit dari admin
     if (typeof Auth !== 'undefined' && Auth.profile) {
       var custom = Auth.profile.custom_min_withdraw;
       if (custom !== undefined && custom !== null && custom > 0) {
         return custom;
       }
     }
-
-    // Hitung dari jumlah withdraw sukses user
+    // Auto increment: 1000 + (withdrawCount * 1500)
     var state = this.getState();
     var withdrawCount = state.withdrawCount || 0;
-
-    // Rumus: 1000 + (count * 1500)
-    var minWd = 1000 + (withdrawCount * 1500);
-
-    return minWd;
+    return 1000 + (withdrawCount * 1500);
   },
 
-  // ============================================
-  // GET NEXT MIN WITHDRAW (untuk display)
-  // ============================================
-  getNextMinWithdraw() {
+  getNextMinWithdraw: function() {
     var state = this.getState();
     var nextCount = (state.withdrawCount || 0) + 1;
     return 1000 + (nextCount * 1500);
   },
 
-  // ============================================
-  // GET WITHDRAW INFO
-  // ============================================
-  getWithdrawInfo() {
+  getWithdrawInfo: function() {
     var state = this.getState();
     var count = state.withdrawCount || 0;
-    var currentMin = this.getUserMinWithdraw();
-    var nextMin = this.getNextMinWithdraw();
-
     return {
       count: count,
-      currentMin: currentMin,
-      nextMin: nextMin,
+      currentMin: this.getUserMinWithdraw(),
+      nextMin: this.getNextMinWithdraw(),
       increase: 1500,
     };
   },
 
-  // Sync withdraw config dari Firestore
-  async syncWithdrawConfig() {
-    if (typeof Auth === 'undefined' || !Auth.db) return;
-    try {
-      const doc = await Auth.db.collection('config').doc('withdraw_config').get();
-      if (doc.exists) {
-        localStorage.setItem('learnearn_withdraw_config', JSON.stringify(doc.data()));
-      }
-    } catch (e) {}
-  },
-
-  canWithdraw() {
-    const min = this.getUserMinWithdraw();
+  canWithdraw: function() {
+    var min = this.getUserMinWithdraw();
     return this.getState().balance >= min;
   },
 
-  async requestWithdraw(amount, method, account, name) {
-    const state = this.getState();
-    const minWd = this.getUserMinWithdraw();
+  syncWithdrawConfig: function() {
+    if (typeof Auth === 'undefined' || !Auth.db) return;
+    var self = this;
+    Auth.db.collection('config').doc('withdraw_config').get().then(function(doc) {
+      if (doc.exists) {
+        try {
+          localStorage.setItem('yadstore_withdraw_config', JSON.stringify(doc.data()));
+        } catch (e) {}
+      }
+    }).catch(function() {});
+  },
+
+  requestWithdraw: function(amount, method, account, name) {
+    var state = this.getState();
+    var minWd = this.getUserMinWithdraw();
     if (amount < minWd) {
       if (typeof Animate !== 'undefined') Animate.toast('Minimal Rp ' + minWd.toLocaleString('id-ID'), 'error');
-      return false;
+      return Promise.resolve(false);
     }
     if (state.balance < amount) {
       if (typeof Animate !== 'undefined') Animate.toast('Saldo tidak cukup', 'error');
-      return false;
+      return Promise.resolve(false);
     }
 
-    const withdrawId = 'WD' + Date.now().toString(36).toUpperCase();
-    const withdraw = {
+    var withdrawId = 'WD' + Date.now().toString(36).toUpperCase();
+    var newCount = (state.withdrawCount || 0) + 1;
+    var nextMin = 1000 + (newCount * 1500);
+
+    var withdraw = {
       id: withdrawId,
-      userId: typeof Auth !== 'undefined' && Auth.user ? Auth.user.uid : 'anon',
-      userName: typeof Auth !== 'undefined' ? Auth.getName() : 'Guest',
-      amount,
-      method,
-      account,
+      userId: (typeof Auth !== 'undefined' && Auth.user) ? Auth.user.uid : 'anon',
+      userName: (typeof Auth !== 'undefined') ? Auth.getName() : 'Guest',
+      amount: amount,
+      method: method,
+      account: account,
       name: name || '',
       status: 'pending',
       createdAt: new Date().toISOString(),
-      // Info untuk tracking
-      withdrawNumber: (state.withdrawCount || 0) + 1,
+      withdrawNumber: newCount,
       minAtTime: minWd,
     };
 
-    // Simpan di Firestore
-    if (typeof Auth !== 'undefined' && Auth.db && Auth.user && !Auth.user.isLocal) {
-      try {
-        await Auth.db.collection('users').doc(Auth.user.uid)
-          .collection('withdrawals').doc(withdrawId).set(withdraw);
-        await Auth.db.collection('withdrawals').doc(withdrawId).set(withdraw);
+    var self = this;
+    var promises = [];
 
-        // Increment withdrawCount di user profile
-        var newCount = (state.withdrawCount || 0) + 1;
-        var nextMin = 1000 + (newCount * 1500);
-        await Auth.db.collection('users').doc(Auth.user.uid).update({
+    // Save to Firestore
+    if (typeof Auth !== 'undefined' && Auth.db && Auth.user && !Auth.user.isLocal) {
+      promises.push(
+        Auth.db.collection('users').doc(Auth.user.uid)
+          .collection('withdrawals').doc(withdrawId).set(withdraw).catch(function() {})
+      );
+      promises.push(
+        Auth.db.collection('withdrawals').doc(withdrawId).set(withdraw).catch(function() {})
+      );
+      promises.push(
+        Auth.db.collection('users').doc(Auth.user.uid).update({
           withdrawCount: newCount,
           nextMinWithdraw: nextMin,
           lastWithdrawAt: new Date().toISOString(),
-        });
-      } catch (e) { console.error('[Withdraw] save error:', e); }
+        }).catch(function() {})
+      );
     }
 
-    // Update state (potong saldo + increment withdrawCount)
+    // Update state
     state.balance -= amount;
     state.totalWithdrawn += amount;
-    state.withdrawCount = (state.withdrawCount || 0) + 1;
+    state.withdrawCount = newCount;
     state.history.unshift({
       type: 'withdraw',
-      amount,
-      reason: 'Withdraw ke-' + state.withdrawCount + ' (' + method + ')',
+      amount: amount,
+      reason: 'Withdraw ke-' + newCount + ' (' + method + ')',
       date: new Date().toISOString(),
       status: 'pending',
     });
     this.save(state);
     this.syncToFirestore();
 
-    // Kirim ke Telegram
-    try {
-      if (typeof window.TELEGRAM_CONFIG !== 'undefined' && window.TELEGRAM_CONFIG.ENABLED) {
-        var nextMin = 1000 + (state.withdrawCount * 1500);
-        var msg = '💸 <b>WITHDRAW REQUEST</b>
+    // Telegram
+    if (typeof window.TELEGRAM_CONFIG !== 'undefined' && window.TELEGRAM_CONFIG.ENABLED) {
+      var msg = '💸 <b>WITHDRAW REQUEST</b>\n\n' +
+        '🆔 ' + withdrawId + '\n' +
+        '👤 ' + withdraw.userName + '\n' +
+        '🔢 Withdraw ke-' + newCount + '\n' +
+        '💰 Rp ' + amount.toLocaleString('id-ID') + '\n' +
+        '💳 ' + method + '\n' +
+        '📱 ' + account + '\n' +
+        '📊 Min withdraw berikutnya: Rp ' + nextMin.toLocaleString('id-ID') + '\n' +
+        '📅 ' + new Date().toLocaleString('id-ID');
+      promises.push(window.TELEGRAM_CONFIG.sendMessage(msg).catch(function() {}));
+    }
 
-' +
-          '🆔 ' + withdrawId + '
-' +
-          '👤 ' + withdraw.userName + '
-' +
-          '🔢 Withdraw ke-' + state.withdrawCount + '
-' +
-          '💰 Rp ' + amount.toLocaleString('id-ID') + '
-' +
-          '💳 ' + method + '
-' +
-          '📱 ' + account + '
-' +
-          '📊 Min withdraw berikutnya: Rp ' + nextMin.toLocaleString('id-ID') + '
-' +
-          '📅 ' + new Date().toLocaleString('id-ID');
-        await window.TELEGRAM_CONFIG.sendMessage(msg);
-      }
-    } catch (e) { console.warn('[Withdraw] telegram error:', e); }
-
-    return true;
+    return Promise.all(promises).then(function() { return true; });
   },
 
   // ============================================
-  // RENDER PAGE
+  // RENDER REWARDS PAGE
   // ============================================
-  renderRewardsPage() {
+  renderRewardsPage: function() {
     var state = this.getState();
     var rupiah = state.balance * this.CONFIG.COIN_TO_RUPIAH;
     var adWatched = this.getAdWatchedToday();
     var adLeft = this.CONFIG.AD_WATCH_LIMIT - adWatched;
     var cooldown = this.getAdCooldownRemaining();
-    var t = (typeof I18n !== 'undefined') ? function(k) { return I18n.t(k); } : function(k) { return k; };
+    var t = (typeof I18n !== 'undefined')
+      ? function(k) { return I18n.t(k); }
+      : function(k) { return k; };
 
     var html = '<div class="reward-hero">' +
       '<div class="reward-balance-label">' + t('reward_balance_label') + '</div>' +
@@ -717,23 +487,11 @@ const Rewards = {
       '<p style="color:#666;font-size:13px;margin-bottom:8px">' + t('reward_watch_ad_desc') + '</p>' +
       '<div class="ad-counter">' + adWatched + ' / ' + this.CONFIG.AD_WATCH_LIMIT + ' ' + t('reward_ad_counter') +
       (adLeft > 0 ? ' • ' + t('reward_ad_remaining') + ' ' + adLeft : ' • ' + t('reward_ad_limit_reached')) + '</div>' +
-      (cooldown > 0 ?
-        '<button class="btn-ad" disabled>⏱️ ' + t('reward_ad_cooldown') + ' ' + cooldown + 's</button>' :
-        '<button class="btn-ad" onclick="Rewards.watchAdFlow()" ' + (adLeft > 0 ? '' : 'disabled') + '>' +
-        (adLeft > 0 ? t('reward_ad_btn') : '✅ ' + t('reward_ad_limit_reached')) +
-        '</button>') +
-      '</div>';
-
-    // ====== DAILY SPIN HEART ======
-    var canSpin = this.canSpinToday();
-    html += '<div class="reward-missions" style="background:linear-gradient(135deg,#fff9e6,#fff4cc);border:2px solid #ffc800">' +
-      '<h3>' + t('spin_title') + '</h3>' +
-      '<p style="color:#7a5d00;font-size:13px;margin-bottom:10px">' + t('spin_desc') + '</p>' +
-      (canSpin ?
-        '<button class="btn-primary" style="width:100%;background:linear-gradient(135deg,#ffc800,#ff9600);box-shadow:0 4px 0 #cc7800" onclick="Rewards.doSpinUI()">' + t('spin_btn') + '</button>' :
-        '<div style="text-align:center;padding:14px;background:white;border-radius:12px;font-weight:800;color:#2c5a00">' +
-          t('spin_already') + '<br><span style="font-size:12px;color:#999">' + t('spin_next') + '</span>' +
-        '</div>') +
+      (cooldown > 0
+        ? '<button class="btn-ad" disabled>⏱️ ' + t('reward_ad_cooldown') + ' ' + cooldown + 's</button>'
+        : '<button class="btn-ad" onclick="Rewards.watchAdFlow()" ' + (adLeft > 0 ? '' : 'disabled') + '>' +
+          (adLeft > 0 ? t('reward_ad_btn') : '✅ ' + t('reward_ad_limit_reached')) +
+          '</button>') +
       '</div>';
 
     // Missions
@@ -743,16 +501,16 @@ const Rewards = {
       '</div>';
 
     // Level rewards
-    var lv = typeof DL !== 'undefined' ? DL.getLevel().level : 1;
+    var lv = (typeof DL !== 'undefined') ? DL.getLevel().level : 1;
     var nextReward = this.CONFIG.LEVEL_REWARDS(lv + 1);
     html += '<div class="reward-missions">' +
       '<h3>' + t('reward_level_title') + '</h3>' +
       '<div class="mission-card">' +
-      '<div class="mission-icon">🎖️</div>' +
-      '<div class="mission-info">' +
-      '<div class="mission-title">' + t('reward_level_next') + ' ' + (lv + 1) + ' = +' + nextReward + ' ' + t('mission_coin_suffix') + '</div>' +
-      '<div class="mission-reward">' + t('reward_level_desc') + '</div>' +
-      '</div>' +
+        '<div class="mission-icon">🎖️</div>' +
+        '<div class="mission-info">' +
+          '<div class="mission-title">' + t('reward_level_next') + ' ' + (lv + 1) + ' = +' + nextReward + ' ' + t('mission_coin_suffix') + '</div>' +
+          '<div class="mission-reward">' + t('reward_level_desc') + '</div>' +
+        '</div>' +
       '</div>' +
       '</div>';
 
@@ -762,8 +520,8 @@ const Rewards = {
       '<h3>' + t('reward_referral_title') + '</h3>' +
       '<p style="font-size:13px;color:#666;margin-bottom:8px">' + t('reward_referral_desc') + '</p>' +
       '<div class="referral-box">' +
-      '<input type="text" value="' + refCode + '" readonly id="ref-code">' +
-      '<button class="btn-primary" onclick="Rewards.copyReferral()">' + t('reward_referral_copy') + '</button>' +
+        '<input type="text" value="' + refCode + '" readonly id="ref-code">' +
+        '<button class="btn-primary" onclick="Rewards.copyReferral()">' + t('reward_referral_copy') + '</button>' +
       '</div>' +
       '</div>';
 
@@ -788,25 +546,27 @@ const Rewards = {
           '<strong style="color:#58cc02">Rp ' + wdInfo.currentMin.toLocaleString('id-ID') + '</strong>' +
         '</div>' +
         '<div class="wd-info-row next">' +
-          '<span>📈 Min withdraw berikutnya (ke-' + nextWithdrawNumber + ')</span>' +
+          '<span>📈 Min berikutnya (ke-' + nextWithdrawNumber + ')</span>' +
           '<strong style="color:#ff9600">Rp ' + wdInfo.nextMin.toLocaleString('id-ID') + '</strong>' +
         '</div>' +
         '<div class="wd-note">Naik +Rp 1.500 setiap withdraw berhasil</div>' +
       '</div>' +
       '<button class="btn-primary btn-full" onclick="Rewards.openWithdraw()" ' + (this.canWithdraw() ? '' : 'disabled') + '>' +
-      (this.canWithdraw() ? t('reward_withdraw_btn') : t('reward_withdraw_locked')) +
+        (this.canWithdraw() ? t('reward_withdraw_btn') : t('reward_withdraw_locked')) +
       '</button>' +
       '</div>';
 
     return html;
   },
 
-  renderMissions() {
-    var t = (typeof I18n !== 'undefined') ? function(k) { return I18n.t(k); } : function(k) { return k; };
+  renderMissions: function() {
+    var t = (typeof I18n !== 'undefined')
+      ? function(k) { return I18n.t(k); }
+      : function(k) { return k; };
     var missions = [
-      { id: 'login', icon: '📅', titleKey: 'mission_login', reward: 10 },
-      { id: 'lesson', icon: '📚', titleKey: 'mission_lesson', reward: 5 },
-      { id: 'perfect', icon: '🎯', titleKey: 'mission_perfect', reward: 20 },
+      { id: 'login', icon: '📅', titleKey: 'mission_login', reward: 15 },
+      { id: 'lesson', icon: '📚', titleKey: 'mission_lesson', reward: '50-500' },
+      { id: 'perfect', icon: '🎯', titleKey: 'mission_perfect', reward: '250-500' },
       { id: 'topup', icon: '🛒', titleKey: 'mission_topup', reward: 100 },
       { id: 'ad5', icon: '🎬', titleKey: 'mission_ad5', reward: 10 },
       { id: 'streak3', icon: '🔥', titleKey: 'mission_streak3', reward: 50 },
@@ -816,35 +576,36 @@ const Rewards = {
       return '<div class="mission-card">' +
         '<div class="mission-icon">' + m.icon + '</div>' +
         '<div class="mission-info">' +
-        '<div class="mission-title">' + t(m.titleKey) + '</div>' +
-        '<div class="mission-reward">+' + m.reward + ' ' + t('mission_coin_suffix') + '</div>' +
+          '<div class="mission-title">' + t(m.titleKey) + '</div>' +
+          '<div class="mission-reward">+' + m.reward + ' ' + t('mission_coin_suffix') + '</div>' +
         '</div>' +
-        '</div>';
+      '</div>';
     }).join('');
   },
 
-  renderHistory() {
-    const state = this.getState();
-    if (!state.history.length) return '<p class="empty-msg">' + ((typeof I18n !== 'undefined') ? I18n.t('reward_history_empty') : 'Belum ada transaksi') + '</p>';
-
-    return state.history.slice(0, 15).map(h => {
-      const icon = h.type === 'earn' ? '📈' : (h.type === 'spend' ? '📉' : '💸');
-      const color = h.type === 'earn' ? '#58cc02' : '#ff4b4b';
-      const sign = h.type === 'earn' ? '+' : '-';
-      const date = new Date(h.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+  renderHistory: function() {
+    var state = this.getState();
+    if (!state.history.length) {
+      return '<p class="empty-msg">' + ((typeof I18n !== 'undefined') ? I18n.t('reward_history_empty') : 'Belum ada transaksi') + '</p>';
+    }
+    return state.history.slice(0, 15).map(function(h) {
+      var icon = h.type === 'earn' ? '📈' : (h.type === 'spend' ? '📉' : '💸');
+      var color = h.type === 'earn' ? '#58cc02' : '#ff4b4b';
+      var sign = h.type === 'earn' ? '+' : '-';
+      var date = new Date(h.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
       return '<div class="history-item">' +
         '<div class="history-icon">' + icon + '</div>' +
         '<div class="history-info">' +
-        '<div class="history-reason">' + h.reason + '</div>' +
-        '<div class="history-date">' + date + '</div>' +
+          '<div class="history-reason">' + h.reason + '</div>' +
+          '<div class="history-date">' + date + '</div>' +
         '</div>' +
         '<div class="history-amount" style="color:' + color + '">' + sign + h.amount + '</div>' +
-        '</div>';
+      '</div>';
     }).join('');
   },
 
-  copyReferral() {
-    const input = document.getElementById('ref-code');
+  copyReferral: function() {
+    var input = document.getElementById('ref-code');
     if (!input) return;
     input.select();
     try {
@@ -856,68 +617,74 @@ const Rewards = {
   // ============================================
   // WITHDRAW MODAL
   // ============================================
-  openWithdraw() {
-    const state = this.getState();
-    const methods = ['DANA', 'OVO', 'GoPay', 'ShopeePay', 'SEABANK'];
-    const wdInfo = this.getWithdrawInfo();
-    const nextWithdrawNumber = wdInfo.count + 1;
+  openWithdraw: function() {
+    var state = this.getState();
+    var methods = ['DANA', 'OVO', 'GoPay', 'ShopeePay', 'SEABANK'];
+    var wdInfo = this.getWithdrawInfo();
+    var nextWithdrawNumber = wdInfo.count + 1;
 
-    const modal = document.getElementById('reward-modal');
+    var modal = document.getElementById('reward-modal');
+    if (!modal) return;
+
     modal.innerHTML = '<div class="modal-content">' +
       '<div class="modal-header" style="background: linear-gradient(135deg, #58cc02, #89e219)">' +
-      '<button class="modal-close" onclick="Rewards.closeModal()">X</button>' +
-      '<h2>💸 Withdraw</h2>' +
-      '<p>Saldo: ' + this.formatRp(state.balance) + '</p>' +
+        '<button class="modal-close" onclick="Rewards.closeModal()">X</button>' +
+        '<h2>💸 Withdraw</h2>' +
+        '<p>Saldo: ' + this.formatRp(state.balance) + '</p>' +
       '</div>' +
       '<div class="modal-body">' +
 
-      // Info withdraw number
-      '<div class="wd-number-badge">' +
-        '📊 Withdraw ke-<strong>' + nextWithdrawNumber + '</strong>' +
-      '</div>' +
+        '<div class="wd-number-badge">📊 Withdraw ke-<strong>' + nextWithdrawNumber + '</strong></div>' +
 
-      // Info min withdraw
-      '<div class="wd-info-modal">' +
-        '<div class="wd-row">' +
-          '<span>Min withdraw saat ini</span>' +
-          '<strong>Rp ' + wdInfo.currentMin.toLocaleString('id-ID') + '</strong>' +
+        '<div class="wd-info-modal">' +
+          '<div class="wd-row">' +
+            '<span>Min withdraw saat ini</span>' +
+            '<strong>Rp ' + wdInfo.currentMin.toLocaleString('id-ID') + '</strong>' +
+          '</div>' +
+          '<div class="wd-row highlight">' +
+            '<span>Min withdraw berikutnya</span>' +
+            '<strong>Rp ' + wdInfo.nextMin.toLocaleString('id-ID') + '</strong>' +
+          '</div>' +
         '</div>' +
-        '<div class="wd-row highlight">' +
-          '<span>Min withdraw berikutnya</span>' +
-          '<strong>Rp ' + wdInfo.nextMin.toLocaleString('id-ID') + '</strong>' +
+
+        '<div class="form-group">' +
+          '<label>Jumlah (min Rp ' + wdInfo.currentMin.toLocaleString('id-ID') + ')</label>' +
+          '<input type="number" id="wd-amount" value="' + Math.max(wdInfo.currentMin, state.balance) + '" min="' + wdInfo.currentMin + '" max="' + state.balance + '">' +
         '</div>' +
-      '</div>' +
 
-      '<div class="form-group"><label>Jumlah (min Rp ' + wdInfo.currentMin.toLocaleString('id-ID') + ')</label>' +
-      '<input type="number" id="wd-amount" value="' + Math.max(wdInfo.currentMin, state.balance) + '" min="' + wdInfo.currentMin + '" max="' + state.balance + '"></div>' +
+        '<div class="form-group">' +
+          '<label>Metode</label>' +
+          '<select id="wd-method">' + methods.map(function(m) { return '<option value="' + m + '">' + m + '</option>'; }).join('') + '</select>' +
+        '</div>' +
 
-      '<div class="form-group"><label>Metode</label>' +
-      '<select id="wd-method">' + methods.map(m => '<option value="' + m + '">' + m + '</option>').join('') + '</select></div>' +
+        '<div class="form-group">' +
+          '<label>Nomor Tujuan</label>' +
+          '<input type="text" id="wd-account" placeholder="081234567890">' +
+        '</div>' +
 
-      '<div class="form-group"><label>Nomor Tujuan</label>' +
-      '<input type="text" id="wd-account" placeholder="081234567890"></div>' +
+        '<div class="form-group">' +
+          '<label>Nama Pemilik</label>' +
+          '<input type="text" id="wd-name" placeholder="Nama lengkap">' +
+        '</div>' +
 
-      '<div class="form-group"><label>Nama Pemilik</label>' +
-      '<input type="text" id="wd-name" placeholder="Nama lengkap"></div>' +
+        '<div class="payment-notice">' +
+          '<p><strong>ℹ️ Info:</strong> Withdraw diproses 1-3 hari kerja.</p>' +
+          '<p><strong>⚠️ Catatan:</strong> Setelah sukses, min withdraw naik jadi <strong>Rp ' + wdInfo.nextMin.toLocaleString('id-ID') + '</strong></p>' +
+        '</div>' +
 
-      '<div class="payment-notice">' +
-        '<p><strong>ℹ️ Info:</strong> Withdraw diproses 1-3 hari kerja. Pastikan nomor & nama benar.</p>' +
-        '<p><strong>⚠️ Catatan:</strong> Setelah withdraw sukses, min withdraw naik jadi <strong>Rp ' + wdInfo.nextMin.toLocaleString('id-ID') + '</strong></p>' +
-      '</div>' +
-
-      '<button class="btn-primary btn-full" onclick="Rewards.submitWithdraw()">Ajukan Withdraw</button>' +
+        '<button class="btn-primary btn-full" onclick="Rewards.submitWithdraw()">Ajukan Withdraw</button>' +
       '</div>' +
       '</div>';
     modal.classList.add('active');
   },
 
-  async submitWithdraw() {
-    const amount = parseInt(document.getElementById('wd-amount').value);
-    const method = document.getElementById('wd-method').value;
-    const account = document.getElementById('wd-account').value.trim();
-    const name = document.getElementById('wd-name').value.trim();
+  submitWithdraw: function() {
+    var amount = parseInt(document.getElementById('wd-amount').value);
+    var method = document.getElementById('wd-method').value;
+    var account = document.getElementById('wd-account').value.trim();
+    var name = document.getElementById('wd-name').value.trim();
 
-    const minWd = this.getUserMinWithdraw();
+    var minWd = this.getUserMinWithdraw();
     if (!amount || amount < minWd) {
       alert('Minimal ' + this.formatRp(minWd));
       return;
@@ -925,76 +692,31 @@ const Rewards = {
     if (!account) { alert('Masukkan nomor tujuan'); return; }
     if (!name) { alert('Masukkan nama pemilik'); return; }
 
-    const ok = await this.requestWithdraw(amount, method, account, name);
-    if (ok) {
-      this.closeModal();
-      if (typeof Animate !== 'undefined') {
-        Animate.confetti();
-        Animate.toast('Withdraw diajukan! Admin akan memproses.', 'success');
+    var self = this;
+    this.requestWithdraw(amount, method, account, name).then(function(ok) {
+      if (ok) {
+        self.closeModal();
+        if (typeof Animate !== 'undefined') {
+          Animate.confetti();
+          Animate.toast('Withdraw diajukan! Cek Telegram.', 'success');
+        }
+        if (typeof App !== 'undefined' && App.currentTab === 'rewards') {
+          var el = document.getElementById('rewards-content');
+          if (el) el.innerHTML = self.renderRewardsPage();
+        }
       }
-      if (typeof App !== 'undefined' && App.currentTab === 'rewards') {
-        document.getElementById('rewards-content').innerHTML = this.renderRewardsPage();
-      }
-    }
+    });
   },
 
-  // ============================================
-  // DAILY SPIN UI
-  // ============================================
-  async doSpinUI() {
-    if (!this.canSpinToday()) {
-      if (typeof Animate !== 'undefined') Animate.toast('Sudah spin hari ini', 'error');
-      return;
-    }
-
-    // Tampilkan animasi spin
+  closeModal: function() {
     var modal = document.getElementById('reward-modal');
-    modal.innerHTML = '<div class="modal-content" style="max-width:400px">' +
-      '<div class="modal-header" style="background:linear-gradient(135deg,#ffc800,#ff9600)">' +
-      '<h2>🎰 ' + ((typeof I18n !== 'undefined') ? I18n.t('spin_title') : 'Spin Harian') + '</h2>' +
-      '</div>' +
-      '<div class="modal-body" style="text-align:center;padding:30px">' +
-      '<div id="spin-wheel" style="font-size:80px;animation:spinAnim 2s linear infinite">🎰</div>' +
-      '<h3 style="margin-top:20px;color:#666">' + ((typeof I18n !== 'undefined') ? I18n.t('spin_spinning') : 'Memutar...') + '</h3>' +
-      '</div>' +
-      '</div>';
-    modal.classList.add('active');
-
-    // Trigger spin logic
-    var result = await this.doSpin();
-
-    setTimeout(() => {
-      var wheel = document.getElementById('spin-wheel');
-      if (wheel) {
-        wheel.style.animation = 'none';
-        wheel.style.fontSize = '100px';
-        wheel.textContent = '🎉';
-      }
-
-      var body = modal.querySelector('.modal-body');
-      if (body) {
-        var t = (typeof I18n !== 'undefined') ? I18n.t : function(k){return k;};
-        var msg = t('spin_win').replace('{n}', result.hearts);
-        body.innerHTML =
-          '<div style="font-size:80px;margin-bottom:16px">🎉</div>' +
-          '<h2 style="color:#2c5a00;font-size:32px;margin-bottom:8px">+' + result.hearts + ' ❤️</h2>' +
-          '<p style="color:#666;font-size:15px;margin-bottom:20px">' + msg + '</p>' +
-          '<button class="btn-primary btn-full" onclick="Rewards.closeModal(); if(typeof App!==\'undefined\') App.switchTab(\'rewards\')">OK</button>';
-      }
-
-      if (typeof Animate !== 'undefined') Animate.confetti();
-    }, 2000);
-  },
-
-  closeModal() {
-    const modal = document.getElementById('reward-modal');
     if (modal) { modal.classList.remove('active'); modal.innerHTML = ''; }
   },
 
-  formatRp(n) {
+  formatRp: function(n) {
     try { return 'Rp ' + n.toLocaleString('id-ID'); } catch (e) { return 'Rp ' + n; }
   },
 };
 
 if (typeof window !== 'undefined') window.Rewards = Rewards;
-console.log('[rewards] loaded');
+console.log('[rewards] v3 CLEAN loaded');
