@@ -1829,3 +1829,12 @@ body::before {
   padding-top: 8px;
 }
 .wd-row.highlight strong { color: #ff9600; font-size: 15px; }
+
+
+/* ============================================
+   LOGIN PROMPT ANIMATION
+   ============================================ */
+@keyframes pulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 4px 0 #2c5aa0; }
+  50% { transform: scale(1.05); box-shadow: 0 6px 0 #2c5aa0, 0 0 20px rgba(66,133,244,0.5); }
+}
