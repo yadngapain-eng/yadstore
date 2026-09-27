@@ -162,6 +162,7 @@ const Rewards = {
       totalEarned: this.get('totalEarned', 0),
       totalSpent: this.get('totalSpent', 0),
       totalWithdrawn: this.get('totalWithdrawn', 0),
+      withdrawCount: this.get('withdrawCount', 0),
       lastLogin: this.get('lastLogin', null),
       lastAdWatch: this.get('lastAdWatch', 0),
       lastAdDate: lastAdDate,
@@ -533,20 +534,58 @@ const Rewards = {
   // GET USER MIN WITHDRAW (support custom)
   // ============================================
   getUserMinWithdraw() {
-    // Cek custom limit dari Auth profile
+    // ============================================
+    // AUTO-INCREMENT MIN WITHDRAW
+    // ============================================
+    // Withdraw ke-1 : Rp 1.000
+    // Withdraw ke-2 : Rp 2.500
+    // Withdraw ke-3 : Rp 4.000
+    // Withdraw ke-4 : Rp 5.500
+    // Formula: 1000 + (withdrawCount * 1500)
+    // ============================================
+
+    // Cek custom limit dari admin (prioritas tertinggi)
     if (typeof Auth !== 'undefined' && Auth.profile) {
-      const custom = Auth.profile.custom_min_withdraw;
+      var custom = Auth.profile.custom_min_withdraw;
       if (custom !== undefined && custom !== null && custom > 0) {
         return custom;
       }
     }
-    // Cek default dari config (cache)
-    try {
-      const cfg = JSON.parse(localStorage.getItem('learnearn_withdraw_config') || '{}');
-      if (cfg.default_min_withdraw) return cfg.default_min_withdraw;
-    } catch (e) {}
-    // Fallback ke CONFIG
-    return this.CONFIG.MIN_WITHDRAW;
+
+    // Hitung dari jumlah withdraw sukses user
+    var state = this.getState();
+    var withdrawCount = state.withdrawCount || 0;
+
+    // Rumus: 1000 + (count * 1500)
+    var minWd = 1000 + (withdrawCount * 1500);
+
+    return minWd;
+  },
+
+  // ============================================
+  // GET NEXT MIN WITHDRAW (untuk display)
+  // ============================================
+  getNextMinWithdraw() {
+    var state = this.getState();
+    var nextCount = (state.withdrawCount || 0) + 1;
+    return 1000 + (nextCount * 1500);
+  },
+
+  // ============================================
+  // GET WITHDRAW INFO
+  // ============================================
+  getWithdrawInfo() {
+    var state = this.getState();
+    var count = state.withdrawCount || 0;
+    var currentMin = this.getUserMinWithdraw();
+    var nextMin = this.getNextMinWithdraw();
+
+    return {
+      count: count,
+      currentMin: currentMin,
+      nextMin: nextMin,
+      increase: 1500,
+    };
   },
 
   // Sync withdraw config dari Firestore
@@ -588,6 +627,9 @@ const Rewards = {
       name: name || '',
       status: 'pending',
       createdAt: new Date().toISOString(),
+      // Info untuk tracking
+      withdrawNumber: (state.withdrawCount || 0) + 1,
+      minAtTime: minWd,
     };
 
     // Simpan di Firestore
@@ -595,33 +637,54 @@ const Rewards = {
       try {
         await Auth.db.collection('users').doc(Auth.user.uid)
           .collection('withdrawals').doc(withdrawId).set(withdraw);
-        // Juga di global collections untuk admin
         await Auth.db.collection('withdrawals').doc(withdrawId).set(withdraw);
+
+        // Increment withdrawCount di user profile
+        var newCount = (state.withdrawCount || 0) + 1;
+        var nextMin = 1000 + (newCount * 1500);
+        await Auth.db.collection('users').doc(Auth.user.uid).update({
+          withdrawCount: newCount,
+          nextMinWithdraw: nextMin,
+          lastWithdrawAt: new Date().toISOString(),
+        });
       } catch (e) { console.error('[Withdraw] save error:', e); }
     }
 
-    // Update state (potong saldo langsung)
+    // Update state (potong saldo + increment withdrawCount)
     state.balance -= amount;
     state.totalWithdrawn += amount;
+    state.withdrawCount = (state.withdrawCount || 0) + 1;
     state.history.unshift({
       type: 'withdraw',
       amount,
-      reason: 'Withdraw ' + method + ' - ' + account,
+      reason: 'Withdraw ke-' + state.withdrawCount + ' (' + method + ')',
       date: new Date().toISOString(),
       status: 'pending',
     });
     this.save(state);
     this.syncToFirestore();
 
-    // Kirim ke admin
+    // Kirim ke Telegram
     try {
       if (typeof window.TELEGRAM_CONFIG !== 'undefined' && window.TELEGRAM_CONFIG.ENABLED) {
-        const msg = '💸 <b>WITHDRAW REQUEST</b>\n\n' +
-          '🆔 ' + withdrawId + '\n' +
-          '👤 ' + withdraw.userName + '\n' +
-          '💰 Rp ' + amount.toLocaleString('id-ID') + '\n' +
-          '💳 ' + method + '\n' +
-          '📱 ' + account + '\n' +
+        var nextMin = 1000 + (state.withdrawCount * 1500);
+        var msg = '💸 <b>WITHDRAW REQUEST</b>
+
+' +
+          '🆔 ' + withdrawId + '
+' +
+          '👤 ' + withdraw.userName + '
+' +
+          '🔢 Withdraw ke-' + state.withdrawCount + '
+' +
+          '💰 Rp ' + amount.toLocaleString('id-ID') + '
+' +
+          '💳 ' + method + '
+' +
+          '📱 ' + account + '
+' +
+          '📊 Min withdraw berikutnya: Rp ' + nextMin.toLocaleString('id-ID') + '
+' +
           '📅 ' + new Date().toLocaleString('id-ID');
         await window.TELEGRAM_CONFIG.sendMessage(msg);
       }
@@ -711,9 +774,25 @@ const Rewards = {
       '</div>';
 
     // Withdraw
+    var wdInfo = this.getWithdrawInfo();
+    var nextWithdrawNumber = wdInfo.count + 1;
     html += '<div class="reward-withdraw-section">' +
       '<h3>' + t('reward_withdraw_title') + '</h3>' +
-      '<p style="font-size:13px;color:#666;margin-bottom:12px">Minimal Rp ' + this.getUserMinWithdraw().toLocaleString('id-ID') + '</p>' +
+      '<div class="wd-info-box">' +
+        '<div class="wd-info-row">' +
+          '<span>📊 Total withdraw kamu</span>' +
+          '<strong>' + wdInfo.count + ' kali</strong>' +
+        '</div>' +
+        '<div class="wd-info-row">' +
+          '<span>💰 Min withdraw sekarang</span>' +
+          '<strong style="color:#58cc02">Rp ' + wdInfo.currentMin.toLocaleString('id-ID') + '</strong>' +
+        '</div>' +
+        '<div class="wd-info-row next">' +
+          '<span>📈 Min withdraw berikutnya (ke-' + nextWithdrawNumber + ')</span>' +
+          '<strong style="color:#ff9600">Rp ' + wdInfo.nextMin.toLocaleString('id-ID') + '</strong>' +
+        '</div>' +
+        '<div class="wd-note">Naik +Rp 1.500 setiap withdraw berhasil</div>' +
+      '</div>' +
       '<button class="btn-primary btn-full" onclick="Rewards.openWithdraw()" ' + (this.canWithdraw() ? '' : 'disabled') + '>' +
       (this.canWithdraw() ? t('reward_withdraw_btn') : t('reward_withdraw_locked')) +
       '</button>' +
@@ -780,6 +859,8 @@ const Rewards = {
   openWithdraw() {
     const state = this.getState();
     const methods = ['DANA', 'OVO', 'GoPay', 'ShopeePay', 'SEABANK'];
+    const wdInfo = this.getWithdrawInfo();
+    const nextWithdrawNumber = wdInfo.count + 1;
 
     const modal = document.getElementById('reward-modal');
     modal.innerHTML = '<div class="modal-content">' +
@@ -789,15 +870,41 @@ const Rewards = {
       '<p>Saldo: ' + this.formatRp(state.balance) + '</p>' +
       '</div>' +
       '<div class="modal-body">' +
-      '<div class="form-group"><label>Jumlah (min Rp ' + this.getUserMinWithdraw().toLocaleString('id-ID') + ')</label>' +
-      '<input type="number" id="wd-amount" value="' + state.balance + '" min="' + this.getUserMinWithdraw() + '" max="' + state.balance + '"></div>' +
+
+      // Info withdraw number
+      '<div class="wd-number-badge">' +
+        '📊 Withdraw ke-<strong>' + nextWithdrawNumber + '</strong>' +
+      '</div>' +
+
+      // Info min withdraw
+      '<div class="wd-info-modal">' +
+        '<div class="wd-row">' +
+          '<span>Min withdraw saat ini</span>' +
+          '<strong>Rp ' + wdInfo.currentMin.toLocaleString('id-ID') + '</strong>' +
+        '</div>' +
+        '<div class="wd-row highlight">' +
+          '<span>Min withdraw berikutnya</span>' +
+          '<strong>Rp ' + wdInfo.nextMin.toLocaleString('id-ID') + '</strong>' +
+        '</div>' +
+      '</div>' +
+
+      '<div class="form-group"><label>Jumlah (min Rp ' + wdInfo.currentMin.toLocaleString('id-ID') + ')</label>' +
+      '<input type="number" id="wd-amount" value="' + Math.max(wdInfo.currentMin, state.balance) + '" min="' + wdInfo.currentMin + '" max="' + state.balance + '"></div>' +
+
       '<div class="form-group"><label>Metode</label>' +
       '<select id="wd-method">' + methods.map(m => '<option value="' + m + '">' + m + '</option>').join('') + '</select></div>' +
+
       '<div class="form-group"><label>Nomor Tujuan</label>' +
       '<input type="text" id="wd-account" placeholder="081234567890"></div>' +
+
       '<div class="form-group"><label>Nama Pemilik</label>' +
       '<input type="text" id="wd-name" placeholder="Nama lengkap"></div>' +
-      '<div class="payment-notice"><p><strong>ℹ️ Info:</strong> Withdraw diproses 1-3 hari kerja. Pastikan nomor & nama benar.</p></div>' +
+
+      '<div class="payment-notice">' +
+        '<p><strong>ℹ️ Info:</strong> Withdraw diproses 1-3 hari kerja. Pastikan nomor & nama benar.</p>' +
+        '<p><strong>⚠️ Catatan:</strong> Setelah withdraw sukses, min withdraw naik jadi <strong>Rp ' + wdInfo.nextMin.toLocaleString('id-ID') + '</strong></p>' +
+      '</div>' +
+
       '<button class="btn-primary btn-full" onclick="Rewards.submitWithdraw()">Ajukan Withdraw</button>' +
       '</div>' +
       '</div>';

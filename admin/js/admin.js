@@ -346,7 +346,7 @@ const Admin = {
       } else {
         html += '<div class="table-wrap"><table><thead><tr>' +
           '<th style="width:40px"><input type="checkbox" onchange="Admin.toggleSelectAll(this)" style="width:18px;height:18px"></th>' +
-          '<th>User</th><th>Email</th><th>Saldo</th><th>Min Withdraw</th><th>Status</th></tr></thead><tbody>';
+          '<th>User</th><th>Email</th><th>Saldo</th><th>Min WD</th><th>Withdraw</th><th>Status</th></tr></thead><tbody>';
         users.forEach(u => {
           const hasCustom = u.custom_min_withdraw !== undefined && u.custom_min_withdraw !== null;
           const currentLimit = hasCustom ? u.custom_min_withdraw : defaultLimit;
@@ -357,6 +357,7 @@ const Admin = {
             '<td style="font-size:11px">' + (u.email || '-') + '</td>' +
             '<td>Rp ' + (u.balance || 0).toLocaleString('id-ID') + '</td>' +
             '<td><strong>Rp ' + currentLimit.toLocaleString('id-ID') + '</strong></td>' +
+            '<td>' + (u.withdrawCount || 0) + 'x</td>' +
             '<td>' + (hasCustom ? '<span style="color:#58cc02;font-size:10px;font-weight:800">CUSTOM</span>' : '<span style="color:#999;font-size:11px">Default</span>') + '</td>' +
             '</tr>';
         });
