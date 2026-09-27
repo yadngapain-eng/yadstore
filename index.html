@@ -2,15 +2,123 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#58cc02">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#58cc02">
 <title>Learn Earn</title>
 <link rel="stylesheet" href="css/style.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+/* ============================================
+   APP MODE — Sembunyikan browser feel
+   ============================================ */
+html, body {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    overscroll-behavior: none;
+    touch-action: manipulation;
+    height: 100%;
+    overflow-x: hidden;
+}
+
+/* Safe area untuk notch / gesture bar */
+body {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+}
+
+/* Sembunyikan scrollbar tapi tetap scrollable */
+body::-webkit-scrollbar {
+    display: none;
+}
+body {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+/* Splash screen */
+#app-splash {
+    position: fixed;
+    inset: 0;
+    background: linear-gradient(135deg, #58cc02, #89e219);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 999999;
+    transition: opacity 0.5s ease, visibility 0.5s ease;
+}
+#app-splash.hide {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+#app-splash .splash-logo {
+    width: 120px;
+    height: 120px;
+    background: white;
+    border-radius: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 56px;
+    font-weight: 900;
+    color: #58cc02;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    animation: splashPulse 1.5s ease-in-out infinite;
+    margin-bottom: 24px;
+}
+#app-splash .splash-title {
+    color: white;
+    font-size: 28px;
+    font-weight: 900;
+    letter-spacing: -1px;
+    margin-bottom: 8px;
+}
+#app-splash .splash-subtitle {
+    color: rgba(255,255,255,0.9);
+    font-size: 14px;
+    font-weight: 600;
+}
+#app-splash .splash-loader {
+    margin-top: 32px;
+    width: 40px;
+    height: 40px;
+    border: 4px solid rgba(255,255,255,0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: splashSpin 0.8s linear infinite;
+}
+@keyframes splashSpin {
+    to { transform: rotate(360deg); }
+}
+@keyframes splashPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+/* Sembunyikan status bar hijau yang tidak match */
+@media all and (display-mode: standalone) {
+    .app-header {
+        padding-top: env(safe-area-inset-top);
+    }
+}
+</style>
 </head>
 <body>
+<div id="app-splash">
+    <div class="splash-logo">LE</div>
+    <div class="splash-title">Learn Earn</div>
+    <div class="splash-subtitle">Belajar, Main, Cuan</div>
+    <div class="splash-loader"></div>
+</div>
 
 <header class="app-header">
   <div class="header-inner">
@@ -188,19 +296,19 @@
 <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
 
 <!-- App Scripts -->
-<script src="js/i18n.js?v=1790452188"></script>
-<script src="js/lessons-data.js?v=1790452188"></script>
-<script src="js/duolingo-core.js?v=1790452188"></script>
-<script src="js/games-data.js?v=1790452188"></script>
-<script src="js/animasi.js?v=1790452188"></script>
-<script src="js/duolingo-ui.js?v=1790452188"></script>
-<script src="js/topup-ui.js?v=1790452188"></script>
-<script src="js/telegram-config.js?v=1790452188"></script>
-<script src="js/firebase-config.js?v=1790452188"></script>
-<script src="js/auth.js?v=1790452188"></script>
-<script src="js/rewards.js?v=1790452188"></script>
-<script src="js/ads-manager.js?v=1790452188"></script>
-<script src="js/app.js?v=1790452188"></script>
+<script src="js/i18n.js?v=1790471127"></script>
+<script src="js/lessons-data.js?v=1790471127"></script>
+<script src="js/duolingo-core.js?v=1790471127"></script>
+<script src="js/games-data.js?v=1790471127"></script>
+<script src="js/animasi.js?v=1790471127"></script>
+<script src="js/duolingo-ui.js?v=1790471127"></script>
+<script src="js/topup-ui.js?v=1790471127"></script>
+<script src="js/telegram-config.js?v=1790471127"></script>
+<script src="js/firebase-config.js?v=1790471127"></script>
+<script src="js/auth.js?v=1790471127"></script>
+<script src="js/rewards.js?v=1790471127"></script>
+<script src="js/ads-manager.js?v=1790471127"></script>
+<script src="js/app.js?v=1790471127"></script>
 
 <script>
 // ==========================================
@@ -226,6 +334,31 @@
       clearInterval(timer);
     }
   }, 500);
+})();
+</script>
+<script>
+(function() {
+    // Sembunyikan splash setelah halaman siap
+    function hideSplash() {
+        var splash = document.getElementById('app-splash');
+        if (!splash) return;
+        setTimeout(function() {
+            splash.classList.add('hide');
+            setTimeout(function() { splash.remove(); }, 600);
+        }, 800); // minimal 800ms biar kelihatan
+    }
+
+    if (document.readyState === 'complete') {
+        hideSplash();
+    } else {
+        window.addEventListener('load', hideSplash);
+        // Fallback: hide setelah 3 detik
+        setTimeout(hideSplash, 3000);
+    }
+
+    // Cegah zoom gesture
+    document.addEventListener('gesturestart', function(e) { e.preventDefault(); });
+    document.addEventListener('dblclick', function(e) { e.preventDefault(); }, { passive: false });
 })();
 </script>
 </body>
