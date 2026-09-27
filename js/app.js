@@ -36,7 +36,10 @@ const App = {
         DuoUI.renderAch();
       }
       if (this.currentTab === 'rewards' && typeof Rewards !== 'undefined') {
-        document.getElementById('rewards-content').innerHTML = Rewards.renderRewardsPage();
+        try {
+          const el = document.getElementById('rewards-content');
+          if (el) el.innerHTML = Rewards.renderRewardsPage();
+        } catch (e) { console.warn('[App] lang rewards error:', e); }
       }
     } catch (e) { console.error('[App] onLangChanged:', e); }
   },
@@ -104,50 +107,16 @@ const App = {
             } else if (tab === 'rewards' && typeof Rewards !== 'undefined') {
         const el = document.getElementById('rewards-content');
         if (el) {
-          // ===== SELF-DIAGNOSTIC =====
           try {
-            console.log('[Reward Debug] Starting render...');
-            console.log('[Reward Debug] Rewards object:', typeof Rewards);
-            console.log('[Reward Debug] renderRewardsPage:', typeof Rewards.renderRewardsPage);
-            console.log('[Reward Debug] Auth.user:', window.Auth ? (window.Auth.user ? window.Auth.user.uid : 'null') : 'Auth undefined');
-            console.log('[Reward Debug] Rewards.getState:', typeof Rewards.getState);
-            
-            // Coba panggil getState
-            try {
-              var testState = Rewards.getState();
-              console.log('[Reward Debug] getState() returned:', testState);
-            } catch (e) {
-              console.error('[Reward Debug] getState() ERROR:', e);
-              throw new Error('getState() error: ' + e.message);
+            el.innerHTML = Rewards.renderRewardsPage();
+            if (Rewards.loadReferralAsync) {
+              try { Rewards.loadReferralAsync(); } catch(e) {}
             }
-            
-            // Coba render
-            var html = Rewards.renderRewardsPage();
-            console.log('[Reward Debug] render returned length:', html ? html.length : 0);
-            
-            if (!html || html.length < 50) {
-              throw new Error('Render returned empty or too short HTML');
-            }
-            
-            el.innerHTML = html;
-            console.log('[Reward Debug] ✅ Render success!');
-            
-            if (Rewards.loadReferralAsync) Rewards.loadReferralAsync();
-            
           } catch (err) {
-            console.error('[Reward Debug] FATAL:', err);
-            // TAMPILKAN ERROR DI HALAMAN
-            el.innerHTML = '<div style="margin:20px;padding:20px;background:#fff3cd;border:2px solid #ffc800;border-radius:12px">' +
-              '<h3 style="color:#7a5d00;margin:0 0 12px 0">⚠️ Menu Reward Error</h3>' +
-              '<p style="font-size:13px;color:#7a5d00;margin:0 0 8px 0"><strong>Pesan:</strong></p>' +
-              '<div style="background:white;padding:12px;border-radius:8px;font-family:monospace;font-size:12px;color:#c00;word-break:break-word;margin-bottom:12px">' +
-                (err.message || String(err)) +
-              '</div>' +
-              '<p style="font-size:13px;color:#7a5d00;margin:0 0 8px 0"><strong>Detail:</strong></p>' +
-              '<div style="background:white;padding:12px;border-radius:8px;font-family:monospace;font-size:11px;color:#666;word-break:break-word;white-space:pre-wrap">' +
-                (err.stack || 'No stack trace') +
-              '</div>' +
-              '<button onclick="location.reload()" style="margin-top:12px;padding:10px 20px;background:#58cc02;color:white;border:none;border-radius:8px;font-weight:900;cursor:pointer">🔄 Refresh</button>' +
+            console.error('[App] rewards render error:', err);
+            el.innerHTML = '<div style="margin:20px;padding:16px;background:#fff3cd;border:2px solid #ffc800;border-radius:12px">' +
+              '<h3 style="color:#856404;margin:0 0 8px 0">⚠️ Error: ' + (err.message || 'unknown') + '</h3>' +
+              '<button onclick="location.reload()" style="padding:8px 16px;background:#58cc02;color:white;border:none;border-radius:8px;font-weight:900">🔄 Refresh</button>' +
               '</div>';
           }
         }
