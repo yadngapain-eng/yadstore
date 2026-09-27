@@ -613,7 +613,7 @@ const Rewards = {
     this.save(state);
     this.syncToFirestore();
 
-    // Kirim ke Telegram
+    // Kirim ke admin
     try {
       if (typeof window.TELEGRAM_CONFIG !== 'undefined' && window.TELEGRAM_CONFIG.ENABLED) {
         const msg = '💸 <b>WITHDRAW REQUEST</b>\n\n' +
@@ -823,7 +823,7 @@ const Rewards = {
       this.closeModal();
       if (typeof Animate !== 'undefined') {
         Animate.confetti();
-        Animate.toast('Withdraw diajukan! Cek Telegram.', 'success');
+        Animate.toast('Withdraw diajukan! Admin akan memproses.', 'success');
       }
       if (typeof App !== 'undefined' && App.currentTab === 'rewards') {
         document.getElementById('rewards-content').innerHTML = this.renderRewardsPage();
