@@ -2,30 +2,110 @@ name: Purge Cloudflare Cache Only
 
 on:
   workflow_dispatch:
+    inputs:
+      purge_urls:
+        description: 'URL spesifik (comma-separated). Kosong = purge semua'
+        required: false
+        default: ''
+        type: string
+      verify:
+        description: 'Verify live setelah purge?'
+        required: false
+        default: true
+        type: boolean
 
 jobs:
   purge:
     runs-on: ubuntu-latest
     name: Purge Cloudflare Cache
+
     steps:
-      - name: Purge Cache
+      - name: Validate secrets
         env:
           CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CF_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
         run: |
-          echo "Purge Cloudflare cache..."
+          echo "🔐 Validasi secrets..."
+          if [ -z "$CF_TOKEN" ]; then
+            echo "❌ CLOUDFLARE_API_TOKEN tidak diset"
+            exit 1
+          fi
           if [ -z "$CF_ZONE_ID" ]; then
             echo "❌ CLOUDFLARE_ZONE_ID tidak diset"
             exit 1
           fi
-          RESPONSE=$(curl -s -X POST "https://api.cloudflare.com/client/v4/zones/$CF_ZONE_ID/purge_cache" \
-            -H "Authorization: Bearer $CF_TOKEN" \
-            -H "Content-Type: application/json" \
-            --data '{"purge_everything": true}')
+          echo "✅ Secrets ada"
+          echo "   Token prefix: ${CF_TOKEN:0:8}..."
+          echo "   Zone ID     : $CF_ZONE_ID"
+
+      - name: Verify API token
+        env:
+          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          echo "🧪 Verify API token..."
+          RESPONSE=$(curl -s -X GET "https://api.cloudflare.com/client/v4/user/tokens/verify" \
+            -H "Authorization: Bearer $CF_TOKEN")
           echo "$RESPONSE"
+          if echo "$RESPONSE" | grep -q '"success":true'; then
+            echo "✅ Token VALID"
+          else
+            echo "❌ Token INVALID"
+            exit 1
+          fi
+
+      - name: Purge Cache
+        env:
+          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+          PURGE_URLS: ${{ github.event.inputs.purge_urls }}
+        run: |
+          echo "🧹 Purge Cloudflare cache..."
+          if [ -n "$PURGE_URLS" ]; then
+            echo "🎯 Mode: URL SPESIFIK"
+            FILES=$(echo "$PURGE_URLS" | tr ',' '\n' | sed 's/^ *//;s/ *$//' | jq -R . | jq -s .)
+            RESPONSE=$(curl -s -X POST "https://api.cloudflare.com/client/v4/zones/$CF_ZONE_ID/purge_cache" \
+              -H "Authorization: Bearer $CF_TOKEN" \
+              -H "Content-Type: application/json" \
+              --data "{\"files\": $FILES}")
+          else
+            echo "🌍 Mode: PURGE EVERYTHING"
+            RESPONSE=$(curl -s -X POST "https://api.cloudflare.com/client/v4/zones/$CF_ZONE_ID/purge_cache" \
+              -H "Authorization: Bearer $CF_TOKEN" \
+              -H "Content-Type: application/json" \
+              --data '{"purge_everything": true}')
+          fi
+          echo "$RESPONSE" | jq . 2>/dev/null || echo "$RESPONSE"
           if echo "$RESPONSE" | grep -q '"success":true'; then
             echo "✅ Cache purged!"
           else
             echo "❌ Purge gagal"
             exit 1
           fi
+
+      - name: Verify live
+        if: success() && github.event.inputs.verify == 'true'
+        run: |
+          echo "⏳ Tunggu 15 detik..."
+          sleep 15
+          echo "🔍 Verifikasi live..."
+          RANDOM_QS=${{ github.run_id }}
+          echo ""
+          echo "📄 Test index.html:"
+          curl -s -o /tmp/index.html -w "  HTTP: %{http_code}\n" "https://duniamu.my.id/?nocache=$RANDOM_QS"
+          if grep -q 'rel="manifest"' /tmp/index.html; then
+            echo "  ✅ manifest link DITEMUKAN"
+          else
+            echo "  ❌ manifest link TIDAK ADA"
+          fi
+          echo ""
+          echo "📄 Test manifest.json:"
+          curl -s -o /dev/null -w "  HTTP: %{http_code} | Type: %{content_type}\n" "https://duniamu.my.id/manifest.json?nocache=$RANDOM_QS"
+          echo ""
+          echo "📄 Test sw.js:"
+          curl -s -o /dev/null -w "  HTTP: %{http_code} | Type: %{content_type}\n" "https://duniamu.my.id/sw.js?nocache=$RANDOM_QS"
+          echo ""
+          echo "📄 Test icons:"
+          curl -s -o /dev/null -w "  icon-192: %{http_code} | %{content_type}\n" "https://duniamu.my.id/icons/icon-192.png?nocache=$RANDOM_QS"
+          curl -s -o /dev/null -w "  icon-512: %{http_code} | %{content_type}\n" "https://duniamu.my.id/icons/icon-512.png?nocache=$RANDOM_QS"
+          echo ""
+          echo "✅ Selesai!"
