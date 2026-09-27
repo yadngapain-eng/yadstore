@@ -1,6 +1,6 @@
 /* ============================================
-   YADSTORE — ARTICLES v2 (Iframe Mode)
-   Baca artikel di dalam app, iklan tetap muncul
+   YADSTORE — ARTICLES v3
+   39 artikel iframe-friendly + banner ads
    ============================================ */
 
 const Articles = {
@@ -12,14 +12,45 @@ const Articles = {
   },
 
   LIST: [
-    {title: 'Cara Belajar Coding untuk Pemula', url: 'https://www.dicoding.com/blog/cara-belajar-coding-untuk-pemula/', icon: '💻', reward: 50},
-    {title: 'Tips Belajar Bahasa Inggris Cepat', url: 'https://www.ruangguru.com/blog/tips-belajar-bahasa-inggris', icon: '🇬🇧', reward: 50},
-    {title: 'Cara Cerdas Mengatur Uang Jajan', url: 'https://www.ocbc.id/id/article/2023/05/22/mengatur-uang-jajan', icon: '💰', reward: 50},
-    {title: 'Manfaat Belajar Matematika Sehari-hari', url: 'https://www.zenius.net/blog/manfaat-belajar-matematika', icon: '🔢', reward: 50},
-    {title: 'Tips Sukses Belajar Online', url: 'https://www.kompas.com/', icon: '🎓', reward: 50},
-    {title: 'Cara Mengatur Waktu dengan Baik', url: 'https://www.bola.com/', icon: '⏰', reward: 50},
-    {title: 'Panduan Investasi untuk Pemula', url: 'https://www.investopedia.com/', icon: '📈', reward: 50},
-    {title: 'Cara Meningkatkan Fokus Belajar', url: 'https://www.healthline.com/', icon: '🧠', reward: 50}
+    {title: 'Apa itu Komputer?', url: 'https://id.wikipedia.org/wiki/Komputer', icon: '💻', reward: 50},
+    {title: 'Belajar Matematika', url: 'https://id.wikipedia.org/wiki/Matematika', icon: '🔢', reward: 50},
+    {title: 'Bahasa Inggris', url: 'https://id.wikipedia.org/wiki/Bahasa_Inggris', icon: '🇬🇧', reward: 50},
+    {title: 'Sejarah Indonesia', url: 'https://id.wikipedia.org/wiki/Sejarah_Indonesia', icon: '📚', reward: 50},
+    {title: 'Tata Surya', url: 'https://id.wikipedia.org/wiki/Tata_Surya', icon: '🌍', reward: 50},
+    {title: 'Fisika Dasar', url: 'https://id.wikipedia.org/wiki/Fisika', icon: '⚡', reward: 50},
+    {title: 'Biologi', url: 'https://id.wikipedia.org/wiki/Biologi', icon: '🧬', reward: 50},
+    {title: 'Kimia', url: 'https://id.wikipedia.org/wiki/Kimia', icon: '🧪', reward: 50},
+    {title: 'Ekonomi', url: 'https://id.wikipedia.org/wiki/Ekonomi', icon: '💰', reward: 50},
+    {title: 'Internet', url: 'https://id.wikipedia.org/wiki/Internet', icon: '🌐', reward: 50},
+    {title: 'Artificial Intelligence', url: 'https://id.wikipedia.org/wiki/Kecerdasan_buatan', icon: '🤖', reward: 50},
+    {title: 'Pemrograman', url: 'https://id.wikipedia.org/wiki/Pemrograman', icon: '⌨️', reward: 50},
+    {title: 'Indonesia', url: 'https://id.wikipedia.org/wiki/Indonesia', icon: '🇮🇩', reward: 50},
+    {title: 'Jakarta', url: 'https://id.wikipedia.org/wiki/Jakarta', icon: '🏙️', reward: 50},
+    {title: 'Pancasila', url: 'https://id.wikipedia.org/wiki/Pancasila', icon: '🇮🇩', reward: 50},
+    {title: 'Bumi', url: 'https://id.wikipedia.org/wiki/Bumi', icon: '🌎', reward: 50},
+    {title: 'Matahari', url: 'https://id.wikipedia.org/wiki/Matahari', icon: '☀️', reward: 50},
+    {title: 'Bulan', url: 'https://id.wikipedia.org/wiki/Bulan', icon: '🌙', reward: 50},
+    {title: 'Air', url: 'https://id.wikipedia.org/wiki/Air', icon: '💧', reward: 50},
+    {title: 'Udara', url: 'https://id.wikipedia.org/wiki/Udara', icon: '🌬️', reward: 50},
+    {title: 'Manusia', url: 'https://id.wikipedia.org/wiki/Manusia', icon: '👤', reward: 50},
+    {title: 'Kesehatan', url: 'https://id.wikipedia.org/wiki/Kesehatan', icon: '💊', reward: 50},
+    {title: 'Olahraga', url: 'https://id.wikipedia.org/wiki/Olahraga', icon: '⚽', reward: 50},
+    {title: 'Musik', url: 'https://id.wikipedia.org/wiki/Musik', icon: '🎵', reward: 50},
+    {title: 'Seni', url: 'https://id.wikipedia.org/wiki/Seni', icon: '🎨', reward: 50},
+    {title: 'Film', url: 'https://id.wikipedia.org/wiki/Film', icon: '🎬', reward: 50},
+    {title: 'Buku', url: 'https://id.wikipedia.org/wiki/Buku', icon: '📖', reward: 50},
+    {title: 'Teknologi', url: 'https://id.wikipedia.org/wiki/Teknologi', icon: '⚙️', reward: 50},
+    {title: 'Sains', url: 'https://id.wikipedia.org/wiki/Sains', icon: '🔬', reward: 50},
+    {title: 'Sejarah Dunia', url: 'https://id.wikipedia.org/wiki/Sejarah_dunia', icon: '🏛️', reward: 50},
+    {title: 'Geografi', url: 'https://id.wikipedia.org/wiki/Geografi', icon: '🗺️', reward: 50},
+    {title: 'Astronomi', url: 'https://id.wikipedia.org/wiki/Astronomi', icon: '🔭', reward: 50},
+    {title: 'Cara Belajar Efektif', url: 'https://id.wikihow.com/Belajar-Secara-Efektif', icon: '📚', reward: 50},
+    {title: 'Cara Mengatur Waktu', url: 'https://id.wikihow.com/Mengatur-Waktu', icon: '⏰', reward: 50},
+    {title: 'Cara Menghemat Uang', url: 'https://id.wikihow.com/Menghemat-Uang', icon: '💰', reward: 50},
+    {title: 'Cara Sukses di Sekolah', url: 'https://id.wikihow.com/Sukses-di-Sekolah', icon: '🎓', reward: 50},
+    {title: 'Belajar HTML', url: 'https://developer.mozilla.org/id/docs/Learn/HTML', icon: '🌐', reward: 50},
+    {title: 'Belajar CSS', url: 'https://developer.mozilla.org/id/docs/Learn/CSS', icon: '🎨', reward: 50},
+    {title: 'Belajar JavaScript', url: 'https://developer.mozilla.org/id/docs/Learn/JavaScript', icon: '⚡', reward: 50}
   ],
 
   currentArticle: null,
@@ -27,10 +58,8 @@ const Articles = {
   currentTimer: null,
   secondsRead: 0,
   isReading: false,
+  currentCategory: 'all',
 
-  // ============================================
-  // STORAGE
-  // ============================================
   get: function(key, def) {
     try {
       var v = localStorage.getItem('learnearn_article_' + key);
@@ -77,46 +106,32 @@ const Articles = {
     return state.todayArticles.indexOf(articleUrl) !== -1;
   },
 
-  // ============================================
-  // BUKA ARTIKEL (MODE IFRAME)
-  // ============================================
   open: function(index) {
     var article = this.LIST[index];
     if (!article) return;
-
     var check = this.canRead();
     if (!check.ok) {
       if (typeof Animate !== 'undefined') Animate.toast('⚠️ ' + check.reason, 'error');
       return;
     }
-
     if (this.hasRead(article.url)) {
       if (typeof Animate !== 'undefined') Animate.toast('Artikel ini sudah kamu baca hari ini', 'error');
       return;
     }
-
     this.currentArticle = article;
     this.currentArticleIndex = index;
     this.secondsRead = 0;
     this.isReading = true;
-
     this.showIframeModal(article);
   },
 
-  // ============================================
-  // MODAL IFRAME (ARTIKEL + IKLAN)
-  // ============================================
   showIframeModal: function(article) {
     var modal = document.getElementById('reward-modal');
     if (!modal) return;
 
-    var self = this;
-    
-    // HTML modal full screen
     modal.innerHTML = 
       '<div class="modal-content" style="max-width:100%;width:100%;height:100vh;max-height:100vh;border-radius:0;padding:0;display:flex;flex-direction:column;background:#f0f0f0">' +
         
-        // ===== TOP BAR (header + timer) =====
         '<div style="background:linear-gradient(135deg,#a855f7,#7c3aed);padding:12px 16px;display:flex;align-items:center;gap:12px;flex-shrink:0">' +
           '<button onclick="Articles.cancelRead()" style="background:rgba(255,255,255,0.2);border:none;color:white;width:36px;height:36px;border-radius:50%;font-size:18px;font-weight:900;cursor:pointer;flex-shrink:0">✕</button>' +
           '<div style="flex:1;min-width:0">' +
@@ -126,40 +141,29 @@ const Articles = {
           '<div style="background:white;color:#a855f7;padding:6px 12px;border-radius:999px;font-size:13px;font-weight:900;flex-shrink:0">+' + article.reward + ' 🪙</div>' +
         '</div>' +
 
-        // ===== PROGRESS BAR =====
         '<div style="height:4px;background:rgba(168,85,247,0.2);flex-shrink:0">' +
           '<div id="article-progress-bar" style="height:100%;width:0%;background:#a855f7;transition:width 1s linear"></div>' +
         '</div>' +
 
-        // ===== BANNER AD SLOT (DI ATAS) =====
-        '<div id="article-banner-top" style="background:#fff9e6;border-bottom:2px solid #ffc800;padding:8px;text-align:center;flex-shrink:0;min-height:60px;display:flex;align-items:center;justify-content:center">' +
-          '<div style="font-size:11px;color:#7a5d00;font-weight:700">📢 Iklan</div>' +
+        // Banner ad atas
+        '<div id="article-banner-top" style="background:white;border-bottom:2px solid #ffc800;padding:0;text-align:center;flex-shrink:0;min-height:50px;display:flex;align-items:center;justify-content:center;overflow:hidden">' +
+          '<div style="font-size:11px;color:#999;font-weight:700;padding:16px">📢 Iklan (banner)</div>' +
         '</div>' +
 
-        // ===== IFRAME ARTICLE =====
+        // Iframe
         '<div style="flex:1;overflow:hidden;position:relative">' +
           '<iframe id="article-iframe" src="' + article.url + '" ' +
             'style="width:100%;height:100%;border:none;background:white" ' +
             'sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-popups-to-escape-sandbox" ' +
             'referrerpolicy="no-referrer" ' +
-            'onload="Articles.onIframeLoad()" ' +
           '></iframe>' +
-          
-          // Overlay info kalau iframe gagal load
-          '<div id="article-iframe-error" style="display:none;position:absolute;inset:0;background:white;padding:24px;text-align:center;flex-direction:column;align-items:center;justify-content:center">' +
-            '<div style="font-size:60px;margin-bottom:16px">🔒</div>' +
-            '<h3 style="font-size:16px;font-weight:900;margin-bottom:8px">Artikel tidak bisa dimuat di dalam app</h3>' +
-            '<p style="font-size:13px;color:#666;margin-bottom:16px">Klik tombol di bawah untuk buka di browser</p>' +
-            '<button onclick="Articles.openExternal()" class="btn-primary" style="padding:12px 24px">🌐 Buka di Browser</button>' +
-          '</div>' +
         '</div>' +
 
-        // ===== BANNER AD SLOT (DI BAWAH) =====
-        '<div id="article-banner-bottom" style="background:#fff9e6;border-top:2px solid #ffc800;padding:8px;text-align:center;flex-shrink:0;min-height:60px;display:flex;align-items:center;justify-content:center">' +
-          '<div style="font-size:11px;color:#7a5d00;font-weight:700">📢 Iklan</div>' +
+        // Banner ad bawah
+        '<div id="article-banner-bottom" style="background:white;border-top:2px solid #ffc800;padding:0;text-align:center;flex-shrink:0;min-height:50px;display:flex;align-items:center;justify-content:center;overflow:hidden">' +
+          '<div style="font-size:11px;color:#999;font-weight:700;padding:16px">📢 Iklan (banner)</div>' +
         '</div>' +
 
-        // ===== BOTTOM INFO =====
         '<div style="background:white;padding:10px 16px;display:flex;align-items:center;gap:10px;flex-shrink:0;border-top:2px solid #e5e5e5">' +
           '<div style="font-size:12px;color:#666;font-weight:700;flex:1">💡 Baca sampai timer selesai untuk dapat koin</div>' +
           '<div id="article-coin-badge" style="background:#a855f7;color:white;padding:6px 12px;border-radius:999px;font-size:12px;font-weight:900">+' + article.reward + ' 🪙</div>' +
@@ -167,75 +171,19 @@ const Articles = {
       '</div>';
 
     modal.classList.add('active');
-
-    // Inject banner ads ke slot
     this.injectBannerAds();
-
-    // Start timer
     this.startTimer();
   },
 
-  // ============================================
-  // INJECT BANNER ADS
-  // ============================================
   injectBannerAds: function() {
-    // Iklan banner dari Adsterra/Monetag
-    // Karena mereka biasanya inject via script global, kita cuma trigger re-render
-    
-    // Cara 1: Kalau AdsManager punya method banner
+    // Kalau user sudah punya AdsManager banner, trigger refresh
     if (typeof AdsManager !== 'undefined') {
       try {
-        // Trigger refresh banner (kalau ada)
-        if (AdsManager.refreshBanners) {
-          AdsManager.refreshBanners();
-        }
+        if (AdsManager.refreshBanners) AdsManager.refreshBanners();
       } catch (e) {}
     }
-
-    // Cara 2: Manual create ad slot dengan Monetag script
-    var bannerTop = document.getElementById('article-banner-top');
-    var bannerBottom = document.getElementById('article-banner-bottom');
-
-    // Kalau ada script Monetag untuk banner, inject di sini
-    // Contoh: kalau kamu punya zone banner
-    if (bannerTop && !bannerTop.dataset.loaded) {
-      bannerTop.dataset.loaded = 'true';
-      // Inject Monetag banner script (kalau ada zone banner)
-      // Untuk sekarang, tampilkan placeholder + trigger Adsterra popunder untuk banner
-    }
   },
 
-  // ============================================
-  // IFRAME ONLOAD
-  // ============================================
-  onIframeLoad: function() {
-    console.log('[Articles] Iframe loaded');
-    // Reset error state
-    var err = document.getElementById('article-iframe-error');
-    if (err) err.style.display = 'none';
-  },
-
-  // ============================================
-  // BUKA DI BROWSER (fallback)
-  // ============================================
-  openExternal: function() {
-    var article = this.currentArticle;
-    if (!article) return;
-    
-    // Simpan state
-    localStorage.setItem('learnearn_article_pending', JSON.stringify({
-      index: this.currentArticleIndex,
-      startedAt: Date.now(),
-      reward: article.reward,
-    }));
-    
-    // Buka di browser
-    window.open(article.url, '_blank');
-  },
-
-  // ============================================
-  // TIMER
-  // ============================================
   startTimer: function() {
     var self = this;
     this.secondsRead = 0;
@@ -247,20 +195,11 @@ const Articles = {
       self.secondsRead++;
       var remain = totalTime - self.secondsRead;
 
-      // Update UI
       var textEl = document.getElementById('article-timer-text');
       var progressEl = document.getElementById('article-progress-bar');
 
-      if (textEl) {
-        if (remain > 0) {
-          textEl.textContent = '⏱️ ' + remain + ' detik';
-        } else {
-          textEl.textContent = '✅ Selesai!';
-        }
-      }
-      if (progressEl) {
-        progressEl.style.width = ((self.secondsRead / totalTime) * 100) + '%';
-      }
+      if (textEl) textEl.textContent = remain > 0 ? '⏱️ ' + remain + ' detik' : '✅ Selesai!';
+      if (progressEl) progressEl.style.width = ((self.secondsRead / totalTime) * 100) + '%';
 
       if (self.secondsRead >= totalTime) {
         clearInterval(self.currentTimer);
@@ -271,9 +210,6 @@ const Articles = {
     }, 1000);
   },
 
-  // ============================================
-  // SELESAI BACA
-  // ============================================
   finishReading: function() {
     var article = this.currentArticle;
     if (!article) return;
@@ -321,9 +257,6 @@ const Articles = {
     this.currentArticle = null;
   },
 
-  // ============================================
-  // CANCEL
-  // ============================================
   cancelRead: function() {
     if (this.currentTimer) {
       clearInterval(this.currentTimer);
@@ -342,14 +275,10 @@ const Articles = {
       modal.classList.remove('active');
       modal.innerHTML = '';
     }
-    // Clear iframe to stop loading
     var iframe = document.getElementById('article-iframe');
     if (iframe) iframe.src = 'about:blank';
   },
 
-  // ============================================
-  // RENDER HALAMAN ARTIKEL
-  // ============================================
   render: function() {
     var c = document.getElementById('articles-content');
     if (!c) return;
@@ -359,7 +288,7 @@ const Articles = {
 
     var html = '';
 
-    // Stats card
+    // Stats
     html += '<div style="background:linear-gradient(135deg,#a855f7,#7c3aed);border-radius:16px;padding:16px;color:white;margin-bottom:16px;box-shadow:0 8px 24px rgba(168,85,247,0.3)">' +
       '<div style="display:flex;justify-content:space-between;align-items:center">' +
         '<div>' +
@@ -376,13 +305,12 @@ const Articles = {
     // Info
     html += '<div style="background:#faf5ff;border:2px solid #a855f7;border-radius:12px;padding:12px;margin-bottom:16px;text-align:center">' +
       '<div style="font-size:13px;color:#6b21a8;font-weight:800;line-height:1.6">' +
-        '📖 Baca artikel selama <strong>' + this.CONFIG.READ_TIME + ' detik</strong><br>' +
-        '💰 Dapat <strong>+' + this.CONFIG.REWARD_DEFAULT + ' koin</strong> per artikel<br>' +
-        '⏰ Max <strong>' + this.CONFIG.MAX_PER_DAY + ' artikel/hari</strong>' +
+        '📖 Baca artikel <strong>' + this.CONFIG.READ_TIME + ' detik</strong> → <strong>+' + this.CONFIG.REWARD_DEFAULT + ' koin</strong><br>' +
+        '📚 Total <strong>' + this.LIST.length + ' artikel</strong> tersedia<br>' +
+        '⏰ Max <strong>' + this.CONFIG.MAX_PER_DAY + '/hari</strong>' +
       '</div>' +
     '</div>';
 
-    // Cooldown info
     var check = this.canRead();
     if (!check.ok && check.cooldown) {
       html = '<div style="background:#fff3cd;border:2px solid #ffc800;border-radius:12px;padding:12px;margin-bottom:16px;text-align:center;font-size:13px;font-weight:800;color:#7a5d00">⏰ ' + check.reason + '</div>' + html;
@@ -421,16 +349,12 @@ const Articles = {
       .replace(/'/g, '&#39;');
   },
 
-  // ============================================
-  // CHECK PENDING (kalau user balik dari browser)
-  // ============================================
   checkPending: function() {
     try {
       var pending = localStorage.getItem('learnearn_article_pending');
       if (!pending) return;
       var data = JSON.parse(pending);
       var elapsed = Date.now() - (data.startedAt || 0);
-      
       if (elapsed >= 60000 && elapsed < 5 * 60 * 1000) {
         var article = this.LIST[data.index];
         if (article) {
@@ -446,5 +370,5 @@ const Articles = {
 
 if (typeof window !== 'undefined') {
   window.Articles = Articles;
-  console.log('[articles] v2 loaded (iframe mode) — ' + Articles.LIST.length + ' artikel');
+  console.log('[articles] v3 loaded — ' + Articles.LIST.length + ' artikel');
 }
