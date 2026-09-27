@@ -104,7 +104,16 @@ const App = {
         TopUpUI.renderOrders();
       } else if (tab === 'achievements' && typeof DuoUI !== 'undefined') {
         DuoUI.renderAch();
-            } else if (tab === 'rewards' && typeof Rewards !== 'undefined') {
+            } else if (tab === 'articles' && typeof Articles !== 'undefined') {
+        try {
+          Articles.render();
+          if (Articles.checkPending) Articles.checkPending();
+        } catch (e) {
+          console.error('[App] articles error:', e);
+          var el = document.getElementById('articles-content');
+          if (el) el.innerHTML = '<div style="padding:20px;background:#fff3cd;border-radius:12px"><p style="color:#856404">⚠️ Error: ' + e.message + '</p></div>';
+        }
+      } else if (tab === 'rewards' && typeof Rewards !== 'undefined') {
         const el = document.getElementById('rewards-content');
         if (el) {
           try {
