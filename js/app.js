@@ -103,7 +103,7 @@ const App = {
         DuoUI.renderAch();
       } else if (tab === 'rewards' && typeof Rewards !== 'undefined') {
         const el = document.getElementById('rewards-content');
-        if (el) el.innerHTML = Rewards.renderRewardsPage();
+        if (el) { Rewards.renderRewardsPage().then(function(h) { el.innerHTML = h; }); }
       }
     } catch (e) { console.error('[App] switchTab:', e); }
 

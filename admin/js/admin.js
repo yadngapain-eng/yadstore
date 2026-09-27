@@ -50,6 +50,7 @@ const Admin = {
           limits: 'Min Withdraw Limit',
           products: 'Produk & Markup',
           massboost: '💰 Mass Boost',
+          referral: '🎁 Referral',
           users: 'Users',
           debug: '🐛 Debug & Monitor',
           settings: 'Pengaturan'
@@ -116,6 +117,7 @@ const Admin = {
     else if (this.section === 'limits') this.renderLimits(c);
     else if (this.section === 'products') this.renderProducts(c);
     else if (this.section === 'massboost') this.renderMassBoost(c);
+    else if (this.section === 'referral') this.renderReferral(c);
     else if (this.section === 'users') this.renderUsers(c);
     else if (this.section === 'debug') this.renderDebug(c);
     else if (this.section === 'settings') this.renderSettings(c);
@@ -1092,6 +1094,108 @@ const Admin = {
       alert('✅ ' + ok + ' user di-reset total');
       this.renderMassBoost(document.getElementById('content'));
     } catch (e) { alert('Error: ' + e.message); }
+  },
+
+  // ============================================
+  // REFERRAL ADMIN
+  // ============================================
+  async renderReferral(c) {
+    c.innerHTML = '<div class="loading-inline">Memuat data referral...</div>';
+    try {
+      // Ambil semua user dengan referral
+      const usersSnap = await this.db.collection('users').limit(500).get();
+      const users = usersSnap.docs.map(d => ({ uid: d.id, ...d.data() }));
+
+      // Filter user yang punya referral
+      const referrers = users
+        .filter(u => (u.referralCount || 0) > 0)
+        .sort((a, b) => (b.referralCount || 0) - (a.referralCount || 0));
+
+      // Ambil log referral
+      const refSnap = await this.db.collection('referrals')
+        .orderBy('referredAt', 'desc')
+        .limit(100)
+        .get();
+      const referrals = refSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+      // Total stats
+      const totalReferrals = referrals.length;
+      const totalReferrers = referrers.length;
+
+      let html = '';
+
+      // ===== STATS =====
+      html += '<div class="stats-grid">' +
+        this._statCard('👥', totalReferrals, 'Total Referral') +
+        this._statCard('🎯', totalReferrers, 'Total Pengundang') +
+        this._statCard('💰', (totalReferrals * 500).toLocaleString('id-ID'), 'Koin Dibagikan') +
+        '</div>';
+
+      // ===== LEADERBOARD =====
+      html += '<div class="card"><h3>🏆 Top 10 Pengundang</h3>';
+      if (referrers.length === 0) {
+        html += '<p class="empty-msg">Belum ada referral</p>';
+      } else {
+        html += '<div class="table-wrap"><table><thead><tr>' +
+          '<th>#</th><th>User</th><th>Kode</th><th>Teman</th><th>Koin</th></tr></thead><tbody>';
+        referrers.slice(0, 10).forEach((u, i) => {
+          const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '#' + (i+1);
+          const count = u.referralCount || 0;
+          html += '<tr>' +
+            '<td>' + medal + '</td>' +
+            '<td>' + (u.avatar || '👤') + ' ' + (u.displayName || '-') + '</td>' +
+            '<td><code style="font-size:11px">' + (u.referralCode || '-') + '</code></td>' +
+            '<td><strong>' + count + '</strong></td>' +
+            '<td>' + (count * 500).toLocaleString('id-ID') + '</td>' +
+            '</tr>';
+        });
+        html += '</tbody></table></div>';
+      }
+      html += '</div>';
+
+      // ===== LOG REFERRAL =====
+      html += '<div class="card"><h3>📋 Log Referral Terbaru</h3>';
+      if (referrals.length === 0) {
+        html += '<p class="empty-msg">Belum ada log referral</p>';
+      } else {
+        html += '<div class="table-wrap"><table><thead><tr>' +
+          '<th>Waktu</th><th>Kode</th><th>Status</th><th>Bonus</th></tr></thead><tbody>';
+        referrals.slice(0, 30).forEach(r => {
+          const t = r.referredAt ? new Date(r.referredAt).toLocaleString('id-ID', {
+            day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'
+          }) : '-';
+          html += '<tr>' +
+            '<td style="font-size:11px">' + t + '</td>' +
+            '<td><code>' + (r.code || '-') + '</code></td>' +
+            '<td>' + (r.bonusGiven ? '✅ Aktif' : '⏳ Pending') + '</td>' +
+            '<td>' + (r.bonusGiven ? '500 + 250' : '-') + '</td>' +
+            '</tr>';
+        });
+        html += '</tbody></table></div>';
+      }
+      html += '</div>';
+
+      // ===== ALL USERS WITH REFERRAL CODE =====
+      html += '<div class="card"><h3>📊 Semua User dengan Kode</h3>' +
+        '<div class="table-wrap"><table><thead><tr>' +
+        '<th>User</th><th>Kode</th><th>Teman</th><th>Di-refer Oleh</th></tr></thead><tbody>';
+
+      users.slice(0, 100).forEach(u => {
+        const count = (u.referredUsers || []).length;
+        html += '<tr>' +
+          '<td>' + (u.avatar || '👤') + ' ' + (u.displayName || '-') + '</td>' +
+          '<td><code style="font-size:11px">' + (u.referralCode || '-') + '</code></td>' +
+          '<td>' + count + '</td>' +
+          '<td>' + (u.referredByCode ? '<code>' + u.referredByCode + '</code>' : '-') + '</td>' +
+          '</tr>';
+      });
+      html += '</tbody></table></div></div>';
+
+      c.innerHTML = html;
+    } catch (e) {
+      console.error('[Admin] renderReferral error:', e);
+      c.innerHTML = '<div class="card"><p style="color:red">Error: ' + e.message + '</p></div>';
+    }
   },
 
   // ============================================

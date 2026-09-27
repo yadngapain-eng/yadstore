@@ -525,6 +525,16 @@ var Rewards = {
       '</div>' +
       '</div>';
 
+    // ===== REFERRAL SECTION =====
+    if (typeof Referral !== 'undefined') {
+      try {
+        var refHTML = await Referral.renderReferralSection();
+        html += refHTML;
+      } catch (e) {
+        console.warn('[Rewards] Referral render error:', e);
+      }
+    }
+
     // History
     html += '<div class="reward-history">' +
       '<h3>' + t('reward_history_title') + '</h3>' +
