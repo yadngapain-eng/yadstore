@@ -111,6 +111,21 @@ body {
     }
 }
 </style>
+
+<script>
+// Auto-reset achievement yang ter-trigger dengan coin lama
+(function() {
+  if (typeof window === 'undefined') return;
+  try {
+    var version = localStorage.getItem('yadstore_ach_version') || 'v1';
+    if (version !== 'v4') {
+      console.log('[Migration] Reset achievements ke v4');
+      localStorage.removeItem('yadstore_achievements');
+      localStorage.setItem('yadstore_ach_version', 'v4');
+    }
+  } catch (e) {}
+})();
+</script>
 </head>
 <body>
 <div id="app-splash">
@@ -296,20 +311,20 @@ body {
 <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
 
 <!-- App Scripts -->
-<script src="js/i18n.js?v=1790478107"></script>
-<script src="js/lessons-data.js?v=1790478107"></script>
-<script src="js/duolingo-core.js?v=1790478107"></script>
-<script src="js/games-data.js?v=1790478107"></script>
-<script src="js/animasi.js?v=1790478107"></script>
-<script src="js/duolingo-ui.js?v=1790478107"></script>
-<script src="js/topup-ui.js?v=1790478107"></script>
-<script src="js/telegram-config.js?v=1790478107"></script>
-<script src="js/firebase-config.js?v=1790478107"></script>
-<script src="js/auth.js?v=1790478107"></script>
-<script src="js/rewards.js?v=1790478107"></script>
-<script src="js/ads-manager.js?v=1790478107"></script>
-<script src="js/log-tracker.js?v=1790478107"></script>
-<script src="js/app.js?v=1790478107"></script>
+<script src="js/i18n.js?v=1790479084"></script>
+<script src="js/lessons-data.js?v=1790479084"></script>
+<script src="js/duolingo-core.js?v=1790479084"></script>
+<script src="js/games-data.js?v=1790479084"></script>
+<script src="js/animasi.js?v=1790479084"></script>
+<script src="js/duolingo-ui.js?v=1790479084"></script>
+<script src="js/topup-ui.js?v=1790479084"></script>
+<script src="js/telegram-config.js?v=1790479084"></script>
+<script src="js/firebase-config.js?v=1790479084"></script>
+<script src="js/auth.js?v=1790479084"></script>
+<script src="js/rewards.js?v=1790479084"></script>
+<script src="js/ads-manager.js?v=1790479084"></script>
+<script src="js/log-tracker.js?v=1790479084"></script>
+<script src="js/app.js?v=1790479084"></script>
 
 <script>
 // ==========================================
