@@ -1,0 +1,14 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "id.my.duniamu.learnearn",
+      "sha256_cert_fingerprints": [
+        "41:D2:6E:29:78:E1:47:41:39:A6:64:61:1A:38:DF:14:46:D1:80:0B:11:5C:32:21:A4:D3:01:B0:F1:11:3A:33"
+      ]
+    }
+  }
+]
