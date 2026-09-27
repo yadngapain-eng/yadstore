@@ -38,20 +38,35 @@ const Auth = {
 
       this.auth.onAuthStateChanged(async (user) => {
         if (user) {
+          const wasAnon = this.lastUid && this.lastUid !== user.uid && !user.isAnonymous;
+          
           console.log('[Auth] User:', user.uid, user.isAnonymous ? '(anon)' : '(google)');
 
           // ===== DETEKSI USER GANTI =====
-          if (this.lastUid && this.lastUid !== user.uid) {
-            console.log('[Auth] User changed! Clearing old data...', this.lastUid, '→', user.uid);
-            this.clearLocalData();
+          // KALAU user login Google setelah guest → MERGE data, JANGAN clear
+          if (user.isAnonymous === false && this.lastUid && this.lastUid !== user.uid) {
+            console.log('[Auth] 🎉 Guest → Google login detected!');
+            this.lastUid = user.uid;
+            this.user = user;
+            await this.loadProfile();
+            // MERGE koin guest ke akun Google
+            await this.mergeGuestData();
+            this.syncLocalFromProfile();
+            this.updateUI();
+            this.notifyApp();
+          } else {
+            // Skenario normal
+            if (this.lastUid && this.lastUid !== user.uid) {
+              console.log('[Auth] User changed, clearing data');
+              this.clearLocalData();
+            }
+            this.lastUid = user.uid;
+            this.user = user;
+            await this.loadProfile();
+            this.syncLocalFromProfile();
+            this.updateUI();
+            this.notifyApp();
           }
-          this.lastUid = user.uid;
-
-          this.user = user;
-          await this.loadProfile();
-          this.syncLocalFromProfile();
-          this.updateUI();
-          this.notifyApp();
         } else {
           try { await this.auth.signInAnonymously(); }
           catch (e) { this.initLocalOnly(); }
@@ -146,6 +161,90 @@ const Auth = {
         totalCorrect: 0, totalWrong: 0,
         balance: 0,
       };
+    }
+  },
+
+  // ============================================
+  // MERGE GUEST DATA → AKUN GOOGLE
+  // Dipanggil otomatis saat user login Google
+  // ============================================
+  async mergeGuestData() {
+    try {
+      // Cek apakah ada data guest yang tersimpan sebelum login
+      const guestBalance = parseFloat(localStorage.getItem('yadstore_reward_balance') || '0');
+      const guestEarned = parseFloat(localStorage.getItem('yadstore_reward_totalEarned') || '0');
+      const guestXp = parseInt(localStorage.getItem('yadstore_xp') || '0');
+      const guestGems = parseInt(localStorage.getItem('yadstore_gems') || '0');
+      const guestLessons = JSON.parse(localStorage.getItem('yadstore_completedLessons') || '[]');
+      const guestAch = JSON.parse(localStorage.getItem('yadstore_achievements') || '[]');
+      
+      // Cek flag apakah data ini sudah pernah di-merge
+      const mergeKey = 'yadstore_merged_' + this.user.uid;
+      if (localStorage.getItem(mergeKey)) {
+        console.log('[Auth] Guest data already merged for this user');
+        return { skipped: true };
+      }
+      
+      // Kalau guest tidak punya data, skip
+      if (guestBalance === 0 && guestXp === 0 && guestLessons.length === 0) {
+        console.log('[Auth] No guest data to merge');
+        localStorage.setItem(mergeKey, 'true');
+        return { skipped: true };
+      }
+      
+      console.log('[Auth] Merging guest data:', {
+        balance: guestBalance, xp: guestXp, gems: guestGems,
+        lessons: guestLessons.length, achievements: guestAch.length
+      });
+      
+      // Ambil data profile dari server
+      const ref = this.db.collection('users').doc(this.user.uid);
+      const doc = await ref.get();
+      if (!doc.exists) return { skipped: true };
+      
+      const profile = doc.data();
+      
+      // Merge data
+      const merged = {
+        balance: (profile.balance || 0) + guestBalance,
+        totalEarned: (profile.totalEarned || 0) + guestEarned,
+        xp: (profile.xp || 0) + guestXp,
+        gems: (profile.gems || 0) + guestGems,
+        completedLessons: [...new Set([...(profile.completedLessons || []), ...guestLessons])],
+        achievements: [...new Set([...(profile.achievements || []), ...guestAch])],
+        updatedAt: new Date().toISOString(),
+        mergedAt: new Date().toISOString(),
+        mergedFromGuest: true,
+      };
+      
+      // Save ke Firestore
+      await ref.set(merged, { merge: true });
+      
+      // Update local profile
+      Object.assign(this.profile, merged);
+      
+      // Tandai sudah di-merge
+      localStorage.setItem(mergeKey, 'true');
+      
+      // Update localStorage
+      localStorage.setItem('yadstore_reward_balance', String(merged.balance));
+      localStorage.setItem('yadstore_xp', String(merged.xp));
+      localStorage.setItem('yadstore_gems', String(merged.gems));
+      
+      console.log('[Auth] ✅ Guest data merged successfully!');
+      
+      // Notifikasi ke user
+      setTimeout(() => {
+        if (typeof Animate !== 'undefined') {
+          Animate.confetti();
+          Animate.toast('🎉 ' + Math.round(guestBalance) + ' koin kamu otomatis dipindahkan!', 'success');
+        }
+      }, 2000);
+      
+      return { merged: true, guestBalance, guestXp };
+    } catch (e) {
+      console.error('[Auth] mergeGuestData error:', e);
+      return { error: e.message };
     }
   },
 
@@ -283,7 +382,8 @@ const Auth = {
     const set = (id, text) => { const e = document.getElementById(id); if (e) e.textContent = text; };
     set('profile-name', this.getName());
     set('profile-avatar-emoji', this.getAvatar());
-    set('profile-status', this.isAnonymous() ? '👤 Mode Anonim' : '✅ Login Google');
+    var statusText = this.isAnonymous() ? '👤 Mode Guest — Login untuk withdraw' : '✅ Login Google';
+    set('profile-status', statusText);
     set('header-name', this.getName());
     set('header-avatar', this.getAvatar());
 
