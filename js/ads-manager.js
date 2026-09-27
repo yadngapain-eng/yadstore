@@ -15,9 +15,8 @@ window.AdsManager = {
       },
       swZone: 11886708,
       // Link untuk rewarded (vignette direct)
-      rewardedUrl: 'https://5gvci.com/400/11893258',
-      rewardedUrl2: 'https://5gvci.com/400/11893257',
-      rewardedUrl3: 'https://5gvci.com/400/11893256',
+
+
     },
     adsterra: {
       name: 'Adsterra',
@@ -175,46 +174,13 @@ window.AdsManager = {
   // OPEN REWARDED — MONETAG UTAMA
   // ============================================
   async openRewarded() {
-    const now = Date.now();
-
-    // Cek cooldown
-    if (now - this.lastMonetagOpen < this.MONETAG_COOLDOWN) {
-      const remain = Math.ceil((this.MONETAG_COOLDOWN - (now - this.lastMonetagOpen)) / 1000);
-      return { success: false, reason: 'cooldown', remain: remain };
-    }
-
-    console.log('[AdsManager] Opening MONETAG rewarded...');
-
-    const m = this.NETWORKS.monetag;
-
-    // Pilih salah satu URL (rotasi antara 3 zone)
-    const urls = [m.rewardedUrl, m.rewardedUrl2, m.rewardedUrl3];
-    const pickedUrl = urls[Math.floor(Math.random() * urls.length)];
-    console.log('[AdsManager] Monetag URL:', pickedUrl);
-
-    // Buka di tab baru
-    let popup = null;
-    try {
-      popup = window.open(pickedUrl, '_blank', 'width=800,height=600');
-    } catch (e) {
-      console.warn('[AdsManager] popup error:', e);
-    }
-
-    if (!popup || popup.closed) {
-      console.log('[AdsManager] Popup blocked → redirect');
-      try {
-        localStorage.setItem('yadstore_ad_pending', Date.now().toString());
-        window.location.href = pickedUrl;
-        return { success: true, method: 'redirect', network: 'monetag' };
-      } catch (e) {
-        // Fallback ke Adsterra
-        console.log('[AdsManager] Monetag failed, trying Adsterra fallback...');
-        return this.openAdsterraRewarded();
-      }
-    }
-
-    this.lastMonetagOpen = Date.now();
-    return { success: true, method: 'popup', network: 'monetag' };
+    // ============================================================
+    // REWARDED: Pakai Adsterra Smartlink (PROVEN WORKS)
+    // Monetag TIDAK PUNYA direct-link rewarded — cuma script-based
+    // Jadi background ads pakai Monetag, klik rewarded pakai Adsterra
+    // ============================================================
+    console.log('[AdsManager] Rewarded → Adsterra smartlink');
+    return this.openAdsterraRewarded();
   },
 
   // ============================================
