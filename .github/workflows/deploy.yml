@@ -1,17 +1,22 @@
-name: Deploy + Auto-Purge Cache
+name: Deploy to Cloudflare Pages (Manual Only)
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Alasan deploy (opsional)'
+        required: false
+        default: 'Manual deploy from GitHub'
+        type: string
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    name: Deploy to Cloudflare Pages
+    name: Deploy + Purge + Verify
     permissions:
       contents: read
       deployments: write
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -23,18 +28,24 @@ jobs:
 
       - name: Verify files
         run: |
-          echo "Root:"
-          ls -la
+          echo "📁 Root files:"
+          ls -la | head -20
           echo ""
-          echo "js/:"
-          ls -la js/ 2>/dev/null || echo "No js folder"
+          echo "✅ Check manifest.json:"
+          [ -f manifest.json ] && echo "  ✅ $(wc -c < manifest.json) bytes" || echo "  ❌ NOT FOUND"
+          echo ""
+          echo "✅ Check index.html has manifest link:"
+          grep -q 'rel="manifest"' index.html && echo "  ✅ Found" || echo "  ⚠️  Missing"
+          echo ""
+          echo "✅ Check icons:"
+          ls -la icons/ 2>/dev/null || echo "  ⚠️  No icons folder"
 
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy . --project-name=yadstore --branch=main
+          command: pages deploy . --project-name=yadstore --branch=main --commit-dirty=true
 
       - name: Purge Cloudflare Cache
         if: always()
@@ -42,26 +53,69 @@ jobs:
           CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CF_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
         run: |
-          echo "Purge Cloudflare cache..."
+          echo "🧹 Purging Cloudflare cache..."
           if [ -z "$CF_ZONE_ID" ]; then
             echo "⚠️  CLOUDFLARE_ZONE_ID tidak diset — skip purge"
             exit 0
           fi
+          
           RESPONSE=$(curl -s -X POST "https://api.cloudflare.com/client/v4/zones/$CF_ZONE_ID/purge_cache" \
             -H "Authorization: Bearer $CF_TOKEN" \
             -H "Content-Type: application/json" \
             --data '{"purge_everything": true}')
+          
           echo "Response: $RESPONSE"
+          
           if echo "$RESPONSE" | grep -q '"success":true'; then
             echo "✅ Cache purged!"
           else
-            echo "❌ Purge gagal"
-            exit 1
+            echo "⚠️  Purge gagal — tapi deploy tetap lanjut"
           fi
 
-      - name: Verify live
+      - name: Verify Live (wait 20s)
         if: always()
         run: |
-          sleep 10
-          echo "Verify live site..."
-          curl -s -I "https://duniamu.my.id/?nocache=${{ github.run_id }}" | head -20
+          echo "⏳ Tunggu 20 detik untuk propagasi..."
+          sleep 20
+          
+          RANDOM_QS=${{ github.run_id }}
+          
+          echo ""
+          echo "🔍 Verifikasi live..."
+          echo ""
+          
+          echo "📄 Test index.html:"
+          curl -s -o /tmp/index.html -w "  HTTP: %{http_code}\n" "https://duniamu.my.id/?nocache=$RANDOM_QS"
+          
+          if grep -q 'rel="manifest"' /tmp/index.html; then
+            echo "  ✅ manifest link DITEMUKAN"
+          else
+            echo "  ❌ manifest link TIDAK ADA"
+          fi
+          
+          echo ""
+          echo "📄 Test manifest.json:"
+          curl -s -o /dev/null -w "  HTTP: %{http_code} | Type: %{content_type}\n" "https://duniamu.my.id/manifest.json?nocache=$RANDOM_QS"
+          
+          echo ""
+          echo "📄 Test sw.js:"
+          curl -s -o /dev/null -w "  HTTP: %{http_code} | Type: %{content_type}\n" "https://duniamu.my.id/sw.js?nocache=$RANDOM_QS"
+          
+          echo ""
+          echo "📄 Test icons:"
+          curl -s -o /dev/null -w "  icon-192: HTTP %{http_code} | %{content_type}\n" "https://duniamu.my.id/icons/icon-192.png?nocache=$RANDOM_QS"
+          curl -s -o /dev/null -w "  icon-512: HTTP %{http_code} | %{content_type}\n" "https://duniamu.my.id/icons/icon-512.png?nocache=$RANDOM_QS"
+
+      - name: Summary
+        if: always()
+        run: |
+          echo ""
+          echo "=========================================="
+          echo "🎯 DEPLOY SUMMARY"
+          echo "=========================================="
+          echo "  Reason     : ${{ github.event.inputs.reason }}"
+          echo "  Status     : ${{ job.status }}"
+          echo "  Run ID     : ${{ github.run_id }}"
+          echo "  Timestamp  : $(date -u +'%Y-%m-%d %H:%M:%S UTC')"
+          echo "  Commit     : ${{ github.sha }}"
+          echo "=========================================="
