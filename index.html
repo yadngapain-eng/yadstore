@@ -11,6 +11,7 @@
 <title>Learn Earn</title>
 <link rel="stylesheet" href="css/style.css?v=1790516289">
 <link rel="stylesheet" href="css/premium.css?v=1">
+<link rel="stylesheet" href="css/header-menu.css?v=1">
 <link rel="stylesheet" href="css/upgrade.css?v=1">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -175,7 +176,7 @@ body {
 <main class="app-main">
 
   <!-- ========== PAGE: LEARN ========== -->
-  <section class="tab-page active" id="page-learn">
+  <section class="tab-page" id="page-learn">
     <div class="page-header">
       <h1 data-i18n="learn_title">📚 Belajar</h1>
       <p data-i18n="learn_subtitle">Selesaikan lesson untuk dapat XP & Gems</p>
@@ -223,7 +224,7 @@ body {
   </section>
 
     <!-- ========== PAGE: ARTICLES ========== -->
-  <section class="tab-page" id="page-articles">
+  <section class="tab-page active" id="page-articles">
     <div class="page-header">
       <h1>📖 Artikel</h1>
       <p>Baca artikel, dapat koin per 1 menit</p>
@@ -294,7 +295,7 @@ body {
 </main>
 
 <nav class="bottom-nav">
-  <button class="nav-btn active" data-tab="learn" onclick="App.switchTab('learn')">
+  <button class="nav-btn" data-tab="learn" onclick="App.switchTab('learn')">
     <span class="nav-icon">📚</span><span class="nav-label">Learn</span>
   </button>
   <button class="nav-btn" data-tab="topup" onclick="App.switchTab('topup')">
@@ -306,7 +307,7 @@ body {
   <button class="nav-btn" data-tab="achievements" onclick="App.switchTab('achievements')">
     <span class="nav-icon">🏆</span><span class="nav-label">Achieve</span>
   </button>
-  <button class="nav-btn" data-tab="articles" onclick="App.switchTab('articles')">
+  <button class="nav-btn active" data-tab="articles" onclick="App.switchTab('articles')">
     <span class="nav-icon">📖</span><span class="nav-label">Artikel</span>
   </button>
   <button class="nav-btn" data-tab="rewards" onclick="App.switchTab('rewards')">
@@ -347,6 +348,8 @@ body {
 <script src="js/articles.js?v=1790516289"></script>
 <script src="js/app.js?v=1790516289"></script>
 <script src="js/premium-ui.js?v=1"></script>
+<script src="js/header-menu.js?v=1"></script>
+<script src="js/default-tab.js?v=1"></script>
 <script src="js/onboarding.js?v=1"></script>
 <script src="js/retention.js?v=1"></script>
 
