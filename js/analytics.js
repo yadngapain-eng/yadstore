@@ -10,7 +10,7 @@
 
   // ⚠️ GANTI DENGAN ID KAMU
   var CONFIG = {
-    GA4_ID: '',           // ← Ganti dengan G-XXXXXXXXXX
+    GA4_ID: 'G-R1CHPYR321',           // ← Ganti dengan G-XXXXXXXXXX
     SENTRY_DSN: '',       // ← Ganti dengan Sentry DSN (opsional)
     ENABLED: true,
   };
