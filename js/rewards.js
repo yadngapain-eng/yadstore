@@ -43,6 +43,7 @@ var Rewards = {
       totalSpent: this.get('totalSpent', 0),
       totalWithdrawn: this.get('totalWithdrawn', 0),
       withdrawCount: this.get('withdrawCount', 0),
+      withdrawCount: this.get('withdrawCount', 0),
       lastLogin: this.get('lastLogin', null),
       lastAdWatch: this.get('lastAdWatch', 0),
       lastAdDate: this.get('lastAdDate', today),
