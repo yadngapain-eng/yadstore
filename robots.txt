@@ -1,7 +1,15 @@
+# robots.txt for duniamu.my.id
+# Belajar Sambil Cuan
+
 User-agent: *
 Allow: /
 Disallow: /admin/
 Disallow: /js/
 Disallow: /css/
+Disallow: /workers/
 
+# Sitemap
 Sitemap: https://duniamu.my.id/sitemap.xml
+
+# Crawl-delay (opsional)
+Crawl-delay: 1
