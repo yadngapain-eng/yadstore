@@ -596,58 +596,19 @@ const Admin = {
   _debugT0: 0,
 
   async renderDebug(c) {
-    // Bersihkan timer lama kalau ada
-    if (this._debugTimer) { clearInterval(this._debugTimer); this._debugTimer = null; }
-
-    c.innerHTML =
-      '<div class="card" style="background:linear-gradient(135deg,#0d1117,#161b22);border:2px solid #58cc02;color:#c9d1d9">' +
-        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">' +
-          '<h3 style="color:#58cc02;margin:0">🐛 Live Monitor — duniamu.my.id</h3>' +
-          '<div style="font-size:12px">' +
-            '<span id="dbg-status" style="color:#3fb950">● LIVE</span> ' +
-            '<span style="color:#8b949e">| refresh tiap 10s</span>' +
-          '</div>' +
-        '</div>' +
-        '<div style="font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;color:#8b949e">' +
-          'Terakhir update: <span id="dbg-last-update">-</span>' +
-        '</div>' +
-      '</div>' +
-
-      '<div class="stats-grid" id="dbg-stats">' +
-        '<div class="loading-inline">Memuat statistik...</div>' +
-      '</div>' +
-
-      '<div class="card"><h3>🟢 User Online (aktif < 5 menit)</h3>' +
-        '<div id="dbg-online"><div class="loading-inline">Memuat...</div></div>' +
-      '</div>' +
-
-      '<div class="card"><h3>🛒 Order Terbaru (10 menit terakhir)</h3>' +
-        '<div id="dbg-orders"><div class="loading-inline">Memuat...</div></div>' +
-      '</div>' +
-
-      '<div class="card"><h3>💸 Withdraw Terbaru (pending)</h3>' +
-        '<div id="dbg-withdrawals"><div class="loading-inline">Memuat...</div></div>' +
-      '</div>' +
-
-      '<div class="card"><h3>🏆 Aktivitas Belajar (top user hari ini)</h3>' +
-        '<div id="dbg-learn"><div class="loading-inline">Memuat...</div></div>' +
-      '</div>' +
-
-      '<div class="card"><h3>📊 Statistik Global</h3>' +
-        '<div id="dbg-global"><div class="loading-inline">Memuat...</div></div>' +
-      '</div>';
-
-    // Panggil sekali, lalu auto-refresh tiap 10 detik
-    await this._refreshDebug();
-    this._debugTimer = setInterval(() => {
-      // Stop kalau user pindah section
-      if (this.section !== 'debug') {
-        clearInterval(this._debugTimer);
-        this._debugTimer = null;
-        return;
+    // Render container untuk log tracker
+    c.innerHTML = '<div id="admin-debug"></div>';
+    
+    // Init & render log tracker
+    if (typeof AdminLog !== 'undefined') {
+      if (!AdminLog._started) {
+        AdminLog._started = true;
+        AdminLog.init();
       }
-      this._refreshDebug();
-    }, 10000);
+      AdminLog.renderDebugUI();
+    } else {
+      c.innerHTML = '<div class="card"><p style="color:red">Log Tracker belum load. Refresh halaman.</p></div>';
+    }
   },
 
   async _refreshDebug() {
