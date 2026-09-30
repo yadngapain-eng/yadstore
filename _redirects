@@ -1,17 +1,13 @@
 # ============================================
 # CLOUDFLARE PAGES REDIRECTS
 # ============================================
-# Format:
-#   /dari/*  /ke/:splat  301
-#
-# ⚠️  PENTING:
-#   Redirect www → main domain TIDAK BISA via file ini.
-#   Harus pakai Cloudflare "Redirect Rules" di Dashboard.
-#   Lihat instruksi di bawah.
+# ⚠️  PENTING: Hanya URL relative yang diizinkan di kiri.
+# Redirect www → main domain HARUS via Cloudflare Dashboard
+# (Rules → Redirect Rules), TIDAK via file ini.
 # ============================================
+
+# SPA fallback (opsional, untuk hash routing)
+# /*  /index.html  200
 
 # Redirect trailing slash (opsional)
 # /page/  /page  301
-
-# Fallback untuk SPA (kalau perlu)
-# /*  /index.html  200
