@@ -246,9 +246,26 @@ const TopUpUI = {
     try { localStorage.setItem('learnearn_orders', JSON.stringify(o)); } catch(e) {}
     if (typeof Auth !== 'undefined' && Auth.db && Auth.user && !Auth.user.isLocal) {
       try {
+        // ===== 1. SIMPAN KE SUBCOLLECTION USER =====
         const ref = Auth.db.collection('users').doc(Auth.user.uid).collection('orders');
         o.slice(0, 5).forEach(function(order) { ref.doc(order.id).set(order); });
-      } catch(e) {}
+
+        // ===== 2. SIMPAN KE COLLECTION GLOBAL 'orders' (UNTUK ADMIN) =====
+        o.slice(0, 5).forEach(function(order) {
+          // Tambah field userId & userUid untuk rules
+          var orderWithUser = Object.assign({}, order, {
+            userId: Auth.user.uid,
+            userUid: Auth.user.uid,
+            userEmail: (Auth.user.email || 'guest'),
+            savedAt: new Date().toISOString()
+          });
+          Auth.db.collection('orders').doc(order.id).set(orderWithUser).catch(function(e) {
+            console.warn('[TopUpUI] Save global order error:', e);
+          });
+        });
+      } catch(e) {
+        console.warn('[TopUpUI] Save orders error:', e);
+      }
     }
   },
 
