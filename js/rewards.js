@@ -524,8 +524,6 @@ var Rewards = {
         '<button class="btn-primary" onclick="Rewards.copyReferral()">' + t('reward_referral_copy') + '</button>' +
       '</div>' +
       '</div>';
-    // ===== REFERRAL PLACEHOLDER =====
-    html += '<div id="referral-section-placeholder"></div>';
 
     // History
     html += '<div class="reward-history">' +
