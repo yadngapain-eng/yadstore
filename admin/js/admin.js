@@ -44,19 +44,22 @@ const Admin = {
         document.querySelectorAll('.nav-item').forEach(x => x.classList.remove('active'));
         el.classList.add('active');
         const titles = {
-          dash: 'Dashboard',
-          orders: 'Pesanan',
-          withdrawals: 'Withdraw Request',
-          limits: 'Min Withdraw Limit',
-          products: 'Produk & Markup',
-          massboost: '💰 Mass Boost',
-          referral: '🎁 Referral',
-          users: 'Users',
-          debug: '🐛 Debug & Monitor',
-          settings: 'Pengaturan'
+          dash: { title: 'Dashboard', sub: 'Ringkasan aktivitas website' },
+          orders: { title: 'Pesanan', sub: 'Kelola & konfirmasi pesanan user' },
+          withdrawals: { title: 'Withdraw', sub: 'Kelola permintaan withdraw user' },
+          limits: { title: 'Min Withdraw', sub: 'Atur minimum withdraw per user' },
+          products: { title: 'Produk & Markup', sub: 'Kelola harga & markup produk' },
+          massboost: { title: 'Mass Boost', sub: 'Tambah koin/XP massal ke user' },
+          referral: { title: 'Referral', sub: 'Monitor program referral' },
+          users: { title: 'Users', sub: 'Daftar semua user terdaftar' },
+          debug: { title: 'Debug & Log', sub: 'Monitor error & aktivitas sistem' },
+          settings: { title: 'Pengaturan', sub: 'Konfigurasi admin panel' }
         };
-        document.getElementById('sec-title').textContent = titles[this.section] || this.section;
+        var info = titles[this.section] || { title: this.section, sub: '' };
+        document.getElementById('sec-title').textContent = info.title || this.section;
+        document.getElementById('sec-subtitle').textContent = info.sub || '';
         this.render();
+        this.updateNavBadges();
       });
     });
   },
@@ -102,8 +105,64 @@ const Admin = {
       await this.auth.signInWithPopup(provider);
     } catch (e) { console.error(e); alert('Login gagal: ' + e.message); }
   },
+  // ============================================
+  // MOBILE SIDEBAR TOGGLE
+  // ============================================
+  toggleSidebar() {
+    var sidebar = document.getElementById('admin-sidebar');
+    var overlay = document.getElementById('mobile-overlay');
+    if (!sidebar) return;
+    sidebar.classList.toggle('open');
+    if (overlay) overlay.classList.toggle('show');
+  },
+
+  // ============================================
+  // UPDATE NAV BADGES (jumlah pending)
+  // ============================================
+  async updateNavBadges() {
+    if (typeof this.db === 'undefined' || !this.db) return;
+    try {
+      // Orders pending
+      try {
+        var ordersSnap = await this.db.collection('orders').where('status', '==', 'pending').get();
+        var count = ordersSnap.size;
+        var badge = document.getElementById('nav-badge-orders');
+        if (badge) {
+          if (count > 0) {
+            badge.textContent = count > 99 ? '99+' : count;
+            badge.style.display = 'inline-block';
+          } else {
+            badge.style.display = 'none';
+          }
+        }
+      } catch (e) {}
+
+      // Withdrawals pending
+      try {
+        var wdSnap = await this.db.collection('withdrawals').where('status', '==', 'pending').get();
+        var count2 = wdSnap.size;
+        var badge2 = document.getElementById('nav-badge-withdrawals');
+        if (badge2) {
+          if (count2 > 0) {
+            badge2.textContent = count2 > 99 ? '99+' : count2;
+            badge2.style.display = 'inline-block';
+          } else {
+            badge2.style.display = 'none';
+          }
+        }
+      } catch (e) {}
+    } catch (e) {}
+  },
+
+  // ============================================
+  // LOGOUT
+  // ============================================
   async logout() {
-    if (this.auth) { await this.auth.signOut(); location.reload(); }
+    if (this.auth) {
+      try { await this.auth.signOut(); } catch (e) {}
+    }
+    location.reload();
+  },
   },
 
   // ============================================
