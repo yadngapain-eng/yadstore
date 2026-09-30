@@ -1,10 +1,17 @@
 # ============================================
 # CLOUDFLARE PAGES REDIRECTS
-# Paksa www.duniamu.my.id → duniamu.my.id
+# ============================================
+# Format:
+#   /dari/*  /ke/:splat  301
+#
+# ⚠️  PENTING:
+#   Redirect www → main domain TIDAK BISA via file ini.
+#   Harus pakai Cloudflare "Redirect Rules" di Dashboard.
+#   Lihat instruksi di bawah.
 # ============================================
 
-# Redirect www subdomain ke main domain (301 permanent)
-https://www.duniamu.my.id/*  https://duniamu.my.id/:splat  301
-
 # Redirect trailing slash (opsional)
-# /page/ → /page
+# /page/  /page  301
+
+# Fallback untuk SPA (kalau perlu)
+# /*  /index.html  200
