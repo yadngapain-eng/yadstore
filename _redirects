@@ -1,5 +1,10 @@
-# Redirect www.duniamu.my.id ke duniamu.my.id
-# Cloudflare Pages otomatis handle ini kalau www tidak terdaftar
-# Kalau www terdaftar, redirect ini yang akan handle
+# ============================================
+# CLOUDFLARE PAGES REDIRECTS
+# Paksa www.duniamu.my.id → duniamu.my.id
+# ============================================
 
-https://www.duniamu.my.id/* https://duniamu.my.id/:splat 301
+# Redirect www subdomain ke main domain (301 permanent)
+https://www.duniamu.my.id/*  https://duniamu.my.id/:splat  301
+
+# Redirect trailing slash (opsional)
+# /page/ → /page
