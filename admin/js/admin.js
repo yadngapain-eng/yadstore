@@ -15,6 +15,17 @@ const Admin = {
   // INIT
   // ============================================
   async init() {
+    // ===== FALLBACK: Force hide loading setelah 5 detik =====
+    setTimeout(function() {
+      var loading = document.getElementById('loading');
+      if (loading && loading.style.display !== 'none') {
+        console.warn('[Admin] Force hiding loading overlay (fallback)');
+        loading.style.display = 'none';
+        var login = document.getElementById('login');
+        if (login) login.style.display = 'flex';
+      }
+    }, 5000);
+    
     console.log('[Admin] Init v4...');
 
     if (typeof firebase !== 'undefined') {
@@ -56,8 +67,10 @@ const Admin = {
           settings: { title: 'Pengaturan', sub: 'Konfigurasi admin panel' }
         };
         var info = titles[this.section] || { title: this.section, sub: '' };
-        document.getElementById('sec-title').textContent = info.title || this.section;
-        document.getElementById('sec-subtitle').textContent = info.sub || '';
+        var titleEl = document.getElementById('sec-title');
+        if (titleEl) titleEl.textContent = info.title || this.section;
+        var subtitleEl = document.getElementById('sec-subtitle');
+        if (subtitleEl) subtitleEl.textContent = info.sub || '';
         this.render();
         this.updateNavBadges();
       });
