@@ -1,4 +1,4 @@
-v=1790849982
-Fix admin panel stuck
-Deploy at 1790849982
-Force reload: 1790849982
+v=1790850591
+Fix admin panel syntax error + cleanup
+Deploy at 1790850591
+Force reload: 1790850591
