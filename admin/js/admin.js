@@ -176,7 +176,6 @@ const Admin = {
     }
     location.reload();
   },
-  },
 
   // ============================================
   // RENDER DISPATCHER
