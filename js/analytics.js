@@ -9,11 +9,16 @@
   window.Analytics = window.Analytics || {};
 
   // ⚠️ GANTI DENGAN ID KAMU
-  var CONFIG = {
-    GA4_ID: 'G-R1CHPYR321',           // ← Ganti dengan G-XXXXXXXXXX
-    SENTRY_DSN: '',       // ← Ganti dengan Sentry DSN (opsional)
-    ENABLED: true,
+  var CONFIG = window.ANALYTICS_CONFIG || {
+    GA4_ID: '',
+    SENTRY_DSN: '',
+    ENABLED: false,
   };
+
+  if (!CONFIG.GA4_ID) {
+    CONFIG.ENABLED = false;
+    console.log('[Analytics] Disabled — GA4_ID kosong');
+  }
 
   // ============================================
   // GA4 INIT

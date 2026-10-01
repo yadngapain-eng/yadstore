@@ -355,16 +355,26 @@ const Auth = {
   // LOGOUT
   // ============================================
   async logout() {
+    // Sync dulu sebelum clear
+    if (this.db && this.user && !this.user.isLocal && this.profile) {
+      try {
+        await this.saveProfile(this.profile);
+        console.log('[Auth] Profile synced before logout');
+      } catch (e) {
+        console.warn('[Auth] Sync before logout failed:', e);
+      }
+    }
+
+    this.clearLocalData();
+
     if (this.auth && this.user && !this.user.isLocal) {
       try {
-        // Clear data dulu sebelum logout
-        this.clearLocalData();
         await this.auth.signOut();
-        // Akan otomatis bikin anonymous baru
         await this.auth.signInAnonymously();
-      } catch (e) { console.error('[Auth] logout:', e); }
+      } catch (e) {
+        console.error('[Auth] logout error:', e);
+      }
     } else {
-      this.clearLocalData();
       localStorage.removeItem('learnearn_local_user');
       this.initLocalOnly();
     }
