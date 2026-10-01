@@ -3,23 +3,17 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     function isAdmin() {
-      return request.auth != null
-             && request.auth.token.admin == true;
+      return request.auth != null && request.auth.token.admin == true;
     }
 
     function isOwner(userId) {
-      return request.auth != null
-             && request.auth.uid == userId;
+      return request.auth != null && request.auth.uid == userId;
     }
 
     function isSignedIn() {
       return request.auth != null;
     }
 
-    // ============================================
-    // USER DATA — Client hanya READ
-    // WRITE via Cloud Function
-    // ============================================
     match /users/{userId} {
       allow read: if isOwner(userId) || isAdmin();
       allow write: if false;
@@ -28,17 +22,14 @@ service cloud.firestore {
         allow read: if isOwner(userId) || isAdmin();
         allow write: if false;
       }
-
       match /withdrawals/{wdId} {
         allow read: if isOwner(userId) || isAdmin();
         allow write: if false;
       }
-
       match /rewards/{rewardId} {
         allow read: if isOwner(userId) || isAdmin();
         allow write: if false;
       }
-
       match /history/{historyId} {
         allow read: if isOwner(userId) || isAdmin();
         allow write: if false;

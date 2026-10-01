@@ -19,16 +19,18 @@
 
       // Override tab ke article
       setTimeout(function() {
-        // Force tab ke articles
         try {
           if (typeof App !== 'undefined' && App.switchTab) {
             App.switchTab('articles');
-            console.log('[DefaultTab] Set to articles');
+          }
+          if (typeof DuoUI !== 'undefined' && DuoUI.renderCategories) {
+            DuoUI.renderCategories();
+            console.log('[DefaultTab] Categories re-rendered');
           }
         } catch (e) {
           console.warn('[DefaultTab] error:', e);
         }
-      }, 200);
+      }, 500);
     };
 
     // Override switchTab juga biar konsisten

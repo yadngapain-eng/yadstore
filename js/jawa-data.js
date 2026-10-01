@@ -417,35 +417,46 @@ if (typeof LESSON_CATEGORIES !== 'undefined') {
 if (typeof window !== 'undefined') {
   window.JAWA_LESSONS = JAWA_LESSONS;
 
-  // Tambahkan ke getLessonsByLang
-  if (typeof window.getLessonsByLang === 'function') {
-    var originalGetLessons = window.getLessonsByLang;
+  function patchGetLessons() {
+    if (typeof window.getLessonsByLang !== 'function') {
+      setTimeout(patchGetLessons, 100);
+      return;
+    }
+    if (window.getLessonsByLang.__jawaPatched) return;
+
+    var orig = window.getLessonsByLang;
     window.getLessonsByLang = function(cat, lang) {
       if (cat === 'jawa') {
         if (lang === 'en') {
           return JAWA_LESSONS.map(function(l) {
-            return {
-              ...l,
+            return Object.assign({}, l, {
               title: l.title_en || l.title,
               desc: l.desc_en || l.desc,
               level: l.level_en || l.level,
               questions: l.questions.map(function(q) {
-                return {
+                return Object.assign({}, q, {
                   q: q.q_en || q.q,
-                  o: q.o,
-                  a: q.a,
-                  voice_text: q.voice_text,
-                  correct_pronunciation: q.correct_pronunciation,
                   explanation: q.explanation_en || q.explanation,
-                };
+                });
               }),
-            };
+            });
           });
         }
         return JAWA_LESSONS;
       }
-      return originalGetLessons(cat, lang);
+      return orig(cat, lang);
     };
+    window.getLessonsByLang.__jawaPatched = true;
+    console.log('[jawa-data] getLessonsByLang patched');
+  }
+
+  patchGetLessons();
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() {
+      setTimeout(patchGetLessons, 50);
+    });
+  } else {
+    setTimeout(patchGetLessons, 50);
   }
 }
 

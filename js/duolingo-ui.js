@@ -14,10 +14,30 @@ const DuoUI = {
 
   getLessons(cat) {
     var lang = (typeof I18n !== 'undefined') ? I18n.getLang() : 'id';
+
+    if (cat === 'jawa') {
+      var jawaList = window.JAWA_LESSONS || [];
+      if (lang === 'en') {
+        return jawaList.map(function(l) {
+          return Object.assign({}, l, {
+            title: l.title_en || l.title,
+            desc: l.desc_en || l.desc,
+            level: l.level_en || l.level,
+            questions: l.questions.map(function(q) {
+              return Object.assign({}, q, {
+                q: q.q_en || q.q,
+                explanation: q.explanation_en || q.explanation,
+              });
+            }),
+          });
+        });
+      }
+      return jawaList;
+    }
+
     if (typeof window.getLessonsByLang === 'function') {
       return window.getLessonsByLang(cat, lang);
     }
-    // Fallback
     if (cat === 'english') return window.ENGLISH_LESSONS || [];
     if (cat === 'math') return window.MATH_LESSONS || [];
     if (cat === 'science') return window.SCIENCE_LESSONS || [];
@@ -94,9 +114,19 @@ const DuoUI = {
   },
 
   start(id) {
-    var all = [].concat(window.CODING_LESSONS||[], window.ENGLISH_LESSONS||[], window.MATH_LESSONS||[], window.SCIENCE_LESSONS||[]);
+    var all = [].concat(
+      window.CODING_LESSONS || [],
+      window.ENGLISH_LESSONS || [],
+      window.MATH_LESSONS || [],
+      window.SCIENCE_LESSONS || [],
+      window.JAWA_LESSONS || []
+    );
     var lesson = all.find(function(l) { return l.id === id; });
-    if (!lesson) return;
+    if (!lesson) {
+      console.warn('[DuoUI] Lesson tidak ditemukan:', id);
+      if (typeof Animate !== 'undefined') Animate.toast('Lesson tidak ditemukan', 'error');
+      return;
+    }
     var hearts = DL.regenHearts();
     if (hearts <= 0) { Animate.toast('Hearts habis!', 'error'); return; }
     this.currentLesson = lesson;
@@ -137,8 +167,88 @@ const DuoUI = {
       '</div>' +
       '<div class="wa-progress"><div class="wa-progress-fill" style="width:' + ((this.currentQuestion/total)*100) + '%"></div></div>' +
       '<div class="wa-chat-body" id="wa-chat-body">' + this.renderChatMessages() + '</div>' +
+      ((l.type === 'chat' && typeof VoiceJawa !== 'undefined') ? '<div id="voice-panel-container"></div>' : '') +
       '<div class="wa-input-area" id="wa-input-area">' + this.renderOptions() + '</div>' +
       '</div>';
+
+    if (l.type === 'chat' && typeof VoiceJawa !== 'undefined') {
+      var self = this;
+      setTimeout(function() { self.renderVoicePanel(); }, 50);
+    }
+  },
+
+  renderVoicePanel() {
+    if (typeof VoiceJawa === 'undefined') return;
+    var q = this.questions[this.currentQuestion];
+    if (!q) return;
+    if (!q.voice_text && q.o && q.o[q.a]) q.voice_text = q.o[q.a];
+    if (!q.voice_text) return;
+
+    var container = document.getElementById('voice-panel-container');
+    if (!container) return;
+
+    container.innerHTML =
+      '<div class="voice-panel"><div class="voice-panel-content">' +
+        '<div class="voice-title">🎤 Latihan Ngomong</div>' +
+        '<div class="voice-subtitle">Ucapkan kalimat ini pakai suara kamu</div>' +
+        '<button class="voice-btn" id="voice-record-btn" onclick="DuoUI.toggleVoiceRecord()">🎤</button>' +
+        '<div class="voice-status" id="voice-status">Tekan untuk mulai</div>' +
+        '<div class="voice-target">' +
+          '<div class="voice-target-label">Target:</div>' +
+          '<div class="voice-target-text">' + this.esc(q.voice_text) + '</div>' +
+          (q.correct_pronunciation ? '<div class="voice-target-pronunciation">📖 ' + this.esc(q.correct_pronunciation) + '</div>' : '') +
+        '</div>' +
+        '<div class="voice-transcript" id="voice-transcript"></div>' +
+        '<button class="voice-speak-btn" onclick="DuoUI.speakTarget()">🔊 Dengar Contoh</button>' +
+      '</div></div>';
+  },
+
+  toggleVoiceRecord() {
+    if (typeof VoiceJawa === 'undefined') {
+      if (typeof Animate !== 'undefined') Animate.toast('Voice tidak didukung', 'error');
+      return;
+    }
+    var btn = document.getElementById('voice-record-btn');
+    var q = this.questions[this.currentQuestion];
+
+    if (VoiceJawa.isRecording) {
+      VoiceJawa.stop();
+      if (btn) btn.classList.remove('recording');
+      return;
+    }
+    if (btn) btn.classList.add('recording');
+
+    var self = this;
+    VoiceJawa.start(function(transcript, confidence) {
+      if (btn) btn.classList.remove('recording');
+      var result = VoiceJawa.compare(transcript, q.voice_text);
+      self.showVoiceResult(result);
+    });
+  },
+
+  showVoiceResult(result) {
+    var panel = document.querySelector('.voice-panel-content');
+    if (!panel) return;
+    var existing = panel.querySelector('.voice-feedback');
+    if (existing) existing.remove();
+
+    var cssClass = 'error', msg = '';
+    if (result.score >= 80) { cssClass = 'success'; msg = 'Mantap! Jelas sekali!'; }
+    else if (result.score >= 60) { cssClass = 'warning'; msg = 'Bagus! Bisa lebih baik.'; }
+    else { cssClass = 'error'; msg = 'Coba lagi pelan-pelan.'; }
+
+    panel.insertAdjacentHTML('beforeend',
+      '<div class="voice-feedback ' + cssClass + '">' +
+        '<div style="font-weight:900">Skor: ' + result.score + '/100</div>' +
+        '<div>' + msg + '</div>' +
+        '<div style="font-size:11px;margin-top:6px;opacity:0.8">Kamu: "' + (result.transcript || '-') + '"</div>' +
+      '</div>');
+  },
+
+  speakTarget() {
+    if (typeof VoiceJawa === 'undefined') return;
+    var q = this.questions[this.currentQuestion];
+    if (q && q.voice_text) VoiceJawa.speak(q.voice_text, 'id-ID');
   },
 
   renderChatMessages() {

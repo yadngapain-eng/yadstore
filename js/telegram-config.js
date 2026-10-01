@@ -1,8 +1,4 @@
-/* ============================================
-   TELEGRAM BOT — SECURE PROXY VERSION
-   Token TIDAK di client-side.
-   ============================================ */
-
+/* TELEGRAM BOT — SECURE PROXY VERSION */
 window.TELEGRAM_CONFIG = {
   PROXY_URL: '/api/notify',
   ENABLED: true,
@@ -17,7 +13,7 @@ window.TELEGRAM_CONFIG = {
     .then(function(r) { return r.json(); })
     .catch(function(e) {
       console.warn('[Telegram] error:', e);
-      return { ok: false, error: e.message };
+      return { ok: false };
     });
   },
 
@@ -26,54 +22,33 @@ window.TELEGRAM_CONFIG = {
     return fetch(this.PROXY_URL + '/photo', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        photo: photoData,
-        caption: caption || ''
-      })
+      body: JSON.stringify({ photo: photoData, caption: caption || '' })
     })
     .then(function(r) { return r.json(); })
-    .catch(function(e) {
-      return { ok: false, error: e.message };
-    });
+    .catch(function(e) { return { ok: false }; });
   },
 
   notifyOrder: function(order, pay) {
     if (!this.ENABLED) return Promise.resolve({ ok: false });
-
-    var lines = [];
-    lines.push('🛒 <b>ORDER BARU</b>');
-    lines.push('━━━━━━━━━━━━━━━━━━━━');
-    lines.push('📋 <b>ID:</b> <code>' + order.id + '</code>');
-    lines.push('🎮 <b>Layanan:</b> ' + order.item);
-    lines.push('📦 <b>Produk:</b> ' + order.product);
-
-    var userData = order.userData || {};
-    var keys = Object.keys(userData);
-    if (keys.length > 0) {
-      lines.push('👤 <b>Data Akun:</b>');
-      keys.forEach(function(k) {
-        lines.push('  • ' + k + ': <code>' + userData[k] + '</code>');
-      });
-    }
-
-    lines.push('💰 <b>Total:</b> Rp ' + (order.total || 0).toLocaleString('id-ID'));
-    lines.push('💳 <b>Metode:</b> ' + order.payment);
-    lines.push('🕐 ' + new Date().toLocaleString('id-ID'));
-
-    var text = lines.join('\n');
+    var lines = [
+      '🛒 <b>ORDER BARU</b>',
+      '📋 ID: <code>' + order.id + '</code>',
+      '🎮 ' + order.item + ' - ' + order.product,
+      '💰 Rp ' + (order.total || 0).toLocaleString('id-ID'),
+      '💳 ' + order.payment,
+      '🕐 ' + new Date().toLocaleString('id-ID')
+    ];
     var self = this;
-
-    return this.sendMessage(text).then(function() {
+    return this.sendMessage(lines.join('\n')).then(function() {
       if (order.proof) {
-        var caption = '📸 <b>Bukti Transfer</b> — ' + order.id;
-        return self.sendPhoto(order.proof, caption);
+        return self.sendPhoto(order.proof, 'Bukti: ' + order.id);
       }
     });
   },
 
   test: function() {
-    return this.sendMessage('🧪 Bot aktif via proxy!');
+    return this.sendMessage('Test bot aktif via proxy!');
   }
 };
 
-console.log('[telegram] loaded (secure proxy mode)');
+console.log('[telegram] loaded (secure proxy)');
