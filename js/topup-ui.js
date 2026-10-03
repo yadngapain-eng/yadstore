@@ -155,6 +155,55 @@ const TopUpUI = {
     var item = this.currentItem; var p = this.currentProduct;
     var m = document.getElementById('game-modal');
     var self = this;
+    var total = self.getFinalPrice(item.id, p.id, p.price);
+    
+    // Cek apakah KoinTopUp tersedia
+    var koinHtml = '';
+    if (typeof KoinTopUp !== 'undefined') {
+      var check = KoinTopUp.bisaKoin(total);
+      var saldo = KoinTopUp.getSaldoKoin();
+      var koinDisabled = !check.bisa;
+      
+      koinHtml = '<div style="margin-bottom:16px">' +
+        '<h3 class="section-title" style="color:#f59e0b">💰 Bayar dengan Koin</h3>' +
+        '<div style="background:linear-gradient(135deg,#fef3c7,#fde68a);border:2px solid #f59e0b;border-radius:12px;padding:12px;margin-bottom:10px">' +
+          '<div style="display:flex;justify-content:space-between;align-items:center">' +
+            '<div>' +
+              '<div style="font-size:10px;font-weight:700;color:#78350f;text-transform:uppercase">Saldo Koin</div>' +
+              '<div style="font-size:18px;font-weight:900;color:#92400e">🪙 ' + KoinTopUp.fmt(saldo) + '</div>' +
+            '</div>' +
+            '<div style="text-align:right">' +
+              '<div style="font-size:10px;font-weight:700;color:#78350f;text-transform:uppercase">Butuh</div>' +
+              '<div style="font-size:18px;font-weight:900;color:#92400e">🪙 ' + KoinTopUp.fmt(check.koinDibutuhkan) + '</div>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+        '<button ' +
+          'onclick="KoinTopUp.confirmKoin(\'' + item.id + '_' + p.id + '\', ' + total + ')" ' +
+          'style="' +
+            'width:100%;' +
+            'padding:14px;' +
+            'background:' + (koinDisabled ? '#94a3b8' : 'linear-gradient(135deg,#fbbf24,#f59e0b)') + ';' +
+            'color:white;' +
+            'border:none;' +
+            'border-radius:10px;' +
+            'font-family:inherit;' +
+            'font-size:14px;' +
+            'font-weight:900;' +
+            'cursor:' + (koinDisabled ? 'not-allowed' : 'pointer') + ';' +
+            'box-shadow:0 4px 0 ' + (koinDisabled ? '#64748b' : '#b45309') + ';' +
+          '" ' +
+          (koinDisabled ? 'disabled' : '') +
+        '>' +
+          (koinDisabled ? '🔒 Koin Kurang ' + KoinTopUp.fmt(check.kurang) : '🪙 Bayar ' + KoinTopUp.fmt(check.koinDibutuhkan) + ' Koin (Instan)') +
+        '</button>' +
+        '<div style="text-align:center;font-size:11px;color:#666;margin-top:6px">' +
+          (koinDisabled ? 'Kumpulkan ' + KoinTopUp.fmt(check.kurang) + ' koin lagi' : 'Tanpa perlu upload bukti transfer') +
+        '</div>' +
+      '</div>' +
+      '<div style="text-align:center;color:#999;font-size:12px;margin:16px 0">— ATAU —</div>';
+    }
+    
     m.innerHTML = '<div class="modal-content">' +
       '<div class="modal-header" style="background: ' + item.color + '">' +
       '<button class="modal-close" onclick="TopUpUI.close()">X</button>' +
@@ -164,8 +213,9 @@ const TopUpUI = {
       '<div class="order-row"><span>Layanan</span><strong>' + self.esc(item.name) + '</strong></div>' +
       '<div class="order-row"><span>Item</span><strong>' + self.esc(p.name) + '</strong></div>' +
       Object.keys(this.userData).map(function(k) { return '<div class="order-row"><span>' + self.esc(k) + '</span><strong>' + self.esc(self.userData[k]) + '</strong></div>'; }).join('') +
-      '<div class="order-row total"><span>Total</span><strong>Rp ' + self.fmt(self.getFinalPrice(item.id, p.id, p.price)) + '</strong></div></div>' +
-      '<h3 class="section-title">' + ((typeof I18n !== 'undefined') ? I18n.t('topup_choose_payment') : 'Pilih Pembayaran') + '</h3>' +
+      '<div class="order-row total"><span>Total</span><strong>Rp ' + self.fmt(total) + '</strong></div></div>' +
+      koinHtml +
+      '<h3 class="section-title">💵 Bayar dengan Rupiah</h3>' +
       '<div class="payments-grid">' +
       PAYMENTS.map(function(pay) { return '<div class="payment-card" onclick="TopUpUI.submit(\'' + pay.id + '\')">' +
         '<div class="payment-name">' + self.esc(pay.name) + '</div>' +
