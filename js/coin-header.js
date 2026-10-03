@@ -63,7 +63,7 @@
       btn.innerHTML = 
         '<span style="font-size:14px">🪙</span>' +
         '<span id="coin-header-value">0</span>' +
-        '<span style="font-size:10px;opacity:0.9">🖼️</span>';
+        '<span style="font-size:10px;opacity:0.9">🎮</span>';
 
       // Tambahkan hover effect
       btn.onmouseenter = function() {
@@ -196,17 +196,17 @@
 
         // ===== TOMBOL ICON SHOP =====
         '<div style="background:linear-gradient(135deg,#a855f7,#7c3aed);border-radius:20px;padding:20px;margin-bottom:16px;color:white;box-shadow:0 12px 32px rgba(168,85,247,0.35);position:relative;overflow:hidden">' +
-          '<div style="position:absolute;top:-20px;right:-20px;font-size:100px;opacity:0.15">🖼️</div>' +
+          '<div style="position:absolute;top:-20px;right:-20px;font-size:100px;opacity:0.15">🎮</div>' +
           '<div style="position:relative;z-index:1">' +
             '<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">' +
-              '<span style="font-size:32px">🖼️</span>' +
+              '<span style="font-size:32px">🎮</span>' +
               '<div>' +
                 '<div style="font-size:16px;font-weight:900;margin-bottom:2px">Icon Shop</div>' +
                 '<div style="font-size:11px;opacity:0.9">Beli icon game dengan koin</div>' +
               '</div>' +
             '</div>' +
-            '<button onclick="IconShop.open()" style="width:100%;padding:14px;background:white;color:#7c3aed;border:none;border-radius:12px;font-family:inherit;font-size:14px;font-weight:900;cursor:pointer;box-shadow:0 4px 0 #6d28d9">' +
-              '🖼️ BUKA ICON SHOP' +
+            '<button onclick="GameStore.open()" style="width:100%;padding:14px;background:white;color:#7c3aed;border:none;border-radius:12px;font-family:inherit;font-size:14px;font-weight:900;cursor:pointer;box-shadow:0 4px 0 #6d28d9">' +
+              '🎮 BUKA GAME STORE' +
             '</button>' +
           '</div>' +
         '</div>' +
@@ -243,7 +243,7 @@
               '<div style="flex:1"><div style="font-size:13px;font-weight:900">Beli Produk Top Up</div><div style="font-size:11px;color:#78350f">Diamond, Pulsa, Voucher</div></div>' +
             '</div>' +
             '<div style="display:flex;align-items:center;gap:12px;padding:10px;background:linear-gradient(135deg,#f3e8ff,#e9d5ff);border-radius:10px">' +
-              '<span style="font-size:24px">🖼️</span>' +
+              '<span style="font-size:24px">🎮</span>' +
               '<div style="flex:1"><div style="font-size:13px;font-weight:900">Beli Icon Game</div><div style="font-size:11px;color:#6d28d9">500-1000 koin per icon</div></div>' +
             '</div>' +
           '</div>' +
