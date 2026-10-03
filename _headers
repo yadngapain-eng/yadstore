@@ -1,11 +1,13 @@
 # ============================================
 # CLOUDFLARE PAGES HEADERS
+# NO CSP — allow all scripts
 # ============================================
 
 /sw.js
   Content-Type: application/javascript; charset=utf-8
   Cache-Control: public, max-age=0, must-revalidate
   Service-Worker-Allowed: /
+  Access-Control-Allow-Origin: *
 
 /manifest.json
   Content-Type: application/manifest+json
@@ -35,16 +37,17 @@
 /css/*.css
   Content-Type: text/css
   Cache-Control: public, max-age=604800, immutable
+  Access-Control-Allow-Origin: *
 
 /js/*.js
   Content-Type: application/javascript
   Cache-Control: public, max-age=604800, immutable
+  Access-Control-Allow-Origin: *
 
 /index.html
   Cache-Control: public, max-age=0, must-revalidate
 
 /*
-  X-Frame-Options: SAMEORIGIN
+  Access-Control-Allow-Origin: *
   X-Content-Type-Options: nosniff
-  Referrer-Policy: strict-origin-when-cross-origin
-  Permissions-Policy: geolocation=(), microphone=(self), camera=()
+  Referrer-Policy: no-referrer-when-downgrade

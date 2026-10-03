@@ -1,13 +1,12 @@
 /* ============================================
-   ADS CONFIG — Adsterra for duniamu.my.id
-   Zone IDs: 31533043, 31533051, 31533052
+   ADS CONFIG — Adsterra
    ============================================ */
 
 window.ADS_CONFIG = {
   NETWORK: 'adsterra',
   DOMAIN: 'duniamu.my.id',
   ENABLED: true,
-
+  
   ADSTERRA: {
     zones: {
       popunder: 31533043,
@@ -22,4 +21,4 @@ window.ADS_CONFIG = {
   },
 };
 
-console.log('[ads-config] Adsterra for duniamu.my.id loaded');
+console.log('[ads-config] Loaded');

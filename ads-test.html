@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ads Test — duniamu.my.id</title>
+<style>
+body { font-family: Arial; background: #1a1a1a; color: white; padding: 15px; font-size: 14px; }
+h1 { color: #58cc02; }
+.btn { display: block; width: 100%; padding: 15px; margin: 10px 0; background: #58cc02; color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: 900; cursor: pointer; }
+.btn-danger { background: #ff4b4b; }
+.btn-blue { background: #1cb0f6; }
+.log { background: #000; padding: 10px; border-radius: 8px; margin-top: 10px; max-height: 300px; overflow-y: auto; font-family: monospace; font-size: 11px; }
+.log-line { padding: 3px 0; border-bottom: 1px solid #333; }
+.ok { color: #58cc02; }
+.err { color: #ff4b4b; }
+.warn { color: #ffc800; }
+.info { color: #1cb0f6; }
+</style>
+</head>
+<body>
+<h1>🧪 Ads Test Tool</h1>
+<p>Domain: <strong>duniamu.my.id</strong></p>
+
+<button class="btn" onclick="testPopunder()">▶️ TEST POPUNDER</button>
+<button class="btn btn-blue" onclick="testSocialbar()">▶️ TEST SOCIALBAR</button>
+<button class="btn btn-blue" onclick="testSmartlink()">▶️ TEST SMARTLINK</button>
+<button class="btn btn-danger" onclick="clearAll()">🗑️ CLEAR CACHE + SW</button>
+
+<div class="log" id="log"></div>
+
+<script>
+var log = document.getElementById('log');
+
+function addLog(msg, cls) {
+  var el = document.createElement('div');
+  el.className = 'log-line ' + (cls || '');
+  el.textContent = new Date().toLocaleTimeString() + ' | ' + msg;
+  log.appendChild(el);
+  log.scrollTop = log.scrollHeight;
+  console.log(msg);
+}
+
+// Cek AdsManager
+addLog('Checking AdsManager...', 'info');
+setTimeout(function() {
+  if (window.AdsManager) {
+    addLog('✅ AdsManager loaded: ' + window.AdsManager.VERSION, 'ok');
+    addLog('   Initialized: ' + window.AdsManager.initialized, 'info');
+    addLog('   Init attempts: ' + window.AdsManager.initAttempts, 'info');
+    addLog('   Loaded scripts: ' + JSON.stringify(window.AdsManager.loadedScripts), 'info');
+  } else {
+    addLog('❌ AdsManager NOT LOADED', 'err');
+  }
+}, 2000);
+
+// Test functions
+function testPopunder() {
+  addLog('=== Testing POPUNDER ===', 'info');
+  if (!window.AdsManager) {
+    addLog('❌ AdsManager not loaded', 'err');
+    return;
+  }
+  var url = window.AdsManager.SCRIPTS.popunder + '?test=' + Date.now();
+  addLog('Injecting: ' + url.substring(0, 80), 'info');
+  window.AdsManager.injectScript(url, 'test-popunder-' + Date.now());
+  addLog('Popunder injected, tunggu iklan muncul...', 'warn');
+}
+
+function testSocialbar() {
+  addLog('=== Testing SOCIALBAR ===', 'info');
+  if (!window.AdsManager) {
+    addLog('❌ AdsManager not loaded', 'err');
+    return;
+  }
+  var url = window.AdsManager.SCRIPTS.socialbar + '?test=' + Date.now();
+  addLog('Injecting: ' + url.substring(0, 80), 'info');
+  window.AdsManager.injectScript(url, 'test-socialbar-' + Date.now());
+  addLog('Socialbar injected, cek popup di bawah', 'warn');
+}
+
+function testSmartlink() {
+  addLog('=== Testing SMARTLINK ===', 'info');
+  if (!window.AdsManager) {
+    addLog('❌ AdsManager not loaded', 'err');
+    return;
+  }
+  window.AdsManager.openRewarded().then(function(r) {
+    if (r.success) {
+      addLog('✅ Smartlink opened: ' + r.method, 'ok');
+    } else {
+      addLog('❌ Smartlink failed: ' + r.reason, 'err');
+    }
+  });
+}
+
+function clearAll() {
+  addLog('=== Clearing all ===', 'info');
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistrations().then(function(regs) {
+      regs.forEach(function(reg) { reg.unregister(); });
+      addLog('✅ ' + regs.length + ' SW unregistered', 'ok');
+    });
+  }
+  if (window.caches) {
+    caches.keys().then(function(keys) {
+      keys.forEach(function(k) { caches.delete(k); });
+      addLog('✅ ' + keys.length + ' caches cleared', 'ok');
+    });
+  }
+  setTimeout(function() { location.reload(); }, 2000);
+}
+
+// Capture semua error
+window.addEventListener('error', function(e) {
+  addLog('🚨 Error: ' + e.message + ' at ' + e.filename + ':' + e.lineno, 'err');
+});
+
+addLog('Test tool ready', 'ok');
+</script>
+</body>
+</html>

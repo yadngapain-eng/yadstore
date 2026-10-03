@@ -1,81 +1,121 @@
 /* ============================================
-   YS STORE — Service Worker
+   SERVICE WORKER — Learn Earn
+   NO CACHE untuk ads & API
    ============================================ */
 
-const CACHE_VERSION = 'yadstore-v1791004298';
-const CACHE_NAME = CACHE_VERSION + '-' + '1791004298';
-
-
+const CACHE_VERSION = 'yadstore-v1791007711';
+const CACHE_NAME = CACHE_VERSION + '-' + '1791007711';
 
 const PRECACHE_ASSETS = [
   '/',
   '/index.html',
-  '/css/style.css',
-  '/css/ys-store.css',
   '/manifest.json',
-  '/js/games-data.js',
-  '/js/firebase-config.js',
-  '/js/auth.js',
-  '/js/telegram-config.js',
-  '/js/animasi.js',
-  '/js/topup-ui.js',
-  '/js/home-store.js',
-  '/js/premium-ui.js',
-  '/js/app.js',
-  '/js/log-tracker.js'
 ];
 
-self.addEventListener('install', (event) => {
+// ===== INSTALL =====
+self.addEventListener('install', function(event) {
+  console.log('[SW] Installing...');
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(PRECACHE_ASSETS).catch(() => Promise.resolve());
-    }).then(() => self.skipWaiting())
+    caches.open(CACHE_NAME).then(function(cache) {
+      return cache.addAll(PRECACHE_ASSETS).catch(function(err) {
+        console.warn('[SW] Precache partial fail:', err);
+      });
+    }).then(function() { return self.skipWaiting(); })
   );
 });
 
-self.addEventListener('activate', (event) => {
+// ===== ACTIVATE =====
+self.addEventListener('activate', function(event) {
+  console.log('[SW] Activating...');
   event.waitUntil(
-    caches.keys().then((keys) => {
+    caches.keys().then(function(keys) {
       return Promise.all(
-        keys.filter((key) => key.startsWith('ys-store-') && key !== CACHE_NAME)
-            .map((key) => caches.delete(key))
+        keys.filter(function(k) { 
+          return k.startsWith('yadstore-') && k !== CACHE_NAME;
+        }).map(function(k) { return caches.delete(k); })
       );
-    }).then(() => self.clients.claim())
+    }).then(function() { return self.clients.claim(); })
   );
 });
 
-self.addEventListener('fetch', (event) => {
-  const req = event.request;
+// ===== FETCH =====
+self.addEventListener('fetch', function(event) {
+  var req = event.request;
   if (req.method !== 'GET') return;
-  const url = new URL(req.url);
-  if (url.origin !== self.location.origin) return;
-  if (url.pathname.startsWith('/admin/')) return;
-
-  if (req.headers.get('accept') && req.headers.get('accept').includes('text/html')) {
+  
+  var url = new URL(req.url);
+  
+  // ===== SKIP CACHE: Ads scripts =====
+  if (url.hostname.indexOf('profitableratecpmnetwork.com') !== -1 ||
+      url.hostname.indexOf('adsterra') !== -1) {
+    // Network-only, no cache
+    return; // Let browser handle natively
+  }
+  
+  // ===== SKIP CACHE: API calls =====
+  if (url.pathname.indexOf('/api/') === 0) {
+    return;
+  }
+  
+  // ===== SKIP CACHE: Telegram =====
+  if (url.hostname.indexOf('telegram.org') !== -1) {
+    return;
+  }
+  
+  // ===== SKIP CACHE: Firebase =====
+  if (url.hostname.indexOf('firebaseio.com') !== -1 ||
+      url.hostname.indexOf('googleapis.com') !== -1) {
+    return;
+  }
+  
+  // ===== SKIP CACHE: Adsterra debug =====
+  if (url.pathname.indexOf('ads-debug') !== -1) {
+    event.respondWith(fetch(req));
+    return;
+  }
+  
+  // ===== HTML: Network-first =====
+  if (req.headers.get('accept') && req.headers.get('accept').indexOf('text/html') !== -1) {
     event.respondWith(
-      fetch(req)
-        .then((res) => {
-          const clone = res.clone();
-          caches.open(CACHE_NAME).then((c) => c.put(req, clone));
-          return res;
-        })
-        .catch(() => caches.match(req).then((c) => c || caches.match('/index.html')))
+      fetch(req).then(function(res) {
+        var clone = res.clone();
+        caches.open(CACHE_NAME).then(function(c) { c.put(req, clone); });
+        return res;
+      }).catch(function() {
+        return caches.match(req).then(function(c) {
+          return c || caches.match('/index.html');
+        });
+      })
     );
     return;
   }
-
+  
+  // ===== Assets: Cache-first =====
   event.respondWith(
-    caches.match(req).then((cached) => {
+    caches.match(req).then(function(cached) {
       if (cached) return cached;
-      return fetch(req).then((res) => {
+      return fetch(req).then(function(res) {
         if (res && res.status === 200 && res.type === 'basic') {
-          const clone = res.clone();
-          caches.open(CACHE_NAME).then((c) => c.put(req, clone));
+          var clone = res.clone();
+          caches.open(CACHE_NAME).then(function(c) { c.put(req, clone); });
         }
         return res;
-      }).catch(() => new Response('Offline', { status: 503 }));
+      }).catch(function() {
+        return new Response('Offline', { status: 503 });
+      });
     })
   );
 });
 
-console.log('[SW] YS Store loaded');
+// ===== MESSAGE =====
+self.addEventListener('message', function(event) {
+  if (!event.data) return;
+  if (event.data.type === 'SKIP_WAITING') self.skipWaiting();
+  if (event.data.type === 'CLEAR_CACHE') {
+    caches.keys().then(function(keys) {
+      keys.forEach(function(k) { caches.delete(k); });
+    });
+  }
+});
+
+console.log('[SW] Ready');
