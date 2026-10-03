@@ -163,8 +163,12 @@
   /* ========== 7. DAILY REWARDS CALENDAR ========== */
   
 
-  /* ========== 8. PULL TO REFRESH ========== */
+  /* ========== 8. PULL TO REFRESH (DISABLED) ========== */
+  // DISABLED: menyebabkan refresh tidak sengaja saat geser ke bawah
   function initPullToRefresh() {
+    console.log('[UI] Pull-to-refresh DISABLED');
+    return; // ⛔ Early return — matikan fungsi ini
+    // eslint-disable-next-line no-unreachable
     var startY = 0;
     var currentY = 0;
     var isPulling = false;
@@ -180,6 +184,7 @@
       return indicator;
     }
 
+    /* DISABLED: PTR block
     document.addEventListener('touchstart', function(e) {
       if (window.scrollY > 0) return;
       startY = e.touches[0].clientY;
@@ -221,6 +226,7 @@
 
       startY = 0;
       currentY = 0;
+    */
     }, { passive: true });
   }
 

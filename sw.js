@@ -2,8 +2,8 @@
    YS STORE — Service Worker
    ============================================ */
 
-const CACHE_VERSION = 'learnearn-v1790999211';
-const CACHE_NAME = CACHE_VERSION + '-' + '1790999211';
+const CACHE_VERSION = 'learnearn-v1790999503';
+const CACHE_NAME = CACHE_VERSION + '-' + '1790999503';
 
 
 // ===== MONETAG PUSH =====

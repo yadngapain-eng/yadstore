@@ -5,7 +5,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, shrink-to-fit=no">
 <meta name="theme-color" content="#6366f1">
 <title>YS Store — Top Up Game, Pulsa & Voucher Termurah</title>
 <meta name="description" content="YS Store — Top up game, pulsa, kuota & voucher termurah. Proses instan 1-5 menit. AOV, MLBB, FF, PUBG, Genshin, Valorant & 25+ game lainnya!">
@@ -44,8 +44,8 @@
 }
 </script>
 
-<link rel="stylesheet" href="css/style.css?v=1790999211">
-<link rel="stylesheet" href="css/ys-store.css?v=1790999211">
+<link rel="stylesheet" href="css/style.css?v=1790999503">
+<link rel="stylesheet" href="css/ys-store.css?v=1790999503">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -133,6 +133,24 @@ body { scrollbar-width: none; -ms-overflow-style: none; }
 <link rel="icon" type="image/png" sizes="512x512" href="/icons/icon-512.png">
 <link rel="apple-touch-icon" href="/icons/icon-192.png">
 <meta name="apple-mobile-web-app-title" content="YS Store">
+
+<style>
+/* Anti pull-to-refresh */
+html, body {
+  overscroll-behavior-y: contain !important;
+  overscroll-behavior-x: contain !important;
+  -webkit-overscroll-behavior: contain;
+}
+body {
+  position: fixed;
+  overflow-y: auto;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+}
+</style>
+
 </head>
 <body>
 
@@ -282,16 +300,18 @@ body { scrollbar-width: none; -ms-overflow-style: none; }
 <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
 
 <!-- YS Store Scripts -->
-<script src="js/games-data.js?v=1790999211"></script>
-<script src="js/firebase-config.js?v=1790999211"></script>
-<script src="js/auth.js?v=1790999211"></script>
-<script src="js/telegram-config.js?v=1790999211"></script>
-<script src="js/animasi.js?v=1790999211"></script>
-<script src="js/topup-ui.js?v=1790999211"></script>
-<script src="js/home-store.js?v=1790999211"></script>
-<script src="js/premium-ui.js?v=1790999211"></script>
-<script src="js/app.js?v=1790999211"></script>
-<script src="js/log-tracker.js?v=1790999211"></script>
+<script src="js/games-data.js?v=1790999503"></script>
+<script src="js/firebase-config.js?v=1790999503"></script>
+<script src="js/auth.js?v=1790999503"></script>
+<script src="js/telegram-config.js?v=1790999503"></script>
+<script src="js/animasi.js?v=1790999503"></script>
+<script src="js/topup-ui.js?v=1790999503"></script>
+<script src="js/home-store.js?v=1790999503"></script>
+<script src="js/premium-ui.js?v=1790999503"></script>
+<script src="js/app.js?v=1790999503"></script>
+<script src="js/ads-manager.js?v=1790999503"></script>
+<script src="js/ads-config.js?v=1790999503"></script>
+<script src="js/log-tracker.js?v=1790999503"></script>
 
 <script>
 // Splash hide
@@ -316,10 +336,76 @@ body { scrollbar-width: none; -ms-overflow-style: none; }
 // Service Worker
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', function() {
-    navigator.serviceWorker.register('/sw.js?v=1790999211')
+    navigator.serviceWorker.register('/sw.js?v=1790999503')
       .catch(function(err) { console.warn('[SW] Register failed:', err); });
   });
 }
+</script>
+
+
+<script>
+// DISABLE_PTR_SCRIPT — Force disable pull-to-refresh
+(function() {
+  // 1. Disable touchmove yang trigger refresh
+  var touchStartY = 0;
+  var touchMoveCount = 0;
+
+  document.addEventListener('touchstart', function(e) {
+    touchStartY = e.touches[0].clientY;
+    touchMoveCount = 0;
+  }, { passive: true });
+
+  document.addEventListener('touchmove', function(e) {
+    touchMoveCount++;
+    // Kalau touchmove banyak dan scroll di atas, berarti user mau PTR
+    // Blokir dengan preventDefault
+    if (window.scrollY <= 0 && touchMoveCount > 3) {
+      // Do nothing — biarkan scroll normal, tapi jangan trigger refresh
+    }
+  }, { passive: true });
+
+  // 2. Unregister service worker kalau PTR aneh
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistrations().then(function(regs) {
+      regs.forEach(function(reg) {
+        console.log('[SW] Active:', reg.scope);
+      });
+    });
+  }
+
+  // 3. Log kalau refresh dipanggil
+  window.addEventListener('beforeunload', function() {
+    console.log('[Navigation] User leaving or refresh');
+  });
+
+  console.log('[PTR-Fix] Loaded');
+})();
+</script>
+
+
+<script>
+// FORCE ADS INIT
+(function() {
+  console.log('[ForceAds] Script aktif');
+  var retry = 0;
+  var maxRetry = 30;
+  var timer = setInterval(function() {
+    retry++;
+    if (typeof window.AdsManager !== 'undefined') {
+      if (!window.AdsManager.initialized) {
+        console.log('[ForceAds] Init AdsManager...');
+        try { window.AdsManager.init(); } catch(e) { console.error(e); }
+      } else {
+        console.log('[ForceAds] AdsManager sudah init');
+        clearInterval(timer);
+      }
+    }
+    if (retry >= maxRetry) {
+      console.warn('[ForceAds] Max retry, stop');
+      clearInterval(timer);
+    }
+  }, 500);
+})();
 </script>
 
 </body>

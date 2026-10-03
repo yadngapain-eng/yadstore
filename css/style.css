@@ -1423,3 +1423,19 @@ body::before {
   padding-top: 8px;
 }
 .wd-row.highlight strong { color: #ff9600; font-size: 15px; }
+
+
+/* ============================================
+   DISABLE PULL-TO-REFRESH (mobile)
+   ============================================ */
+html, body {
+  overscroll-behavior-y: contain !important;
+  overscroll-behavior-x: contain !important;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Prevent elastic scroll di iOS */
+body {
+  position: relative;
+  min-height: 100vh;
+}
