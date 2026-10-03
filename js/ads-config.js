@@ -1,46 +1,40 @@
 /* ============================================
-   ADS CONFIG — Monetag Tag
-   Auto-init tag script (fallback)
+   ADS CONFIG — Adsterra Only
+   Monetag sudah dihapus
    ============================================ */
 
 window.ADS_CONFIG = {
-  TAG_URL: 'https://quge5.com/88/tag.min.js',
-  TAG_ZONE: '286791',
+  NETWORK: 'adsterra',
+  ENABLED: true,
+
+  // Adsterra URLs (untuk referensi)
+  ADSTERRA: {
+    popunder: 'https://pl31468159.profitableratecpmnetwork.com/43/b7/10/43b7103677aebe9ac1a73fef2f093d8e.js',
+    socialbar: 'https://pl31468161.profitableratecpmnetwork.com/5a/74/05/5a7405d3227ef77d3f28c27fb6024aa6.js',
+    smartlink: 'https://www.profitableratecpmnetwork.com/hs7rgc2qv?key=ee5218af9bd180dc813a71fe59ddb5dd',
+  },
 };
 
 (function() {
   if (typeof window === 'undefined') return;
 
-  function injectTag() {
-    try {
-      var s = document.createElement('script');
-      s.src = window.ADS_CONFIG.TAG_URL;
-      s.setAttribute('data-zone', window.ADS_CONFIG.TAG_ZONE);
-      s.setAttribute('data-cfasync', 'false');
-      s.async = true;
-      s.onerror = function() { console.warn('[Ads] tag fail'); };
-      document.head.appendChild(s);
-      console.log('[Ads] tag injected');
-    } catch (e) {
-      console.warn('[Ads] error:', e.message);
-    }
-  }
-
   function registerSW() {
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js')
+      // Hanya register SW kita sendiri, tanpa Monetag
+      var swUrl = '/sw.js?v=' + Date.now();
+      navigator.serviceWorker.register(swUrl)
         .then(function() { console.log('[SW] registered'); })
         .catch(function(e) { console.warn('[SW] fail:', e.message); });
     }
   }
 
   if (document.readyState === 'complete') {
-    setTimeout(injectTag, 3000);
-    setTimeout(registerSW, 4000);
+    setTimeout(registerSW, 2000);
   } else {
     window.addEventListener('load', function() {
-      setTimeout(injectTag, 3000);
-      setTimeout(registerSW, 4000);
+      setTimeout(registerSW, 2000);
     });
   }
 })();
+
+console.log('[ads-config] Adsterra only mode');

@@ -2,21 +2,10 @@
    YS STORE — Service Worker
    ============================================ */
 
-const CACHE_VERSION = 'learnearn-v1790999503';
-const CACHE_NAME = CACHE_VERSION + '-' + '1790999503';
+const CACHE_VERSION = 'yadstore-v1791000200';
+const CACHE_NAME = CACHE_VERSION + '-' + '1791000200';
 
 
-// ===== MONETAG PUSH =====
-try {
-  self.options = {
-    "domain": "5gvci.com",
-    "zoneId": 11886708
-  };
-  self.lary = "";
-  importScripts('https://5gvci.com/act/files/service-worker.min.js?r=sw&v=9');
-} catch (e) {
-  console.warn('[SW] Monetag import failed:', e);
-}
 
 const PRECACHE_ASSETS = [
   '/',

@@ -1,115 +1,127 @@
 /* ============================================
-   ADS MANAGER v12 — More Robust
-   Adsterra + Monetag + Retry Logic
+   YADSTORE — ADS MANAGER v13 (ADSTERRA ONLY)
+   Semua iklan dari Adsterra
    ============================================ */
 
 window.AdsManager = {
-  VERSION: 'v12',
-  MODE: 'monetag-priority',
+  VERSION: 'v13',
+  NETWORK: 'adsterra',
 
-  NETWORKS: {
-    monetag: {
-      enabled: true,
-      priority: 1,
-      swDomain: '5gvci.com',
-      zones: {
-        push: 11893259,
-        vignette: 11893258,
-        inpage: 11893257,
-        popunder: 11893256,
-      },
-    },
-    adsterra: {
-      enabled: true,
-      priority: 2,
-      scripts: {
-        popunder: 'https://pl31468159.profitableratecpmnetwork.com/43/b7/10/43b7103677aebe9ac1a73fef2f093d8e.js',
-        socialbar: 'https://pl31468161.profitableratecpmnetwork.com/5a/74/05/5a7405d3227ef77d3f28c27fb6024aa6.js',
-      },
-      smartlink: 'https://www.profitableratecpmnetwork.com/hs7rgc2qv?key=ee5218af9bd180dc813a71fe59ddb5dd',
-    },
+  CONFIG: {
+    POPUNDER_ENABLED: true,
+    SOCIALBAR_ENABLED: true,
+    SMARTLINK_ENABLED: true,
   },
 
+  // ============================================
+  // URL SCRIPT ADSTERRA
+  // ============================================
+  SCRIPTS: {
+    popunder: 'https://pl31468159.profitableratecpmnetwork.com/43/b7/10/43b7103677aebe9ac1a73fef2f093d8e.js',
+    socialbar: 'https://pl31468161.profitableratecpmnetwork.com/5a/74/05/5a7405d3227ef77d3f28c27fb6024aa6.js',
+    smartlink: 'https://www.profitableratecpmnetwork.com/hs7rgc2qv?key=ee5218af9bd180dc813a71fe59ddb5dd',
+  },
+
+  // ============================================
+  // STATE
+  // ============================================
   loadedScripts: {},
   injected: {},
   initialized: false,
   lastSmartlinkOpen: 0,
   SMARTLINK_COOLDOWN: 30 * 1000,
+  reinjectTimers: [],
 
+  // ============================================
+  // INIT
+  // ============================================
   init() {
     if (this.initialized) return;
     this.initialized = true;
-    console.log('[AdsManager] ' + this.VERSION + ' init');
+    console.log('[AdsManager] ' + this.VERSION + ' init (Adsterra only)');
 
-    // Load Monetag DULU
-    this.loadMonetagAds();
-
-    // Load Adsterra setelah delay
     var self = this;
-    setTimeout(function() { self.loadAdsterraAds(); }, 2000);
 
-    // Re-inject kalau gagal
-    setTimeout(function() { self.reinjectAll(); }, 10000);
-    setTimeout(function() { self.reinjectAll(); }, 30000);
+    // Load Adsterra scripts
+    this.loadAdsterraAds();
+
+    // Backup re-inject
+    setTimeout(function() { self.loadAdsterraAds(true); }, 10000);
+    setTimeout(function() { self.loadAdsterraAds(true); }, 25000);
+
+    // Reinject failed setiap 30 detik
+    setInterval(function() { self.reinjectFailed(); }, 30000);
 
     console.log('[AdsManager] Ready');
   },
 
-  loadMonetagAds(force) {
-    var m = this.NETWORKS.monetag;
-    if (!m.enabled) return;
+  // ============================================
+  // LOAD ADSTERRA
+  // ============================================
+  loadAdsterraAds(force) {
+    var self = this;
+    console.log('[AdsManager] Loading Adsterra' + (force ? ' (force)' : '') + '...');
 
-    console.log('[AdsManager] Monetag loading...');
-    var d = m.swDomain, z = m.zones, cb = Date.now(), self = this;
-
-    // Vignette
-    setTimeout(function() {
-      self.injectScript('https://' + d + '/act/files/tag.min.js?z=' + z.vignette + '&cb=' + cb, 'monetag-vignette');
-    }, 300);
-
-    // In-Page
-    setTimeout(function() {
-      self.injectScript('https://' + d + '/act/files/tag.min.js?z=' + z.inpage + '&cb=' + cb, 'monetag-inpage');
-    }, 1000);
+    var cb = Date.now();
 
     // Popunder
-    setTimeout(function() {
-      self.injectScript('https://' + d + '/act/files/tag.min.js?z=' + z.popunder + '&cb=' + cb, 'monetag-popunder');
-    }, 1800);
+    if (this.CONFIG.POPUNDER_ENABLED) {
+      setTimeout(function() {
+        if (force || !self.injected['adsterra-popunder']) {
+          self.injectScript(self.SCRIPTS.popunder + '?cb=' + cb, 'adsterra-popunder');
+          self.injected['adsterra-popunder'] = true;
+        }
+      }, 500);
+    }
+
+    // Social Bar
+    if (this.CONFIG.SOCIALBAR_ENABLED) {
+      setTimeout(function() {
+        if (force || !self.injected['adsterra-socialbar']) {
+          self.injectScript(self.SCRIPTS.socialbar + '?cb=' + cb, 'adsterra-socialbar');
+          self.injected['adsterra-socialbar'] = true;
+        }
+      }, 1800);
+    }
+
+    console.log('[AdsManager] Adsterra loaded');
   },
 
-  loadAdsterraAds(force) {
-    var a = this.NETWORKS.adsterra;
-    if (!a.enabled) return;
-
-    console.log('[AdsManager] Adsterra loading...');
-    var cb = Date.now(), self = this;
-
-    setTimeout(function() {
-      self.injectScript(a.scripts.popunder + '?cb=' + cb, 'adsterra-popunder');
-    }, 500);
-
-    setTimeout(function() {
-      self.injectScript(a.scripts.socialbar + '?cb=' + cb, 'adsterra-socialbar');
-    }, 1800);
+  // ============================================
+  // REINJECT FAILED
+  // ============================================
+  reinjectFailed() {
+    var self = this;
+    Object.keys(this.loadedScripts).forEach(function(id) {
+      if (self.loadedScripts[id] === false) {
+        console.log('[AdsManager] Re-inject failed:', id);
+        self.injected[id] = false;
+        // Re-trigger load
+        if (id === 'adsterra-popunder') self.loadAdsterraAds(true);
+      }
+    });
   },
 
-  reinjectAll() {
-    console.log('[AdsManager] Re-inject all');
-    this.loadMonetagAds(true);
-    this.loadAdsterraAds(true);
-  },
-
+  // ============================================
+  // OPEN REWARDED AD (Smartlink)
+  // ============================================
   async openRewarded() {
+    if (!this.CONFIG.SMARTLINK_ENABLED) {
+      return { success: false, reason: 'smartlink_disabled' };
+    }
+
     var now = Date.now();
     if (now - this.lastSmartlinkOpen < this.SMARTLINK_COOLDOWN) {
       var remain = Math.ceil((this.SMARTLINK_COOLDOWN - (now - this.lastSmartlinkOpen)) / 1000);
       return { success: false, reason: 'cooldown', remain: remain };
     }
 
-    var smartlink = this.NETWORKS.adsterra.smartlink;
-    var popup = null;
+    var smartlink = this.SCRIPTS.smartlink;
+    if (!smartlink) return { success: false, reason: 'no_smartlink' };
 
+    console.log('[AdsManager] Opening Adsterra smartlink...');
+
+    var popup = null;
     try {
       popup = window.open(smartlink, '_blank', 'width=800,height=600');
     } catch (e) {}
@@ -118,16 +130,19 @@ window.AdsManager = {
       try {
         localStorage.setItem('yadstore_ad_pending', Date.now().toString());
         window.location.href = smartlink;
-        return { success: true, method: 'redirect' };
+        return { success: true, method: 'redirect', network: 'adsterra' };
       } catch (e) {
         return { success: false, reason: 'popup_blocked' };
       }
     }
 
     this.lastSmartlinkOpen = Date.now();
-    return { success: true, method: 'popup' };
+    return { success: true, method: 'popup', network: 'adsterra' };
   },
 
+  // ============================================
+  // INJECT SCRIPT
+  // ============================================
   injectScript(src, id) {
     var self = this;
     return new Promise(function(resolve) {
@@ -159,9 +174,13 @@ window.AdsManager = {
       }
     });
   },
+
+  getActiveNetwork() { return 'adsterra'; },
 };
 
+// ============================================
 // AUTO INIT
+// ============================================
 if (typeof window !== 'undefined') {
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function() {
@@ -172,4 +191,4 @@ if (typeof window !== 'undefined') {
   }
 }
 
-console.log('[ads-manager] ' + window.AdsManager.VERSION + ' loaded');
+console.log('[ads-manager] ' + window.AdsManager.VERSION + ' loaded (Adsterra only)');
