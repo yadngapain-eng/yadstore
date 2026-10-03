@@ -23,12 +23,17 @@
     { id: 'pulsa', label: 'Pulsa & Kuota', icon: '📱' }
   ];
 
-  YSHome.render = function() {
+  YSHome.render = async function() {
     var container = document.getElementById('articles-content');
     if (!container) {
       container = document.getElementById('ys-home-content');
     }
     if (!container) return;
+
+    // Load price config
+    if (typeof TopUpUI !== 'undefined' && TopUpUI.loadPriceConfig) {
+      try { await TopUpUI.loadPriceConfig(); } catch(e) {}
+    }
 
     var allItems = [].concat(window.GAMES || [], window.DATA_PACKAGES || []);
 

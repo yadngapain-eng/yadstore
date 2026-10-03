@@ -2,8 +2,8 @@
    YS STORE — Service Worker
    ============================================ */
 
-const CACHE_VERSION = 'ys-store-v1';
-const CACHE_NAME = CACHE_VERSION + '-' + Date.now();
+const CACHE_VERSION = 'ys-store-v1790996592';
+const CACHE_NAME = CACHE_VERSION + '-1790996592';
 
 const PRECACHE_ASSETS = [
   '/',

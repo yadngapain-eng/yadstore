@@ -17,14 +17,46 @@ const TopUpUI = {
   },
 
   // ===== HELPER: Ambil harga final (dengan markup) =====
+  _priceCache: null,
+  _priceCacheTime: 0,
+
+  async loadPriceConfig() {
+    var now = Date.now();
+    if (this._priceCache && (now - this._priceCacheTime) < 60000) {
+      return this._priceCache;
+    }
+    try {
+      if (typeof Auth !== 'undefined' && Auth.db) {
+        var cfgDoc = await Auth.db.collection('config').doc('markup').get();
+        var pricesDoc = await Auth.db.collection('config').doc('prices').get();
+        this._priceCache = {
+          globalMarkup: cfgDoc.exists ? (cfgDoc.data().global_markup || 0) : 0,
+          gameMarkups: cfgDoc.exists ? (cfgDoc.data().game_markups || {}) : {},
+          customPrices: pricesDoc.exists ? pricesDoc.data() : {},
+        };
+        this._priceCacheTime = now;
+      }
+    } catch (e) {
+      console.warn('[TopUpUI] loadPriceConfig error:', e);
+      this._priceCache = { globalMarkup: 0, gameMarkups: {}, customPrices: {} };
+    }
+    return this._priceCache || { globalMarkup: 0, gameMarkups: {}, customPrices: {} };
+  },
+
   getFinalPrice: function(itemId, prodId, defaultPrice) {
     try {
-      var prices = JSON.parse(localStorage.getItem('learnearn_prices') || '{}');
+      var cache = this._priceCache || { globalMarkup: 0, gameMarkups: {}, customPrices: {} };
       var key = itemId + '_' + prodId;
-      if (prices[key] && prices[key].final) return prices[key].final;
-      var cfg = JSON.parse(localStorage.getItem('learnearn_config') || '{}');
-      var add = cfg.global_markup || 0;
-      return defaultPrice + add;
+
+      // 1. Cek custom price dulu (override)
+      if (cache.customPrices && cache.customPrices[key] !== undefined) {
+        return cache.customPrices[key];
+      }
+
+      // 2. Kalau tidak ada, harga default + markup
+      var globalMarkup = cache.globalMarkup || 0;
+      var gameMarkup = (cache.gameMarkups && cache.gameMarkups[itemId]) || 0;
+      return defaultPrice + globalMarkup + gameMarkup;
     } catch(e) { return defaultPrice; }
   },
 
@@ -34,10 +66,12 @@ const TopUpUI = {
   esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); },
   fmt(n) { try { return n.toLocaleString('id-ID'); } catch(e) { return '' + n; } },
 
-  render(force) {
+  async render(force) {
+    // Load price config dulu
+    await this.loadPriceConfig();
+
     var c = document.getElementById('topup-grid');
     if (!c) return;
-    // Jangan re-render kalau sudah ada & tidak dipaksa
     if (!force && this.rendered && c.children.length > 0) {
       console.log('[TopUpUI] skip re-render');
       return;

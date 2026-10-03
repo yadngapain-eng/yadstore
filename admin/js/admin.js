@@ -1,32 +1,17 @@
 /* ============================================
-   LEARN EARN — ADMIN PANEL v4
-   + Min Withdraw per user + Pilih Semua
+   YS STORE — ADMIN PANEL v1
+   Top Up Management + Markup
    ============================================ */
 
 const Admin = {
   user: null,
   isAdmin: false,
-  section: 'dash',
+  section: 'orders',
   auth: null,
   db: null,
-  selectedUsers: {},  // untuk "pilih semua"
 
-  // ============================================
-  // INIT
-  // ============================================
   async init() {
-    // ===== FALLBACK: Force hide loading setelah 5 detik =====
-    setTimeout(function() {
-      var loading = document.getElementById('loading');
-      if (loading && loading.style.display !== 'none') {
-        console.warn('[Admin] Force hiding loading overlay (fallback)');
-        loading.style.display = 'none';
-        var login = document.getElementById('login');
-        if (login) login.style.display = 'flex';
-      }
-    }, 5000);
-    
-    console.log('[Admin] Init v4...');
+    console.log('[Admin] Init...');
 
     if (typeof firebase !== 'undefined') {
       if (!firebase.apps.length) firebase.initializeApp(window.FIREBASE_CONFIG);
@@ -40,14 +25,24 @@ const Admin = {
           const idTokenResult = await user.getIdTokenResult(true);
           this.isAdmin = idTokenResult.claims.admin === true;
           console.log('[Admin] User:', user.email, '| Admin:', this.isAdmin);
-          if (this.isAdmin) { this.showAdmin(); this.updateUserInfo(); this.render(); }
-          else { this.showDenied(); }
-        } catch (e) { console.error('[Admin] claim error:', e); this.showDenied(); }
+          if (this.isAdmin) {
+            this.showAdmin();
+            this.updateUserInfo();
+            this.render();
+            this.updateNavBadges();
+          } else {
+            this.showDenied();
+          }
+        } catch (e) {
+          console.error('[Admin] claim error:', e);
+          this.showDenied();
+        }
       });
     } else {
       document.getElementById('loading').innerHTML = '<p>❌ Firebase SDK not loaded</p>';
     }
 
+    // Nav
     document.querySelectorAll('.nav-item').forEach(el => {
       el.addEventListener('click', (e) => {
         e.preventDefault();
@@ -55,50 +50,44 @@ const Admin = {
         document.querySelectorAll('.nav-item').forEach(x => x.classList.remove('active'));
         el.classList.add('active');
         const titles = {
-          dash: { title: 'Dashboard', sub: 'Ringkasan aktivitas website' },
-          orders: { title: 'Pesanan', sub: 'Kelola & konfirmasi pesanan user' },
-          withdrawals: { title: 'Withdraw', sub: 'Kelola permintaan withdraw user' },
-          limits: { title: 'Min Withdraw', sub: 'Atur minimum withdraw per user' },
-          products: { title: 'Produk & Markup', sub: 'Kelola harga & markup produk' },
-          massboost: { title: 'Mass Boost', sub: 'Tambah koin/XP massal ke user' },
-          referral: { title: 'Referral', sub: 'Monitor program referral' },
-          users: { title: 'Users', sub: 'Daftar semua user terdaftar' },
-          debug: { title: 'Debug & Log', sub: 'Monitor error & aktivitas sistem' },
-          settings: { title: 'Pengaturan', sub: 'Konfigurasi admin panel' }
+          orders:    { title: '📦 Pesanan',        sub: 'Kelola & konfirmasi pesanan user' },
+          markup:    { title: '💰 Markup Harga',   sub: 'Atur markup harga produk' },
+          products:  { title: '🏷️ Harga Produk',   sub: 'Edit harga per produk' },
+          users:     { title: '👥 Users',          sub: 'Daftar user terdaftar' },
+          settings:  { title: '⚙️ Pengaturan',     sub: 'Konfigurasi admin panel' },
         };
-        var info = titles[this.section] || { title: this.section, sub: '' };
-        var titleEl = document.getElementById('sec-title');
-        if (titleEl) titleEl.textContent = info.title || this.section;
-        var subtitleEl = document.getElementById('sec-subtitle');
-        if (subtitleEl) subtitleEl.textContent = info.sub || '';
+        const info = titles[this.section] || { title: this.section, sub: '' };
+        document.getElementById('sec-title').textContent = info.title;
+        document.getElementById('sec-subtitle').textContent = info.sub;
         this.render();
-        this.updateNavBadges();
       });
     });
   },
 
-  // ============================================
-  // UI STATES
-  // ============================================
   showLogin() {
     document.getElementById('loading').style.display = 'none';
     document.getElementById('login').style.display = 'flex';
     document.getElementById('denied').style.display = 'none';
     document.getElementById('admin-app').style.display = 'none';
   },
+
   showDenied() {
     document.getElementById('loading').style.display = 'none';
     document.getElementById('login').style.display = 'none';
     document.getElementById('denied').style.display = 'flex';
     document.getElementById('admin-app').style.display = 'none';
-    if (this.user) document.getElementById('denied-email').textContent = this.user.email || this.user.uid.slice(0, 8);
+    if (this.user) {
+      document.getElementById('denied-email').textContent = this.user.email || this.user.uid.slice(0, 8);
+    }
   },
+
   showAdmin() {
     document.getElementById('loading').style.display = 'none';
     document.getElementById('login').style.display = 'none';
     document.getElementById('denied').style.display = 'none';
     document.getElementById('admin-app').style.display = 'flex';
   },
+
   updateUserInfo() {
     if (!this.user) return;
     const email = this.user.email || 'Anonymous';
@@ -108,19 +97,24 @@ const Admin = {
     document.getElementById('admin-avatar').textContent = (name[0] || '?').toUpperCase();
   },
 
-  // ============================================
-  // AUTH
-  // ============================================
   async loginGoogle() {
     try {
       const provider = new firebase.auth.GoogleAuthProvider();
       provider.setCustomParameters({ prompt: 'select_account' });
       await this.auth.signInWithPopup(provider);
-    } catch (e) { console.error(e); alert('Login gagal: ' + e.message); }
+    } catch (e) {
+      console.error(e);
+      alert('Login gagal: ' + e.message);
+    }
   },
-  // ============================================
-  // MOBILE SIDEBAR TOGGLE
-  // ============================================
+
+  async logout() {
+    if (this.auth) {
+      try { await this.auth.signOut(); } catch (e) {}
+    }
+    location.reload();
+  },
+
   toggleSidebar() {
     var sidebar = document.getElementById('admin-sidebar');
     var overlay = document.getElementById('mobile-overlay');
@@ -129,449 +123,288 @@ const Admin = {
     if (overlay) overlay.classList.toggle('show');
   },
 
-  // ============================================
-  // UPDATE NAV BADGES (jumlah pending)
-  // ============================================
   async updateNavBadges() {
-    if (typeof this.db === 'undefined' || !this.db) return;
+    if (!this.db) return;
     try {
-      // Orders pending
-      try {
-        var ordersSnap = await this.db.collection('orders').where('status', '==', 'pending').get();
-        var count = ordersSnap.size;
-        var badge = document.getElementById('nav-badge-orders');
-        if (badge) {
-          if (count > 0) {
-            badge.textContent = count > 99 ? '99+' : count;
-            badge.style.display = 'inline-block';
-          } else {
-            badge.style.display = 'none';
-          }
+      var snap = await this.db.collection('orders').where('status', '==', 'pending').get();
+      var badge = document.getElementById('nav-badge-orders');
+      if (badge) {
+        if (snap.size > 0) {
+          badge.textContent = snap.size > 99 ? '99+' : snap.size;
+          badge.style.display = 'inline-block';
+        } else {
+          badge.style.display = 'none';
         }
-      } catch (e) {}
-
-      // Withdrawals pending
-      try {
-        var wdSnap = await this.db.collection('withdrawals').where('status', '==', 'pending').get();
-        var count2 = wdSnap.size;
-        var badge2 = document.getElementById('nav-badge-withdrawals');
-        if (badge2) {
-          if (count2 > 0) {
-            badge2.textContent = count2 > 99 ? '99+' : count2;
-            badge2.style.display = 'inline-block';
-          } else {
-            badge2.style.display = 'none';
-          }
-        }
-      } catch (e) {}
+      }
     } catch (e) {}
   },
 
-  // ============================================
-  // LOGOUT
-  // ============================================
-  async logout() {
-    if (this.auth) {
-      try { await this.auth.signOut(); } catch (e) {}
-    }
-    location.reload();
-  },
-
-  // ============================================
-  // RENDER DISPATCHER
-  // ============================================
   render() {
     const c = document.getElementById('content');
-    if (this.section === 'dash') this.renderDash(c);
-    else if (this.section === 'orders') this.renderOrders(c);
-    else if (this.section === 'withdrawals') this.renderWithdrawals(c);
-    else if (this.section === 'limits') this.renderLimits(c);
+    if (this.section === 'orders') this.renderOrders(c);
+    else if (this.section === 'markup') this.renderMarkup(c);
     else if (this.section === 'products') this.renderProducts(c);
-    else if (this.section === 'massboost') this.renderMassBoost(c);
-    else if (this.section === 'referral') this.renderReferral(c);
     else if (this.section === 'users') this.renderUsers(c);
-    else if (this.section === 'debug') this.renderDebug(c);
     else if (this.section === 'settings') this.renderSettings(c);
-  },
-
-  // ============================================
-  // DASHBOARD
-  // ============================================
-  async renderDash(c) {
-    c.innerHTML = '<div class="loading-inline">Memuat data...</div>';
-    try {
-      const ordersSnap = await this.db.collection('orders').get();
-      const orders = ordersSnap.docs.map(d => d.data());
-      const total = orders.reduce((s, o) => s + (o.total || 0), 0);
-      const pending = orders.filter(o => o.status === 'pending').length;
-      const processing = orders.filter(o => o.status === 'processing').length;
-      const success = orders.filter(o => o.status === 'success').length;
-
-      const wdSnap = await this.db.collection('withdrawals').get();
-      const wds = wdSnap.docs.map(d => d.data());
-      const wdPending = wds.filter(w => w.status === 'pending').length;
-      const wdTotal = wds.filter(w => w.status === 'pending').reduce((s, w) => s + (w.amount || 0), 0);
-
-      const usersSnap = await this.db.collection('users').get();
-      const userCount = usersSnap.size;
-
-      c.innerHTML = '<div class="stats-grid">' +
-        '<div class="stat-card"><div class="stat-icon">🛒</div><div class="stat-val">' + orders.length + '</div><div class="stat-label">Total Order</div></div>' +
-        '<div class="stat-card"><div class="stat-icon">💰</div><div class="stat-val">Rp ' + total.toLocaleString('id-ID') + '</div><div class="stat-label">Revenue</div></div>' +
-        '<div class="stat-card"><div class="stat-icon">⏳</div><div class="stat-val">' + pending + '</div><div class="stat-label">Pending</div></div>' +
-        '<div class="stat-card"><div class="stat-icon">🔄</div><div class="stat-val">' + processing + '</div><div class="stat-label">Diproses</div></div>' +
-        '<div class="stat-card"><div class="stat-icon">✅</div><div class="stat-val">' + success + '</div><div class="stat-label">Sukses</div></div>' +
-        '<div class="stat-card"><div class="stat-icon">👥</div><div class="stat-val">' + userCount + '</div><div class="stat-label">Users</div></div>' +
-        '<div class="stat-card" style="background:linear-gradient(135deg,#fff9e6,#ffefb3);border-color:#ffe58f"><div class="stat-icon">💸</div><div class="stat-val">' + wdPending + '</div><div class="stat-label">Withdraw Pending</div></div>' +
-        '<div class="stat-card" style="background:linear-gradient(135deg,#ffe6e6,#ffcccc);border-color:#ff9b9b"><div class="stat-icon">💰</div><div class="stat-val">Rp ' + wdTotal.toLocaleString('id-ID') + '</div><div class="stat-label">Withdraw Amount</div></div>' +
-        '</div>' +
-        '<div class="card"><h3>Order Terbaru</h3>' +
-        (orders.length === 0 ? '<p class="empty-msg">Belum ada order</p>' :
-        '<table><thead><tr><th>ID</th><th>Layanan</th><th>Produk</th><th>Total</th><th>Status</th></tr></thead><tbody>' +
-        orders.slice(0, 10).map(o => '<tr><td><strong>' + (o.id || '') + '</strong></td><td>' + (o.item || '') + '</td><td>' + (o.product || '') + '</td><td>Rp ' + (o.total || 0).toLocaleString('id-ID') + '</td><td><span class="badge badge-' + o.status + '">' + o.status + '</span></td></tr>').join('') +
-        '</tbody></table>') + '</div>';
-    } catch (e) {
-      c.innerHTML = '<div class="card"><p style="color:red">Error: ' + e.message + '</p></div>';
-    }
   },
 
   // ============================================
   // ORDERS
   // ============================================
   async renderOrders(c) {
-    c.innerHTML = '<div class="loading-inline">Memuat orders...</div>';
+    c.innerHTML = '<div class="loading-inline">Memuat pesanan...</div>';
     try {
-      const snap = await this.db.collection('orders').orderBy('date', 'desc').limit(100).get();
-      const orders = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-      if (orders.length === 0) { c.innerHTML = '<div class="card"><p class="empty-msg">Belum ada order</p></div>'; return; }
-      c.innerHTML = '<div class="card"><h3>Semua Pesanan (' + orders.length + ')</h3>' +
-        '<div class="table-wrap"><table><thead><tr><th>ID</th><th>Tanggal</th><th>Layanan</th><th>Produk</th><th>User</th><th>Total</th><th>Status</th></tr></thead><tbody>' +
-        orders.map(o => {
-          const date = o.date ? new Date(o.date).toLocaleString('id-ID', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' }) : '-';
-          const userData = o.userData ? Object.values(o.userData).join(' / ') : '-';
-          return '<tr><td><strong>' + o.id + '</strong></td><td style="font-size:11px">' + date + '</td><td>' + (o.item || '') + '</td><td>' + (o.product || '') + '</td><td style="font-size:11px">' + userData + '</td><td>Rp ' + (o.total || 0).toLocaleString('id-ID') + '</td><td><span class="badge badge-' + o.status + '">' + o.status + '</span></td></tr>';
-        }).join('') + '</tbody></table></div></div>';
-    } catch (e) {
-      c.innerHTML = '<div class="card"><p style="color:red">Error: ' + e.message + '</p></div>';
-    }
-  },
+      const snap = await this.db.collection('orders')
+        .orderBy('date', 'desc')
+        .limit(200)
+        .get();
+      const orders = snap.docs.map(d => ({ _id: d.id, ...d.data() }));
 
-  // ============================================
-  // WITHDRAWALS
-  // ============================================
-  async renderWithdrawals(c) {
-    c.innerHTML = '<div class="loading-inline">Memuat withdraw requests...</div>';
-    try {
-      const snap = await this.db.collection('withdrawals').orderBy('createdAt', 'desc').limit(100).get();
-      const wds = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-      if (wds.length === 0) { c.innerHTML = '<div class="card"><p class="empty-msg">Belum ada withdraw request</p></div>'; return; }
-
-      c.innerHTML = '<div class="card"><h3>Withdraw Requests (' + wds.length + ')</h3>' +
-        '<div class="table-wrap"><table><thead><tr><th>ID</th><th>User</th><th>Amount</th><th>Metode</th><th>Akun</th><th>Nama</th><th>Status</th><th>Aksi</th></tr></thead><tbody>' +
-        wds.map(w => {
-          return '<tr>' +
-            '<td><strong>' + w.id.slice(0, 12) + '</strong></td>' +
-            '<td>' + (w.userName || '-') + '</td>' +
-            '<td><strong>Rp ' + (w.amount || 0).toLocaleString('id-ID') + '</strong></td>' +
-            '<td>' + (w.method || '-') + '</td>' +
-            '<td><code>' + (w.account || '-') + '</code></td>' +
-            '<td>' + (w.name || '-') + '</td>' +
-            '<td><span class="badge badge-' + (w.status === 'pending' ? 'pending' : (w.status === 'approved' ? 'success' : 'failed')) + '">' + (w.status || 'pending') + '</span></td>' +
-            '<td>' +
-            (w.status === 'pending' ?
-              '<button class="btn-sm btn-success" onclick="Admin.approveWd(\'' + w.id + '\')">✅ Approve</button> ' +
-              '<button class="btn-sm btn-danger" onclick="Admin.rejectWd(\'' + w.id + '\')">❌ Reject</button>'
-              : '-') +
-            '</td></tr>';
-        }).join('') + '</tbody></table></div></div>';
-    } catch (e) {
-      c.innerHTML = '<div class="card"><p style="color:red">Error: ' + e.message + '</p></div>';
-    }
-  },
-
-  async approveWd(id) {
-    if (!confirm('Approve withdraw ini? Pastikan sudah transfer ke user.')) return;
-    try {
-      await this.db.collection('withdrawals').doc(id).update({
-        status: 'approved',
-        approvedAt: new Date().toISOString(),
-        approvedBy: this.user.email,
-      });
-      alert('✅ Approved!');
-      this.renderWithdrawals(document.getElementById('content'));
-    } catch (e) { alert('Error: ' + e.message); }
-  },
-
-  async rejectWd(id) {
-    if (!confirm('Reject withdraw ini?')) return;
-    try {
-      await this.db.collection('withdrawals').doc(id).update({
-        status: 'rejected',
-        rejectedAt: new Date().toISOString(),
-        rejectedBy: this.user.email,
-      });
-      alert('❌ Rejected!');
-      this.renderWithdrawals(document.getElementById('content'));
-    } catch (e) { alert('Error: ' + e.message); }
-  },
-
-  // ============================================
-  // MIN WITHDRAW LIMIT (NEW)
-  // ============================================
-  async renderLimits(c) {
-    c.innerHTML = '<div class="loading-inline">Memuat data user...</div>';
-    this.selectedUsers = {};
-
-    try {
-      // 1. Get default limit
-      let defaultLimit = 10000;
-      try {
-        const cfgDoc = await this.db.collection('config').doc('withdraw_config').get();
-        if (cfgDoc.exists) defaultLimit = cfgDoc.data().default_min_withdraw || 10000;
-      } catch (e) {}
-
-      // 2. Get all users
-      const usersSnap = await this.db.collection('users').limit(200).get();
-      const users = usersSnap.docs.map(d => ({ uid: d.id, ...d.data() }));
-
-      const customUsers = users.filter(u => u.custom_min_withdraw !== undefined && u.custom_min_withdraw !== null);
+      // Stats
+      const stats = {
+        all: orders.length,
+        pending: orders.filter(o => o.status === 'pending').length,
+        processing: orders.filter(o => o.status === 'processing').length,
+        success: orders.filter(o => o.status === 'success').length,
+        failed: orders.filter(o => o.status === 'failed').length,
+        revenue: orders.filter(o => o.status === 'success').reduce((s, o) => s + (o.total || 0), 0),
+      };
 
       let html = '';
 
-      // ===== PANEL DEFAULT =====
-      html += '<div class="card" style="background:linear-gradient(135deg,#f0fff0,#e6ffe6);border:2px solid #89e219">' +
-        '<h3 style="color:#2c5a00">⚙️ Default Min Withdraw (Semua User)</h3>' +
-        '<p style="color:#555;font-size:13px;margin-bottom:14px">Berlaku untuk user yang tidak punya custom limit</p>' +
-        '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">' +
-        '<button class="btn-preset" onclick="Admin.setDefaultLimit(5000)">Rp 5.000</button>' +
-        '<button class="btn-preset" onclick="Admin.setDefaultLimit(10000)">Rp 10.000</button>' +
-        '<button class="btn-preset" onclick="Admin.setDefaultLimit(20000)">Rp 20.000</button>' +
-        '<button class="btn-preset" onclick="Admin.setDefaultLimit(50000)">Rp 50.000</button>' +
-        '<button class="btn-preset" onclick="Admin.setDefaultLimit(100000)">Rp 100.000</button>' +
-        '</div>' +
-        '<div style="display:flex;gap:8px">' +
-        '<input type="number" id="custom-default" placeholder="Nominal lain" style="flex:1;padding:12px;border:2px solid #e5e5e5;border-radius:8px;font-size:14px;font-weight:700">' +
-        '<button class="btn-primary" onclick="Admin.applyCustomDefault()" style="padding:12px 24px">Set</button>' +
-        '</div>' +
-        '<div style="background:white;padding:12px;border-radius:8px;margin-top:12px">' +
-        '<strong style="color:#2c5a00">💰 Default: Rp ' + defaultLimit.toLocaleString('id-ID') + '</strong>' +
-        '</div>' +
-        '</div>';
-
-      // ===== STATS =====
-      html += '<div class="stats-grid">' +
-        '<div class="stat-card"><div class="stat-val">' + users.length + '</div><div class="stat-label">Total Users</div></div>' +
-        '<div class="stat-card" style="background:linear-gradient(135deg,#fff9e6,#ffefb3)"><div class="stat-val">' + customUsers.length + '</div><div class="stat-label">Custom Limit</div></div>' +
-        '<div class="stat-card"><div class="stat-val">' + (users.length - customUsers.length) + '</div><div class="stat-label">Default</div></div>' +
-        '</div>';
-
-      // ===== PANEL MASS EDIT (PILIH SEMUA) =====
-      html += '<div class="card" style="background:linear-gradient(135deg,#fff9e6,#fff4cc);border:2px solid #ffc800">' +
-        '<h3 style="color:#7a5d00">⚡ Set Massal (Pilih Semua)</h3>' +
-        '<p style="color:#7a5d00;font-size:13px;margin-bottom:14px">Set custom min withdraw untuk BANYAK user sekaligus</p>' +
-
-        '<div style="display:flex;gap:8px;align-items:center;margin-bottom:12px">' +
-        '<label style="display:flex;align-items:center;gap:8px;font-weight:800;font-size:13px;cursor:pointer">' +
-        '<input type="checkbox" id="select-all-users" onchange="Admin.toggleSelectAll(this)" style="width:20px;height:20px;cursor:pointer">' +
-        '<span>Pilih Semua User</span>' +
-        '</label>' +
-        '<span id="selected-count" style="margin-left:auto;background:#fff;padding:4px 12px;border-radius:999px;font-weight:900;font-size:12px;color:#7a5d00">0 dipilih</span>' +
-        '</div>' +
-
-        '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">' +
-        '<button class="btn-preset" onclick="Admin.setMassLimit(5000)">Rp 5.000</button>' +
-        '<button class="btn-preset" onclick="Admin.setMassLimit(10000)">Rp 10.000</button>' +
-        '<button class="btn-preset" onclick="Admin.setMassLimit(20000)">Rp 20.000</button>' +
-        '<button class="btn-preset" onclick="Admin.setMassLimit(50000)">Rp 50.000</button>' +
-        '</div>' +
-
-        '<div style="display:flex;gap:8px">' +
-        '<input type="number" id="mass-limit-input" placeholder="Nominal lain" style="flex:1;padding:12px;border:2px solid #e5e5e5;border-radius:8px;font-size:14px;font-weight:700">' +
-        '<button class="btn-primary" onclick="Admin.applyMassLimit()" style="padding:12px 24px">Terapkan ke Terpilih</button>' +
-        '</div>' +
-
-        '<button class="btn-danger" onclick="Admin.removeMassLimit()" style="width:100%;margin-top:12px">🗑️ Hapus Custom Limit (User Terpilih)</button>' +
-        '</div>';
-
-      // ===== CUSTOM USERS =====
-      html += '<div class="card"><h3>🎯 User dengan Custom Limit (' + customUsers.length + ')</h3>';
-      if (customUsers.length === 0) {
-        html += '<p class="empty-msg">Belum ada user dengan custom limit</p>';
-      } else {
-        html += '<div class="table-wrap"><table><thead><tr><th>User</th><th>Email</th><th>Custom Min</th><th>Saldo</th><th>Aksi</th></tr></thead><tbody>';
-        customUsers.forEach(u => {
-          html += '<tr>' +
-            '<td>' + (u.avatar || '👤') + ' ' + (u.displayName || '-') + '</td>' +
-            '<td style="font-size:11px">' + (u.email || '-') + '</td>' +
-            '<td><strong style="color:#58cc02">Rp ' + (u.custom_min_withdraw || 0).toLocaleString('id-ID') + '</strong></td>' +
-            '<td>Rp ' + (u.balance || 0).toLocaleString('id-ID') + '</td>' +
-            '<td><button class="btn-sm btn-danger" onclick="Admin.removeLimit(\'' + u.uid + '\')">🗑️ Hapus</button></td>' +
-            '</tr>';
-        });
-        html += '</tbody></table></div>';
-      }
+      // Stats cards
+      html += '<div class="stats-grid">';
+      html += this._statCard('📊', stats.all, 'Total', '');
+      html += this._statCard('⏳', stats.pending, 'Pending', 'yellow');
+      html += this._statCard('🔄', stats.processing, 'Proses', 'blue');
+      html += this._statCard('✅', stats.success, 'Sukses', 'green');
+      html += this._statCard('❌', stats.failed, 'Gagal', 'red');
+      html += this._statCard('💰', 'Rp ' + stats.revenue.toLocaleString('id-ID'), 'Revenue', 'purple');
       html += '</div>';
 
-      // ===== ALL USERS (dengan checkbox) =====
-      html += '<div class="card"><h3>👥 Semua User</h3>' +
-        '<p style="color:#666;font-size:13px;margin-bottom:12px">Centang user, lalu set limit massal</p>';
-
-      if (users.length === 0) {
-        html += '<p class="empty-msg">Belum ada user</p>';
-      } else {
-        html += '<div class="table-wrap"><table><thead><tr>' +
-          '<th style="width:40px"><input type="checkbox" onchange="Admin.toggleSelectAll(this)" style="width:18px;height:18px"></th>' +
-          '<th>User</th><th>Email</th><th>Saldo</th><th>Min WD</th><th>Withdraw</th><th>Status</th></tr></thead><tbody>';
-        users.forEach(u => {
-          const hasCustom = u.custom_min_withdraw !== undefined && u.custom_min_withdraw !== null;
-          const currentLimit = hasCustom ? u.custom_min_withdraw : defaultLimit;
-
-          html += '<tr>' +
-            '<td><input type="checkbox" class="user-checkbox" data-uid="' + u.uid + '" onchange="Admin.toggleUser(this)" style="width:18px;height:18px;cursor:pointer"></td>' +
-            '<td>' + (u.avatar || '👤') + ' ' + (u.displayName || '-') + '</td>' +
-            '<td style="font-size:11px">' + (u.email || '-') + '</td>' +
-            '<td>Rp ' + (u.balance || 0).toLocaleString('id-ID') + '</td>' +
-            '<td><strong>Rp ' + currentLimit.toLocaleString('id-ID') + '</strong></td>' +
-            '<td>' + (u.withdrawCount || 0) + 'x</td>' +
-            '<td>' + (hasCustom ? '<span style="color:#58cc02;font-size:10px;font-weight:800">CUSTOM</span>' : '<span style="color:#999;font-size:11px">Default</span>') + '</td>' +
-            '</tr>';
-        });
-        html += '</tbody></table></div>';
-      }
+      // Filter tabs
+      html += '<div style="display:flex;gap:8px;margin-bottom:16px;overflow-x:auto;padding-bottom:6px">';
+      html += this._filterTab('all', '🎯 Semua', stats.all);
+      html += this._filterTab('pending', '⏳ Pending', stats.pending);
+      html += this._filterTab('processing', '🔄 Proses', stats.processing);
+      html += this._filterTab('success', '✅ Sukses', stats.success);
+      html += this._filterTab('failed', '❌ Gagal', stats.failed);
       html += '</div>';
+
+      // Orders list
+      if (orders.length === 0) {
+        html += '<div class="card"><p class="empty-msg">Belum ada pesanan</p></div>';
+      } else {
+        // Sort: pending & processing first
+        const priority = { pending: 0, processing: 1, success: 2, failed: 3 };
+        orders.sort((a, b) => (priority[a.status] || 2) - (priority[b.status] || 2));
+
+        html += '<div style="display:flex;flex-direction:column;gap:12px">';
+        orders.forEach(order => {
+          html += this._renderOrderCard(order);
+        });
+        html += '</div>';
+      }
 
       c.innerHTML = html;
     } catch (e) {
-      console.error('[Admin] renderLimits error:', e);
-      c.innerHTML = '<div class="card"><p style="color:red">Error: ' + e.message + '</p></div>';
+      console.error('[Admin] renderOrders error:', e);
+      c.innerHTML = '<div class="card"><p style="color:red">❌ Error: ' + e.message + '</p></div>';
     }
   },
 
-  // ===== SET DEFAULT GLOBAL =====
-  async setDefaultLimit(amount) {
-    if (!confirm('Set default min withdraw ke Rp ' + amount.toLocaleString('id-ID') + '?')) return;
+  _statCard(icon, value, label, colorClass) {
+    return '<div class="stat-card ' + (colorClass || '') + '">' +
+      '<div class="stat-header"><span class="stat-icon">' + icon + '</span></div>' +
+      '<div class="stat-value">' + value + '</div>' +
+      '<div class="stat-label">' + label + '</div>' +
+      '</div>';
+  },
+
+  _filterTab(type, label, count) {
+    var active = this._orderFilter === type;
+    var bg = active ? 'linear-gradient(135deg, #6366f1, #8b5cf6)' : 'white';
+    var color = active ? 'white' : '#666';
+    return '<button onclick="Admin.setOrderFilter(\'' + type + '\')" ' +
+      'style="padding:8px 14px;background:' + bg + ';color:' + color + ';border:2px solid ' +
+      (active ? 'transparent' : '#e5e5e5') +
+      ';border-radius:999px;font-family:inherit;font-size:12px;font-weight:800;cursor:pointer;white-space:nowrap">' +
+      label + '</button>';
+  },
+
+  _orderFilter: 'all',
+
+  setOrderFilter(type) {
+    this._orderFilter = type;
+    this.renderOrders(document.getElementById('content'));
+  },
+
+  _renderOrderCard(order) {
+    const statusColors = {
+      pending: { bg: '#fff7e0', color: '#b07800', label: '⏳ Pending' },
+      processing: { bg: '#e8f6ff', color: '#0ea5e9', label: '🔄 Diproses' },
+      success: { bg: '#d7ffb8', color: '#059669', label: '✅ Sukses' },
+      failed: { bg: '#ffdfe0', color: '#ef4444', label: '❌ Gagal' },
+    };
+    const sc = statusColors[order.status] || statusColors.pending;
+
+    const date = order.date ? new Date(order.date).toLocaleString('id-ID', {
+      day: 'numeric', month: 'short', year: 'numeric',
+      hour: '2-digit', minute: '2-digit'
+    }) : '-';
+
+    let userDataStr = '';
+    if (order.userData) {
+      const keys = Object.keys(order.userData);
+      userDataStr = keys.map(k =>
+        '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed #e5e5e5;font-size:12px">' +
+          '<span style="color:#666;font-weight:600">' + k + '</span>' +
+          '<strong>' + order.userData[k] + '</strong>' +
+        '</div>'
+      ).join('');
+    }
+
+    let html = '<div class="card" style="padding:16px;border-left:4px solid ' + sc.color + '">';
+
+    // Header
+    html += '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:12px;flex-wrap:wrap">';
+    html += '<div style="flex:1;min-width:0">';
+    html += '<div style="font-size:14px;font-weight:900;color:#1a1a1a;margin-bottom:2px">' + (order.item || 'Order') + ' → ' + (order.product || '-') + '</div>';
+    html += '<div style="font-size:11px;color:#999;font-family:monospace">' + (order.id || order._id) + '</div>';
+    html += '</div>';
+    html += '<span class="badge badge-' + (order.status || 'pending') + '">' + sc.label + '</span>';
+    html += '</div>';
+
+    // Info
+    html += '<div style="background:#f8f9fa;border-radius:10px;padding:12px;margin-bottom:12px">';
+    html += '<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:12px"><span style="color:#666">📅 Tanggal</span><strong>' + date + '</strong></div>';
+    html += '<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:12px"><span style="color:#666">💰 Total</span><strong style="color:#6366f1">Rp ' + (order.total || 0).toLocaleString('id-ID') + '</strong></div>';
+    html += '<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:12px"><span style="color:#666">💳 Metode</span><strong>' + (order.payment || '-') + '</strong></div>';
+    html += '</div>';
+
+    // User data
+    if (userDataStr) {
+      html += '<div style="margin-bottom:12px">';
+      html += '<div style="font-size:11px;font-weight:900;color:#999;margin-bottom:6px;text-transform:uppercase">👤 Data User</div>';
+      html += '<div style="background:#fff9e6;border-radius:10px;padding:10px">' + userDataStr + '</div>';
+      html += '</div>';
+    }
+
+    // Proof
+    if (order.proof) {
+      html += '<div style="margin-bottom:12px">';
+      html += '<div style="font-size:11px;font-weight:900;color:#999;margin-bottom:6px;text-transform:uppercase">📸 Bukti Transfer</div>';
+      html += '<img src="' + order.proof + '" style="width:100%;max-height:300px;object-fit:contain;border-radius:10px;background:#f8f9fa;cursor:pointer" onclick="window.open(this.src, \'_blank\')">';
+      html += '</div>';
+    }
+
+    // Actions
+    if (order.status === 'pending' || order.status === 'processing') {
+      html += '<div style="display:flex;gap:8px;flex-wrap:wrap">';
+      html += '<button onclick="Admin.approveOrder(\'' + order._id + '\')" class="btn-success btn-sm" style="flex:1;min-width:100px;padding:12px">✅ Konfirmasi</button>';
+      html += '<button onclick="Admin.rejectOrder(\'' + order._id + '\')" class="btn-danger btn-sm" style="flex:1;min-width:100px;padding:12px">❌ Tolak</button>';
+      html += '<button onclick="Admin.deleteOrder(\'' + order._id + '\')" class="btn-secondary btn-sm" style="padding:12px 16px">🗑️</button>';
+      html += '</div>';
+    } else {
+      html += '<div style="display:flex;gap:8px;flex-wrap:wrap">';
+      html += '<button onclick="Admin.changeStatus(\'' + order._id + '\')" class="btn-secondary btn-sm" style="flex:1;padding:10px">🔄 Ubah Status</button>';
+      html += '<button onclick="Admin.deleteOrder(\'' + order._id + '\')" class="btn-secondary btn-sm" style="padding:10px 16px">🗑️</button>';
+      html += '</div>';
+    }
+
+    html += '</div>';
+    return html;
+  },
+
+  async approveOrder(orderId) {
+    const notes = prompt('📝 Catatan (opsional):', 'Order berhasil diproses');
+    if (notes === null) return;
     try {
-      await this.db.collection('config').doc('withdraw_config').set({
-        default_min_withdraw: amount,
+      await this.db.collection('orders').doc(orderId).update({
+        status: 'success',
+        approvedAt: new Date().toISOString(),
+        approvedBy: this.user.email,
+        adminNotes: notes || 'Order berhasil diproses',
+        updatedAt: new Date().toISOString(),
+      });
+      alert('✅ Order dikonfirmasi!');
+      this.renderOrders(document.getElementById('content'));
+      this.updateNavBadges();
+    } catch (e) {
+      alert('❌ Error: ' + e.message);
+    }
+  },
+
+  async rejectOrder(orderId) {
+    const reason = prompt('❌ Alasan penolakan:', 'Bukti transfer tidak valid');
+    if (reason === null) return;
+    try {
+      await this.db.collection('orders').doc(orderId).update({
+        status: 'failed',
+        rejectedAt: new Date().toISOString(),
+        rejectedBy: this.user.email,
+        adminNotes: reason || 'Order ditolak',
+        updatedAt: new Date().toISOString(),
+      });
+      alert('❌ Order ditolak!');
+      this.renderOrders(document.getElementById('content'));
+      this.updateNavBadges();
+    } catch (e) {
+      alert('❌ Error: ' + e.message);
+    }
+  },
+
+  async changeStatus(orderId) {
+    const status = prompt('🔄 Ubah status ke:\n(pending/processing/success/failed)', 'processing');
+    if (!status) return;
+    const valid = ['pending', 'processing', 'success', 'failed'];
+    if (valid.indexOf(status) === -1) {
+      alert('❌ Status tidak valid');
+      return;
+    }
+    try {
+      await this.db.collection('orders').doc(orderId).update({
+        status,
         updatedAt: new Date().toISOString(),
         updatedBy: this.user.email,
-      }, { merge: true });
-      alert('✅ Default min withdraw: Rp ' + amount.toLocaleString('id-ID'));
-      this.renderLimits(document.getElementById('content'));
-    } catch (e) { alert('Error: ' + e.message); }
-  },
-
-  applyCustomDefault() {
-    const v = parseInt(document.getElementById('custom-default').value) || 0;
-    if (v < 1000) { alert('Minimal Rp 1.000'); return; }
-    this.setDefaultLimit(v);
-  },
-
-  // ===== TOGGLE SELECTION =====
-  toggleSelectAll(checkbox) {
-    const checked = checkbox.checked;
-    document.querySelectorAll('.user-checkbox').forEach(cb => {
-      cb.checked = checked;
-      const uid = cb.getAttribute('data-uid');
-      if (checked) this.selectedUsers[uid] = true;
-      else delete this.selectedUsers[uid];
-    });
-    // Sync checkbox "select all" atas
-    const topCheckbox = document.getElementById('select-all-users');
-    if (topCheckbox) topCheckbox.checked = checked;
-    this.updateSelectedCount();
-  },
-
-  toggleUser(checkbox) {
-    const uid = checkbox.getAttribute('data-uid');
-    if (checkbox.checked) this.selectedUsers[uid] = true;
-    else delete this.selectedUsers[uid];
-    this.updateSelectedCount();
-  },
-
-  updateSelectedCount() {
-    const count = Object.keys(this.selectedUsers).length;
-    const el = document.getElementById('selected-count');
-    if (el) el.textContent = count + ' dipilih';
-  },
-
-  // ===== SET MASS LIMIT =====
-  async setMassLimit(amount) {
-    const uids = Object.keys(this.selectedUsers);
-    if (uids.length === 0) { alert('Pilih user dulu!'); return; }
-    if (!confirm('Set min withdraw Rp ' + amount.toLocaleString('id-ID') + ' untuk ' + uids.length + ' user?')) return;
-
-    try {
-      const batch = this.db.batch();
-      uids.forEach(uid => {
-        const ref = this.db.collection('users').doc(uid);
-        batch.update(ref, {
-          custom_min_withdraw: amount,
-          custom_min_withdraw_updated: new Date().toISOString(),
-          custom_min_withdraw_by: this.user.email,
-        });
       });
-      await batch.commit();
-      alert('✅ ' + uids.length + ' user berhasil di-update!');
-      this.renderLimits(document.getElementById('content'));
-    } catch (e) { alert('Error: ' + e.message); }
+      alert('✅ Status diubah ke: ' + status);
+      this.renderOrders(document.getElementById('content'));
+      this.updateNavBadges();
+    } catch (e) {
+      alert('❌ Error: ' + e.message);
+    }
   },
 
-  applyMassLimit() {
-    const v = parseInt(document.getElementById('mass-limit-input').value) || 0;
-    if (v < 1000) { alert('Minimal Rp 1.000'); return; }
-    this.setMassLimit(v);
-  },
-
-  // ===== REMOVE MASS LIMIT =====
-  async removeMassLimit() {
-    const uids = Object.keys(this.selectedUsers);
-    if (uids.length === 0) { alert('Pilih user dulu!'); return; }
-    if (!confirm('Hapus custom limit untuk ' + uids.length + ' user? (Kembali ke default)')) return;
-
+  async deleteOrder(orderId) {
+    if (!confirm('🗑️ Hapus order ini? Tidak bisa dibatalkan.')) return;
     try {
-      const batch = this.db.batch();
-      uids.forEach(uid => {
-        const ref = this.db.collection('users').doc(uid);
-        batch.update(ref, {
-          custom_min_withdraw: firebase.firestore.FieldValue.delete(),
-          custom_min_withdraw_updated: firebase.firestore.FieldValue.delete(),
-          custom_min_withdraw_by: firebase.firestore.FieldValue.delete(),
-        });
-      });
-      await batch.commit();
-      alert('✅ ' + uids.length + ' user custom limit dihapus!');
-      this.renderLimits(document.getElementById('content'));
-    } catch (e) { alert('Error: ' + e.message); }
-  },
-
-  // ===== REMOVE SINGLE =====
-  async removeLimit(uid) {
-    if (!confirm('Hapus custom limit user ini?')) return;
-    try {
-      await this.db.collection('users').doc(uid).update({
-        custom_min_withdraw: firebase.firestore.FieldValue.delete(),
-        custom_min_withdraw_updated: firebase.firestore.FieldValue.delete(),
-        custom_min_withdraw_by: firebase.firestore.FieldValue.delete(),
-      });
-      alert('✅ Custom limit dihapus');
-      this.renderLimits(document.getElementById('content'));
-    } catch (e) { alert('Error: ' + e.message); }
+      await this.db.collection('orders').doc(orderId).delete();
+      alert('✅ Order dihapus!');
+      this.renderOrders(document.getElementById('content'));
+      this.updateNavBadges();
+    } catch (e) {
+      alert('❌ Error: ' + e.message);
+    }
   },
 
   // ============================================
-  // PRODUCTS & MARKUP
+  // MARKUP — Global + Per Game
   // ============================================
-  async renderProducts(c) {
-    c.innerHTML = '<div class="loading-inline">Memuat config...</div>';
+  async renderMarkup(c) {
+    c.innerHTML = '<div class="loading-inline">Memuat markup config...</div>';
     try {
       const cfgDoc = await this.db.collection('config').doc('markup').get();
       const cfg = cfgDoc.exists ? cfgDoc.data() : {};
       const globalMarkup = cfg.global_markup || 0;
+      const gameMarkups = cfg.game_markups || {};
 
-      let html = '<div class="card markup-card">' +
+      let html = '';
+
+      // ===== GLOBAL MARKUP =====
+      html += '<div class="markup-card">' +
         '<h3>⚡ Global Markup</h3>' +
-        '<p>Naikkan harga SEMUA produk</p>' +
+        '<p>Naikkan harga SEMUA produk sekaligus</p>' +
         '<div class="preset-row">' +
         '<button class="btn-preset" onclick="Admin.applyGlobalMarkup(500)">+500</button>' +
         '<button class="btn-preset" onclick="Admin.applyGlobalMarkup(1000)">+1.000</button>' +
@@ -581,27 +414,60 @@ const Admin = {
         '<button class="btn-preset" onclick="Admin.applyGlobalMarkup(10000)">+10.000</button>' +
         '</div>' +
         '<div class="custom-row">' +
-        '<input type="number" id="custom-markup" placeholder="Nominal lain">' +
+        '<input type="number" id="custom-markup" placeholder="Nominal lain (contoh: 1500)">' +
         '<button class="btn-primary" onclick="Admin.applyCustomMarkup()">Terapkan</button>' +
         '</div>' +
         '<div class="markup-status">💰 Global markup: <strong>+Rp ' + globalMarkup.toLocaleString('id-ID') + '</strong></div>' +
-        '<button class="btn-danger" onclick="Admin.resetMarkup()">Reset Semua</button>' +
+        '<div style="display:flex;gap:8px;flex-wrap:wrap">' +
+        '<button class="btn-danger btn-sm" onclick="Admin.setGlobalMarkup(0)" style="flex:1">🔽 Reset ke 0</button>' +
+        '<button class="btn-warning btn-sm" onclick="Admin.showSetExact()" style="flex:1">✏️ Set Nominal</button>' +
+        '</div>' +
         '</div>';
 
-      html += '<div class="card"><h3>📋 Daftar Produk</h3>';
-      const all = [].concat(window.GAMES || [], window.DATA_PACKAGES || []);
-      all.forEach(item => {
-        html += '<div class="product-group"><h4>' + (item.icon || '') + ' ' + item.name + '</h4>' +
-          '<table><thead><tr><th>Produk</th><th>Dasar</th><th>Jual</th></tr></thead><tbody>';
-        item.products.forEach(p => {
-          const final = p.price + globalMarkup;
-          html += '<tr><td>' + p.name + '</td><td>Rp ' + p.price.toLocaleString('id-ID') + '</td><td><strong>Rp ' + final.toLocaleString('id-ID') + '</strong></td></tr>';
-        });
-        html += '</tbody></table></div>';
-      });
+      // ===== INFO =====
+      html += '<div class="card" style="background:linear-gradient(135deg,#eff6ff,#dbeafe);border:2px solid #3b82f6">' +
+        '<div style="font-size:13px;color:#1e40af;font-weight:600;line-height:1.6">' +
+        '💡 <strong>Cara kerja markup:</strong><br>' +
+        '• Markup global ditambahkan ke SEMUA produk<br>' +
+        '• Markup per game ditambahkan khusus game tersebut<br>' +
+        '• Total markup = global + per game<br>' +
+        '• Harga final = harga dasar + total markup' +
+        '</div>' +
+        '</div>';
+
+      // ===== PER-GAME MARKUP =====
+      html += '<div class="card">';
+      html += '<div class="card-header">';
+      html += '<div>';
+      html += '<div class="card-title">🎮 Markup Per Game</div>';
+      html += '<div class="card-subtitle">Atur markup khusus per game</div>';
       html += '</div>';
+      html += '</div>';
+
+      const allItems = [].concat(window.GAMES || [], window.DATA_PACKAGES || []);
+      allItems.forEach(item => {
+        const currentMarkup = gameMarkups[item.id] || 0;
+        html += '<div class="game-markup-item">' +
+          '<div class="game-markup-header">' +
+            '<div class="game-markup-icon" style="background:' + item.color + '">' + (item.short || item.name.charAt(0)) + '</div>' +
+            '<div class="game-markup-info">' +
+              '<div class="game-markup-name">' + item.name + '</div>' +
+              '<div class="game-markup-desc">' + (item.products ? item.products.length : 0) + ' produk</div>' +
+            '</div>' +
+          '</div>' +
+          '<div class="game-markup-controls">' +
+            '<input type="number" id="gm-' + item.id + '" value="' + currentMarkup + '" placeholder="0" min="0" step="500">' +
+            '<button class="btn-primary btn-sm" onclick="Admin.saveGameMarkup(\'' + item.id + '\')">💾 Simpan</button>' +
+            (currentMarkup > 0 ? '<button class="btn-secondary btn-sm" onclick="Admin.clearGameMarkup(\'' + item.id + '\')">🗑️</button>' : '') +
+          '</div>' +
+        '</div>';
+      });
+
+      html += '</div>';
+
       c.innerHTML = html;
     } catch (e) {
+      console.error('[Admin] renderMarkup error:', e);
       c.innerHTML = '<div class="card"><p style="color:red">Error: ' + e.message + '</p></div>';
     }
   },
@@ -616,22 +482,184 @@ const Admin = {
         updatedAt: new Date().toISOString(),
         updatedBy: this.user.email,
       }, { merge: true });
-      alert('✅ Markup +Rp ' + amount.toLocaleString('id-ID'));
-      this.renderProducts(document.getElementById('content'));
-    } catch (e) { alert('Error: ' + e.message); }
+      alert('✅ Markup +Rp ' + amount.toLocaleString('id-ID') + '\nTotal: +Rp ' + newMarkup.toLocaleString('id-ID'));
+      this.renderMarkup(document.getElementById('content'));
+    } catch (e) {
+      alert('Error: ' + e.message);
+    }
   },
 
   applyCustomMarkup() {
     const v = parseInt(document.getElementById('custom-markup').value) || 0;
-    if (v === 0) return;
+    if (v === 0) { alert('Masukkan nominal'); return; }
     this.applyGlobalMarkup(v);
   },
 
-  async resetMarkup() {
-    if (!confirm('Reset markup?')) return;
-    await this.db.collection('config').doc('markup').set({ global_markup: 0 }, { merge: true });
-    alert('✅ Reset');
-    this.renderProducts(document.getElementById('content'));
+  async setGlobalMarkup(amount) {
+    if (amount !== 0) {
+      const input = prompt('Set global markup ke (Rp):', String(amount));
+      if (input === null) return;
+      amount = parseInt(input) || 0;
+    } else {
+      if (!confirm('Reset global markup ke 0?')) return;
+    }
+    try {
+      await this.db.collection('config').doc('markup').set({
+        global_markup: amount,
+        updatedAt: new Date().toISOString(),
+        updatedBy: this.user.email,
+      }, { merge: true });
+      alert('✅ Global markup: Rp ' + amount.toLocaleString('id-ID'));
+      this.renderMarkup(document.getElementById('content'));
+    } catch (e) {
+      alert('Error: ' + e.message);
+    }
+  },
+
+  showSetExact() {
+    const input = prompt('Set global markup (Rp):', '0');
+    if (input === null) return;
+    const v = parseInt(input) || 0;
+    this.setGlobalMarkupExact(v);
+  },
+
+  async setGlobalMarkupExact(amount) {
+    try {
+      await this.db.collection('config').doc('markup').set({
+        global_markup: amount,
+        updatedAt: new Date().toISOString(),
+        updatedBy: this.user.email,
+      }, { merge: true });
+      alert('✅ Global markup: Rp ' + amount.toLocaleString('id-ID'));
+      this.renderMarkup(document.getElementById('content'));
+    } catch (e) {
+      alert('Error: ' + e.message);
+    }
+  },
+
+  async saveGameMarkup(gameId) {
+    const input = document.getElementById('gm-' + gameId);
+    if (!input) return;
+    const value = parseInt(input.value) || 0;
+
+    try {
+      await this.db.collection('config').doc('markup').set({
+        game_markups: { [gameId]: value },
+        updatedAt: new Date().toISOString(),
+        updatedBy: this.user.email,
+      }, { merge: true });
+      alert('✅ Markup untuk ' + gameId + ': Rp ' + value.toLocaleString('id-ID'));
+      this.renderMarkup(document.getElementById('content'));
+    } catch (e) {
+      alert('Error: ' + e.message);
+    }
+  },
+
+  async clearGameMarkup(gameId) {
+    if (!confirm('Hapus markup untuk game ini?')) return;
+    try {
+      const doc = await this.db.collection('config').doc('markup').get();
+      const cfg = doc.exists ? doc.data() : {};
+      const gameMarkups = cfg.game_markups || {};
+      delete gameMarkups[gameId];
+
+      await this.db.collection('config').doc('markup').set({
+        game_markups: gameMarkups,
+        updatedAt: new Date().toISOString(),
+        updatedBy: this.user.email,
+      }, { merge: true });
+      alert('✅ Markup dihapus');
+      this.renderMarkup(document.getElementById('content'));
+    } catch (e) {
+      alert('Error: ' + e.message);
+    }
+  },
+
+  // ============================================
+  // PRODUCTS — Edit harga per produk
+  // ============================================
+  async renderProducts(c) {
+    c.innerHTML = '<div class="loading-inline">Memuat harga produk...</div>';
+    try {
+      const pricesDoc = await this.db.collection('config').doc('prices').get();
+      const prices = pricesDoc.exists ? pricesDoc.data() : {};
+
+      let html = '';
+
+      html += '<div class="card" style="background:linear-gradient(135deg,#eff6ff,#dbeafe);border:2px solid #3b82f6">' +
+        '<div style="font-size:13px;color:#1e40af;font-weight:600;line-height:1.6">' +
+        '💡 <strong>Edit harga per produk:</strong><br>' +
+        '• Kosongkan = pakai harga default + markup<br>' +
+        '• Isi = override harga dengan nilai yang kamu isi<br>' +
+        '• Perubahan langsung terlihat di website' +
+        '</div>' +
+        '</div>';
+
+      const allItems = [].concat(window.GAMES || [], window.DATA_PACKAGES || []);
+
+      allItems.forEach(item => {
+        html += '<div class="card">';
+        html += '<div class="card-header">';
+        html += '<div style="display:flex;align-items:center;gap:12px">';
+        html += '<div class="game-markup-icon" style="background:' + item.color + '">' + (item.short || item.name.charAt(0)) + '</div>';
+        html += '<div>';
+        html += '<div class="card-title">' + item.name + '</div>';
+        html += '<div class="card-subtitle">' + item.products.length + ' produk</div>';
+        html += '</div>';
+        html += '</div>';
+        html += '</div>';
+
+        item.products.forEach(p => {
+          const key = item.id + '_' + p.id;
+          const customPrice = prices[key] || '';
+          const finalPrice = customPrice || p.price;
+
+          html += '<div class="product-price-item">' +
+            '<div style="flex:1;min-width:0">' +
+              '<div class="product-price-name">' + p.name + '</div>' +
+              '<div style="font-size:11px;color:#999;font-weight:600">Harga dasar: Rp ' + p.price.toLocaleString('id-ID') + '</div>' +
+            '</div>' +
+            '<input type="number" class="product-price-input" id="price-' + key + '" ' +
+              'value="' + customPrice + '" placeholder="' + p.price + '">' +
+            '<button class="product-save-btn" onclick="Admin.saveProductPrice(\'' + item.id + '\',\'' + p.id + '\')">💾</button>' +
+          '</div>';
+        });
+
+        html += '</div>';
+      });
+
+      c.innerHTML = html;
+    } catch (e) {
+      console.error('[Admin] renderProducts error:', e);
+      c.innerHTML = '<div class="card"><p style="color:red">Error: ' + e.message + '</p></div>';
+    }
+  },
+
+  async saveProductPrice(gameId, productId) {
+    const key = gameId + '_' + productId;
+    const input = document.getElementById('price-' + key);
+    if (!input) return;
+    const value = input.value.trim();
+
+    try {
+      if (value === '') {
+        // Hapus override
+        const doc = await this.db.collection('config').doc('prices').get();
+        const prices = doc.exists ? doc.data() : {};
+        delete prices[key];
+        await this.db.collection('config').doc('prices').set(prices);
+        alert('✅ Harga direset ke default');
+      } else {
+        const price = parseInt(value);
+        if (price < 0) { alert('Harga harus >= 0'); return; }
+        await this.db.collection('config').doc('prices').set({
+          [key]: price,
+        }, { merge: true });
+        alert('✅ Harga disimpan: Rp ' + price.toLocaleString('id-ID'));
+      }
+    } catch (e) {
+      alert('Error: ' + e.message);
+    }
   },
 
   // ============================================
@@ -640,623 +668,88 @@ const Admin = {
   async renderUsers(c) {
     c.innerHTML = '<div class="loading-inline">Memuat users...</div>';
     try {
-      const snap = await this.db.collection('users').limit(100).get();
+      const snap = await this.db.collection('users').limit(200).get();
       const users = snap.docs.map(d => ({ uid: d.id, ...d.data() }));
-      c.innerHTML = '<div class="card"><h3>Users (' + users.length + ')</h3>' +
-        '<div class="table-wrap"><table><thead><tr><th>UID</th><th>Nama</th><th>Email</th><th>Saldo</th><th>XP</th><th>Joined</th></tr></thead><tbody>' +
-        users.map(u => {
-          const date = u.createdAt ? new Date(u.createdAt).toLocaleDateString('id-ID') : '-';
-          return '<tr>' +
-            '<td><code style="font-size:10px">' + u.uid.slice(0, 8) + '</code></td>' +
-            '<td>' + (u.avatar || '') + ' ' + (u.displayName || '-') + '</td>' +
-            '<td style="font-size:11px">' + (u.email || '-') + '</td>' +
-            '<td><strong>Rp ' + (u.balance || 0).toLocaleString('id-ID') + '</strong></td>' +
-            '<td>' + (u.xp || 0) + '</td>' +
-            '<td style="font-size:11px">' + date + '</td>' +
-            '</tr>';
-        }).join('') + '</tbody></table></div></div>';
-    } catch (e) {
-      c.innerHTML = '<div class="card"><p style="color:red">Error: ' + e.message + '</p></div>';
-    }
-  },
-
-// ============================================
-  // DEBUG & MONITOR — Aktivitas Live duniamu.my.id
-  // ============================================
-  _debugTimer: null,
-  _debugT0: 0,
-
-  async renderDebug(c) {
-    // Render container untuk log tracker
-    c.innerHTML = '<div id="admin-debug"></div>';
-    
-    // Init & render log tracker
-    if (typeof AdminLog !== 'undefined') {
-      if (!AdminLog._started) {
-        AdminLog._started = true;
-        AdminLog.init();
-      }
-      AdminLog.renderDebugUI();
-    } else {
-      c.innerHTML = '<div class="card"><p style="color:red">Log Tracker belum load. Refresh halaman.</p></div>';
-    }
-  },
-
-  async _refreshDebug() {
-    const db = this.db;
-    const now = Date.now();
-    const FIVE_MIN  = 5 * 60 * 1000;
-    const TEN_MIN   = 10 * 60 * 1000;
-
-    try {
-      // ===== 1. Semua user (limit 500) =====
-      const usersSnap = await db.collection('users').limit(500).get();
-      const users = usersSnap.docs.map(d => ({ uid: d.id, ...d.data() }));
-
-      // ===== 2. Orders terbaru =====
-      const ordersSnap = await db.collection('orders').orderBy('date','desc').limit(50).get();
-      const orders = ordersSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-
-      // ===== 3. Withdrawals pending =====
-      const wdSnap = await db.collection('withdrawals').orderBy('createdAt','desc').limit(50).get();
-      const wds = wdSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-
-      // ===== HITUNG STATISTIK =====
-      // Online: user yang updatedAt < 5 menit lalu
-      const online = users.filter(u => {
-        if (!u.updatedAt) return false;
-        const t = new Date(u.updatedAt).getTime();
-        return (now - t) < FIVE_MIN;
-      }).sort((a,b) => new Date(b.updatedAt) - new Date(a.updatedAt));
-
-      // Order 10 menit terakhir
-      const recentOrders = orders.filter(o => {
-        if (!o.date) return false;
-        return (now - new Date(o.date).getTime()) < TEN_MIN;
-      });
-
-      // Withdraw pending
-      const wdPending = wds.filter(w => w.status === 'pending');
-
-      // Top learner hari ini (dari xp; asumsi xp global, tidak per-hari. Kita pakai total xp)
-      const topLearners = users
-        .filter(u => (u.xp || 0) > 0)
-        .sort((a,b) => (b.xp || 0) - (a.xp || 0))
-        .slice(0, 10);
-
-      // Total stats
-      const totalUser  = users.length;
-      const totalBal   = users.reduce((s,u) => s + (u.balance || 0), 0);
-      const totalOrder = orders.length;
-      const totalRevenue = orders.reduce((s,o) => s + (o.total || 0), 0);
-
-      // ===== UPDATE UI =====
-      // Stats cards
-      document.getElementById('dbg-stats').innerHTML =
-        this._statCard('👥', totalUser, 'Total User') +
-        this._statCard('🟢', online.length, 'Online Sekarang') +
-        this._statCard('🛒', totalOrder, 'Total Order') +
-        this._statCard('💰', 'Rp ' + totalRevenue.toLocaleString('id-ID'), 'Revenue') +
-        this._statCard('💳', 'Rp ' + totalBal.toLocaleString('id-ID'), 'Saldo User') +
-        this._statCard('💸', wdPending.length, 'Withdraw Pending');
-
-      // User online
-      if (online.length === 0) {
-        document.getElementById('dbg-online').innerHTML = '<p class="empty-msg">Tidak ada user online saat ini</p>';
-      } else {
-        document.getElementById('dbg-online').innerHTML =
-          '<div class="table-wrap"><table><thead><tr><th>User</th><th>Email</th><th>Level</th><th>Terakhir Aktif</th><th>Saldo</th></tr></thead><tbody>' +
-          online.map(u => {
-            const t = new Date(u.updatedAt);
-            const ago = Math.round((now - t.getTime()) / 1000);
-            const agoStr = ago < 60 ? ago + 's lalu' : Math.round(ago/60) + 'm lalu';
-            return '<tr>' +
-              '<td>' + (u.avatar || '👤') + ' ' + (u.displayName || '-') + '</td>' +
-              '<td style="font-size:11px">' + (u.email || 'anon') + '</td>' +
-              '<td>Lv ' + (u.level || 1) + '</td>' +
-              '<td><span style="color:#3fb950;font-weight:800">' + agoStr + '</span></td>' +
-              '<td>Rp ' + (u.balance || 0).toLocaleString('id-ID') + '</td>' +
-              '</tr>';
-          }).join('') +
-          '</tbody></table></div>';
-      }
-
-      // Order terbaru
-      if (recentOrders.length === 0) {
-        document.getElementById('dbg-orders').innerHTML = '<p class="empty-msg">Tidak ada order 10 menit terakhir</p>';
-      } else {
-        document.getElementById('dbg-orders').innerHTML =
-          '<div class="table-wrap"><table><thead><tr><th>ID</th><th>User</th><th>Produk</th><th>Total</th><th>Status</th></tr></thead><tbody>' +
-          recentOrders.map(o => {
-            const userData = o.userData ? Object.values(o.userData).join(' / ') : '-';
-            return '<tr>' +
-              '<td><strong>' + o.id + '</strong></td>' +
-              '<td style="font-size:11px">' + userData + '</td>' +
-              '<td>' + (o.product || '-') + '</td>' +
-              '<td>Rp ' + (o.total || 0).toLocaleString('id-ID') + '</td>' +
-              '<td><span class="badge badge-' + (o.status || 'pending') + '">' + (o.status || 'pending') + '</span></td>' +
-              '</tr>';
-          }).join('') +
-          '</tbody></table></div>';
-      }
-
-      // Withdraw pending
-      if (wdPending.length === 0) {
-        document.getElementById('dbg-withdrawals').innerHTML = '<p class="empty-msg">Tidak ada withdraw pending</p>';
-      } else {
-        document.getElementById('dbg-withdrawals').innerHTML =
-          '<div class="table-wrap"><table><thead><tr><th>ID</th><th>User</th><th>Amount</th><th>Metode</th><th>Akun</th><th>Aksi</th></tr></thead><tbody>' +
-          wdPending.map(w => {
-            return '<tr>' +
-              '<td>' + (w.id || '').slice(0,10) + '</td>' +
-              '<td>' + (w.userName || '-') + '</td>' +
-              '<td><strong>Rp ' + (w.amount || 0).toLocaleString('id-ID') + '</strong></td>' +
-              '<td>' + (w.method || '-') + '</td>' +
-              '<td><code>' + (w.account || '-') + '</code></td>' +
-              '<td><button class="btn-sm btn-success" onclick="Admin.approveWd(\'' + w.id + '\')">✅</button> ' +
-                  '<button class="btn-sm btn-danger" onclick="Admin.rejectWd(\'' + w.id + '\')">❌</button></td>' +
-              '</tr>';
-          }).join('') +
-          '</tbody></table></div>';
-      }
-
-      // Top learner
-      if (topLearners.length === 0) {
-        document.getElementById('dbg-learn').innerHTML = '<p class="empty-msg">Belum ada yang belajar</p>';
-      } else {
-        document.getElementById('dbg-learn').innerHTML =
-          '<div class="table-wrap"><table><thead><tr><th>#</th><th>User</th><th>Level</th><th>XP</th><th>Streak</th><th>Lesson Selesai</th></tr></thead><tbody>' +
-          topLearners.map((u, i) => {
-            const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '#' + (i+1);
-            return '<tr>' +
-              '<td>' + medal + '</td>' +
-              '<td>' + (u.avatar || '👤') + ' ' + (u.displayName || '-') + '</td>' +
-              '<td>Lv ' + (u.level || 1) + '</td>' +
-              '<td><strong>' + (u.xp || 0) + '</strong></td>' +
-              '<td>🔥 ' + (u.streak || 0) + '</td>' +
-              '<td>' + ((u.completedLessons || []).length) + '</td>' +
-              '</tr>';
-          }).join('') +
-          '</tbody></table></div>';
-      }
-
-      // Global stats
-      const totalLessons = users.reduce((s,u) => s + ((u.completedLessons || []).length), 0);
-      const totalAch     = users.reduce((s,u) => s + ((u.achievements || []).length), 0);
-      const totalAds     = users.reduce((s,u) => s + (u.adWatchTotal || 0), 0);
-      document.getElementById('dbg-global').innerHTML =
-        '<div class="stats-grid">' +
-          this._statCard('📚', totalLessons, 'Total Lesson Selesai') +
-          this._statCard('🏆', totalAch, 'Total Achievement Unlocked') +
-          this._statCard('🎬', totalAds, 'Total Iklan Ditonton') +
-          this._statCard('💰', users.reduce((s,u) => s + (u.totalEarned || 0), 0).toLocaleString('id-ID'), 'Total Koin Earned') +
-        '</div>';
-
-      // Update timestamp
-      const lu = document.getElementById('dbg-last-update');
-      if (lu) lu.textContent = new Date().toLocaleTimeString('id-ID');
-      const st = document.getElementById('dbg-status');
-      if (st) {
-        st.style.color = '#3fb950';
-        st.textContent = '● LIVE';
-      }
-
-    } catch (e) {
-      console.error('[Admin Debug] error:', e);
-      const st = document.getElementById('dbg-status');
-      if (st) { st.style.color = '#f85149'; st.textContent = '● ERROR'; }
-      ['dbg-online','dbg-orders','dbg-withdrawals','dbg-learn','dbg-global'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.innerHTML = '<p style="color:red">Error: ' + e.message + '</p>';
-      });
-    }
-  },
-
-  _statCard(icon, value, label) {
-    return '<div class="stat-card">' +
-      '<div class="stat-icon">' + icon + '</div>' +
-      '<div class="stat-val">' + value + '</div>' +
-      '<div class="stat-label">' + label + '</div>' +
-    '</div>';
-  },
-
-  // ============================================
-  // MASS BOOST
-  // ============================================
-  massboostSelectedUsers: {},
-
-  async renderMassBoost(c) {
-    c.innerHTML = '<div class="loading-inline">Memuat data user...</div>';
-    this.massboostSelectedUsers = {};
-    try {
-      const snap = await this.db.collection('users').limit(500).get();
-      const users = snap.docs.map(d => ({ uid: d.id, ...d.data() }));
-      const totalBalance = users.reduce((s, u) => s + (u.balance || 0), 0);
-      const totalXp = users.reduce((s, u) => s + (u.xp || 0), 0);
 
       let html = '<div class="stats-grid">' +
-        this._statCard('👥', users.length, 'Total User') +
-        this._statCard('💰', 'Rp ' + totalBalance.toLocaleString('id-ID'), 'Total Koin') +
-        this._statCard('⭐', totalXp.toLocaleString('id-ID'), 'Total XP') +
+        this._statCard('👥', users.length, 'Total Users', 'blue') +
         '</div>';
 
-      html += '<div class="card" style="background:linear-gradient(135deg,#fff9e6,#fff4cc);border:2px solid #ffc800">' +
-        '<h3 style="color:#7a5d00">💰 Mass Boost</h3>' +
-        '<p style="color:#7a5d00;font-size:13px;margin-bottom:14px">Pilih user, lalu naikkan coin/XP</p>' +
-        '<div style="display:flex;gap:8px;align-items:center;margin-bottom:14px;flex-wrap:wrap">' +
-        '<label style="display:flex;align-items:center;gap:8px;font-weight:800;font-size:13px;cursor:pointer">' +
-        '<input type="checkbox" id="massboost-select-all" onchange="Admin.massboostToggleAll(this)" style="width:20px;height:20px">' +
-        '<span>Pilih Semua</span></label>' +
-        '<span id="massboost-selected-count" style="margin-left:auto;background:#fff;padding:4px 12px;border-radius:999px;font-weight:900;font-size:12px;color:#7a5d00">0 dipilih</span>' +
-        '</div>';
-
-      html += '<div style="background:white;border-radius:12px;padding:14px;margin-bottom:10px">' +
-        '<h4 style="font-size:13px;font-weight:900;margin-bottom:8px">💰 Naikkan Koin</h4>' +
-        '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">' +
-        '<button class="btn-preset" onclick="Admin.massboostCoin(1000)">+1K</button>' +
-        '<button class="btn-preset" onclick="Admin.massboostCoin(5000)">+5K</button>' +
-        '<button class="btn-preset" onclick="Admin.massboostCoin(10000)">+10K</button>' +
-        '<button class="btn-preset" onclick="Admin.massboostCoin(50000)">+50K</button>' +
-        '<button class="btn-preset" onclick="Admin.massboostCoin(100000)">+100K</button>' +
-        '</div><div style="display:flex;gap:8px">' +
-        '<input type="number" id="massboost-coin-input" placeholder="Nominal lain" style="flex:1;padding:10px;border:2px solid #e5e5e5;border-radius:8px;font-weight:700">' +
-        '<button class="btn-primary" onclick="Admin.massboostCoin(null)">Boost</button></div></div>';
-
-      html += '<div style="background:white;border-radius:12px;padding:14px;margin-bottom:10px">' +
-        '<h4 style="font-size:13px;font-weight:900;margin-bottom:8px">⭐ Naikkan XP</h4>' +
-        '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">' +
-        '<button class="btn-preset" onclick="Admin.massboostXp(100)">+100</button>' +
-        '<button class="btn-preset" onclick="Admin.massboostXp(500)">+500</button>' +
-        '<button class="btn-preset" onclick="Admin.massboostXp(1000)">+1K</button>' +
-        '<button class="btn-preset" onclick="Admin.massboostXp(5000)">+5K</button>' +
-        '</div><div style="display:flex;gap:8px">' +
-        '<input type="number" id="massboost-xp-input" placeholder="Nominal lain" style="flex:1;padding:10px;border:2px solid #e5e5e5;border-radius:8px;font-weight:700">' +
-        '<button class="btn-primary" onclick="Admin.massboostXp(null)">Boost</button></div></div>';
-
-      html += '<div style="background:white;border-radius:12px;padding:14px;margin-bottom:10px">' +
-        '<h4 style="font-size:13px;font-weight:900;margin-bottom:8px">💎 Naikkan Gems</h4>' +
-        '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">' +
-        '<button class="btn-preset" onclick="Admin.massboostGems(10)">+10</button>' +
-        '<button class="btn-preset" onclick="Admin.massboostGems(50)">+50</button>' +
-        '<button class="btn-preset" onclick="Admin.massboostGems(100)">+100</button>' +
-        '<button class="btn-preset" onclick="Admin.massboostGems(500)">+500</button>' +
-        '</div><div style="display:flex;gap:8px">' +
-        '<input type="number" id="massboost-gems-input" placeholder="Nominal lain" style="flex:1;padding:10px;border:2px solid #e5e5e5;border-radius:8px;font-weight:700">' +
-        '<button class="btn-primary" onclick="Admin.massboostGems(null)">Boost</button></div></div>';
-
-      html += '<div style="background:white;border-radius:12px;padding:14px;margin-bottom:10px">' +
-        '<h4 style="font-size:13px;font-weight:900;margin-bottom:8px">🎁 Bonus</h4>' +
-        '<div style="display:flex;gap:8px;flex-wrap:wrap">' +
-        '<button class="btn-primary" onclick="Admin.massboostHearts()" style="background:#ff4b4b">❤️ Hearts → 5</button>' +
-        '<button class="btn-primary" onclick="Admin.massboostUnlockAllAch()" style="background:#f59e0b">🏆 Unlock Semua</button>' +
-        '</div></div>';
-
-      html += '<div style="background:linear-gradient(135deg,#ffebee,#ffcdd2);border:2px solid #ff4b4b;border-radius:12px;padding:14px;margin-bottom:10px">' +
-        '<h4 style="font-size:13px;font-weight:900;color:#c62828;margin-bottom:8px">⚠️ DANGER</h4>' +
-        '<div style="display:flex;gap:8px;flex-wrap:wrap">' +
-        '<button class="btn-preset" onclick="Admin.massboostResetBalance()" style="border-color:#ff4b4b;color:#ff4b4b">💸 Reset Koin</button>' +
-        '<button class="btn-preset" onclick="Admin.massboostResetAll()" style="border-color:#ff4b4b;color:#ff4b4b">☠️ Reset Semua</button>' +
-        '</div></div>';
-
-      html += '<div class="card"><h3>👥 Pilih User (' + users.length + ')</h3>' +
-        '<div class="table-wrap"><table><thead><tr>' +
-        '<th style="width:40px"><input type="checkbox" onchange="Admin.massboostToggleAll(this)" style="width:18px;height:18px"></th>' +
-        '<th>User</th><th>Saldo</th><th>XP</th><th>Gems</th><th>Ach</th></tr></thead><tbody>';
+      html += '<div class="card">' +
+        '<div class="card-header">' +
+        '<div class="card-title">👥 Users (' + users.length + ')</div>' +
+        '</div>' +
+        '<div class="table-wrap"><table>' +
+        '<thead><tr><th>UID</th><th>Nama</th><th>Email</th><th>Joined</th></tr></thead>' +
+        '<tbody>';
 
       users.forEach(u => {
-        const ach = (u.achievements || []).length;
+        const date = u.createdAt ? new Date(u.createdAt).toLocaleDateString('id-ID') : '-';
         html += '<tr>' +
-          '<td><input type="checkbox" class="massboost-user-cb" data-uid="' + u.uid + '" onchange="Admin.massboostToggleUser(this)" style="width:18px;height:18px;cursor:pointer"></td>' +
+          '<td><code style="font-size:10px">' + u.uid.slice(0, 8) + '</code></td>' +
           '<td>' + (u.avatar || '👤') + ' ' + (u.displayName || '-') + '</td>' +
-          '<td>Rp ' + (u.balance || 0).toLocaleString('id-ID') + '</td>' +
-          '<td>' + (u.xp || 0).toLocaleString('id-ID') + '</td>' +
-          '<td>' + (u.gems || 0) + '</td>' +
-          '<td>' + ach + '</td></tr>';
-      });
-      html += '</tbody></table></div></div>';
-      c.innerHTML = html;
-    } catch (e) {
-      console.error('[Admin] renderMassBoost error:', e);
-      c.innerHTML = '<div class="card"><p style="color:red">Error: ' + e.message + '</p></div>';
-    }
-  },
-
-  massboostToggleAll(cb) {
-    const checked = cb.checked;
-    document.querySelectorAll('.massboost-user-cb').forEach(c => {
-      c.checked = checked;
-      const uid = c.getAttribute('data-uid');
-      if (checked) this.massboostSelectedUsers[uid] = true;
-      else delete this.massboostSelectedUsers[uid];
-    });
-    const top = document.getElementById('massboost-select-all');
-    if (top) top.checked = checked;
-    this.massboostUpdateCount();
-  },
-
-  massboostToggleUser(cb) {
-    const uid = cb.getAttribute('data-uid');
-    if (cb.checked) this.massboostSelectedUsers[uid] = true;
-    else delete this.massboostSelectedUsers[uid];
-    this.massboostUpdateCount();
-  },
-
-  massboostUpdateCount() {
-    const n = Object.keys(this.massboostSelectedUsers).length;
-    const el = document.getElementById('massboost-selected-count');
-    if (el) el.textContent = n + ' dipilih';
-  },
-
-  massboostGetUIDs() {
-    const uids = Object.keys(this.massboostSelectedUsers);
-    if (uids.length === 0) { alert('Pilih user dulu!'); return []; }
-    return uids;
-  },
-
-  async massboostCoin(amount) {
-    if (amount === null) amount = parseInt(document.getElementById('massboost-coin-input').value) || 0;
-    if (amount <= 0) { alert('Nominal > 0'); return; }
-    const uids = this.massboostGetUIDs(); if (!uids.length) return;
-    if (!confirm('Boost Koin +' + amount.toLocaleString('id-ID') + ' untuk ' + uids.length + ' user?')) return;
-    try {
-      let ok = 0;
-      for (const uid of uids) {
-        const ref = this.db.collection('users').doc(uid);
-        const doc = await ref.get();
-        if (!doc.exists) continue;
-        const d = doc.data();
-        await ref.update({
-          balance: (d.balance || 0) + amount,
-          totalEarned: (d.totalEarned || 0) + amount,
-          updatedAt: new Date().toISOString(),
-          lastBoostBy: this.user.email,
-        });
-        ok++;
-      }
-      alert('✅ ' + ok + ' user di-boost +' + amount.toLocaleString('id-ID'));
-      this.renderMassBoost(document.getElementById('content'));
-    } catch (e) { alert('Error: ' + e.message); }
-  },
-
-  async massboostXp(amount) {
-    if (amount === null) amount = parseInt(document.getElementById('massboost-xp-input').value) || 0;
-    if (amount <= 0) { alert('Nominal > 0'); return; }
-    const uids = this.massboostGetUIDs(); if (!uids.length) return;
-    if (!confirm('Boost XP +' + amount + ' untuk ' + uids.length + ' user?')) return;
-    try {
-      let ok = 0;
-      for (const uid of uids) {
-        const ref = this.db.collection('users').doc(uid);
-        const doc = await ref.get();
-        if (!doc.exists) continue;
-        const d = doc.data();
-        await ref.update({ xp: (d.xp || 0) + amount, updatedAt: new Date().toISOString() });
-        ok++;
-      }
-      alert('✅ ' + ok + ' user di-boost XP +' + amount);
-      this.renderMassBoost(document.getElementById('content'));
-    } catch (e) { alert('Error: ' + e.message); }
-  },
-
-  async massboostGems(amount) {
-    if (amount === null) amount = parseInt(document.getElementById('massboost-gems-input').value) || 0;
-    if (amount <= 0) { alert('Nominal > 0'); return; }
-    const uids = this.massboostGetUIDs(); if (!uids.length) return;
-    if (!confirm('Boost Gems +' + amount + ' untuk ' + uids.length + ' user?')) return;
-    try {
-      let ok = 0;
-      for (const uid of uids) {
-        const ref = this.db.collection('users').doc(uid);
-        const doc = await ref.get();
-        if (!doc.exists) continue;
-        const d = doc.data();
-        await ref.update({ gems: (d.gems || 0) + amount, updatedAt: new Date().toISOString() });
-        ok++;
-      }
-      alert('✅ ' + ok + ' user di-boost Gems +' + amount);
-      this.renderMassBoost(document.getElementById('content'));
-    } catch (e) { alert('Error: ' + e.message); }
-  },
-
-  async massboostHearts() {
-    const uids = this.massboostGetUIDs(); if (!uids.length) return;
-    if (!confirm('Reset hearts ke 5 untuk ' + uids.length + ' user?')) return;
-    try {
-      let ok = 0;
-      for (const uid of uids) {
-        await this.db.collection('users').doc(uid).update({
-          hearts: 5, heartsUpdated: Date.now(), updatedAt: new Date().toISOString(),
-        });
-        ok++;
-      }
-      alert('✅ ' + ok + ' user di-reset hearts');
-      this.renderMassBoost(document.getElementById('content'));
-    } catch (e) { alert('Error: ' + e.message); }
-  },
-
-  async massboostUnlockAllAch() {
-    const uids = this.massboostGetUIDs(); if (!uids.length) return;
-    if (!confirm('Unlock SEMUA achievement untuk ' + uids.length + ' user?')) return;
-    try {
-      const allIds = (window.DL && window.DL.ACH) ? window.DL.ACH.map(a => a.id) : [];
-      if (!allIds.length) { alert('⚠️ Tidak bisa akses list achievement'); return; }
-      let ok = 0;
-      for (const uid of uids) {
-        await this.db.collection('users').doc(uid).update({
-          achievements: allIds, updatedAt: new Date().toISOString(),
-        });
-        ok++;
-      }
-      alert('✅ ' + ok + ' user di-unlock ' + allIds.length + ' achievement');
-      this.renderMassBoost(document.getElementById('content'));
-    } catch (e) { alert('Error: ' + e.message); }
-  },
-
-  async massboostResetBalance() {
-    const uids = this.massboostGetUIDs(); if (!uids.length) return;
-    if (!confirm('⚠️ Reset Koin ke 0 untuk ' + uids.length + ' user?')) return;
-    if (!confirm('Yakin? Tidak bisa dibalik!')) return;
-    try {
-      let ok = 0;
-      for (const uid of uids) {
-        await this.db.collection('users').doc(uid).update({
-          balance: 0, updatedAt: new Date().toISOString(),
-        });
-        ok++;
-      }
-      alert('✅ ' + ok + ' user di-reset koin');
-      this.renderMassBoost(document.getElementById('content'));
-    } catch (e) { alert('Error: ' + e.message); }
-  },
-
-  async massboostResetAll() {
-    const uids = this.massboostGetUIDs(); if (!uids.length) return;
-    if (!confirm('☠️ Reset SEMUA stats untuk ' + uids.length + ' user?')) return;
-    if (!confirm('Yakin BANGET? Semua progress hilang!')) return;
-    try {
-      let ok = 0;
-      for (const uid of uids) {
-        await this.db.collection('users').doc(uid).update({
-          balance: 0, totalEarned: 0, xp: 0, gems: 0, hearts: 5, streak: 0,
-          completedLessons: [], achievements: [], totalCorrect: 0, totalWrong: 0,
-          updatedAt: new Date().toISOString(),
-        });
-        ok++;
-      }
-      alert('✅ ' + ok + ' user di-reset total');
-      this.renderMassBoost(document.getElementById('content'));
-    } catch (e) { alert('Error: ' + e.message); }
-  },
-
-  // ============================================
-  // REFERRAL ADMIN
-  // ============================================
-  async renderReferral(c) {
-    c.innerHTML = '<div class="loading-inline">Memuat data referral...</div>';
-    try {
-      // Ambil semua user dengan referral
-      const usersSnap = await this.db.collection('users').limit(500).get();
-      const users = usersSnap.docs.map(d => ({ uid: d.id, ...d.data() }));
-
-      // Filter user yang punya referral
-      const referrers = users
-        .filter(u => (u.referralCount || 0) > 0)
-        .sort((a, b) => (b.referralCount || 0) - (a.referralCount || 0));
-
-      // Ambil log referral
-      const refSnap = await this.db.collection('referrals')
-        .orderBy('referredAt', 'desc')
-        .limit(100)
-        .get();
-      const referrals = refSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-
-      // Total stats
-      const totalReferrals = referrals.length;
-      const totalReferrers = referrers.length;
-
-      let html = '';
-
-      // ===== STATS =====
-      html += '<div class="stats-grid">' +
-        this._statCard('👥', totalReferrals, 'Total Referral') +
-        this._statCard('🎯', totalReferrers, 'Total Pengundang') +
-        this._statCard('💰', (totalReferrals * 500).toLocaleString('id-ID'), 'Koin Dibagikan') +
-        '</div>';
-
-      // ===== LEADERBOARD =====
-      html += '<div class="card"><h3>🏆 Top 10 Pengundang</h3>';
-      if (referrers.length === 0) {
-        html += '<p class="empty-msg">Belum ada referral</p>';
-      } else {
-        html += '<div class="table-wrap"><table><thead><tr>' +
-          '<th>#</th><th>User</th><th>Kode</th><th>Teman</th><th>Koin</th></tr></thead><tbody>';
-        referrers.slice(0, 10).forEach((u, i) => {
-          const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '#' + (i+1);
-          const count = u.referralCount || 0;
-          html += '<tr>' +
-            '<td>' + medal + '</td>' +
-            '<td>' + (u.avatar || '👤') + ' ' + (u.displayName || '-') + '</td>' +
-            '<td><code style="font-size:11px">' + (u.referralCode || '-') + '</code></td>' +
-            '<td><strong>' + count + '</strong></td>' +
-            '<td>' + (count * 500).toLocaleString('id-ID') + '</td>' +
-            '</tr>';
-        });
-        html += '</tbody></table></div>';
-      }
-      html += '</div>';
-
-      // ===== LOG REFERRAL =====
-      html += '<div class="card"><h3>📋 Log Referral Terbaru</h3>';
-      if (referrals.length === 0) {
-        html += '<p class="empty-msg">Belum ada log referral</p>';
-      } else {
-        html += '<div class="table-wrap"><table><thead><tr>' +
-          '<th>Waktu</th><th>Kode</th><th>Status</th><th>Bonus</th></tr></thead><tbody>';
-        referrals.slice(0, 30).forEach(r => {
-          const t = r.referredAt ? new Date(r.referredAt).toLocaleString('id-ID', {
-            day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'
-          }) : '-';
-          html += '<tr>' +
-            '<td style="font-size:11px">' + t + '</td>' +
-            '<td><code>' + (r.code || '-') + '</code></td>' +
-            '<td>' + (r.bonusGiven ? '✅ Aktif' : '⏳ Pending') + '</td>' +
-            '<td>' + (r.bonusGiven ? '500 + 250' : '-') + '</td>' +
-            '</tr>';
-        });
-        html += '</tbody></table></div>';
-      }
-      html += '</div>';
-
-      // ===== ALL USERS WITH REFERRAL CODE =====
-      html += '<div class="card"><h3>📊 Semua User dengan Kode</h3>' +
-        '<div class="table-wrap"><table><thead><tr>' +
-        '<th>User</th><th>Kode</th><th>Teman</th><th>Di-refer Oleh</th></tr></thead><tbody>';
-
-      users.slice(0, 100).forEach(u => {
-        const count = (u.referredUsers || []).length;
-        html += '<tr>' +
-          '<td>' + (u.avatar || '👤') + ' ' + (u.displayName || '-') + '</td>' +
-          '<td><code style="font-size:11px">' + (u.referralCode || '-') + '</code></td>' +
-          '<td>' + count + '</td>' +
-          '<td>' + (u.referredByCode ? '<code>' + u.referredByCode + '</code>' : '-') + '</td>' +
+          '<td style="font-size:11px">' + (u.email || '-') + '</td>' +
+          '<td style="font-size:11px">' + date + '</td>' +
           '</tr>';
       });
+
       html += '</tbody></table></div></div>';
 
       c.innerHTML = html;
     } catch (e) {
-      console.error('[Admin] renderReferral error:', e);
+      console.error('[Admin] renderUsers error:', e);
       c.innerHTML = '<div class="card"><p style="color:red">Error: ' + e.message + '</p></div>';
     }
   },
 
   // ============================================
   // SETTINGS
+  // ============================================
   renderSettings(c) {
-    c.innerHTML = '<div class="card"><h3>🔐 Admin Info</h3>' +
-      '<p><strong>Email:</strong> ' + (this.user.email || '-') + '</p>' +
-      '<p><strong>UID:</strong> <code>' + this.user.uid + '</code></p>' +
-      '<p><strong>Admin Claim:</strong> ✅ Active</p>' +
+    c.innerHTML = '<div class="card">' +
+      '<div class="card-header"><div class="card-title">🔐 Admin Info</div></div>' +
+      '<div style="padding:12px;background:#f8f9fa;border-radius:10px;margin-bottom:12px">' +
+        '<div style="font-size:12px;color:#666;margin-bottom:4px">Email</div>' +
+        '<div style="font-weight:900">' + (this.user.email || '-') + '</div>' +
       '</div>' +
-      '<div class="card"><h3>⚠️ Danger Zone</h3>' +
-      '<p>Hapus semua order (tidak bisa dibalikin)</p>' +
-      '<button class="btn-danger" onclick="Admin.clearOrders()">Hapus Semua Order</button>' +
+      '<div style="padding:12px;background:#f8f9fa;border-radius:10px">' +
+        '<div style="font-size:12px;color:#666;margin-bottom:4px">UID</div>' +
+        '<code style="font-size:11px;word-break:break-all">' + this.user.uid + '</code>' +
+      '</div>' +
+      '</div>' +
+
+      '<div class="card">' +
+      '<div class="card-header"><div class="card-title">🗑️ Danger Zone</div></div>' +
+      '<p style="font-size:13px;color:#666;margin-bottom:12px">Hapus semua order (tidak bisa dibalikin)</p>' +
+      '<button class="btn-danger btn-full" onclick="Admin.clearAllOrders()">Hapus Semua Order</button>' +
+      '</div>' +
+
+      '<div class="card">' +
+      '<div class="card-header"><div class="card-title">ℹ️ Info Sistem</div></div>' +
+      '<div style="font-size:13px;color:#666;line-height:1.8">' +
+        '<div>📦 Version: <strong>YS Store Admin v1</strong></div>' +
+        '<div>🎨 Theme: <strong>Biru-Ungu</strong></div>' +
+        '<div>🔧 Status: <strong style="color:#10b981">● Online</strong></div>' +
+      '</div>' +
       '</div>';
   },
 
-  async clearOrders() {
+  async clearAllOrders() {
     if (!confirm('⚠️ Hapus SEMUA order?')) return;
-    if (!confirm('Yakin? Ini tidak bisa dibatalkan!')) return;
+    if (!confirm('Yakin? Tidak bisa dibatalkan!')) return;
     try {
       const snap = await this.db.collection('orders').get();
       const batch = this.db.batch();
       snap.docs.forEach(doc => batch.delete(doc.ref));
       await batch.commit();
       alert('✅ Semua order dihapus');
-    } catch (e) { alert('Error: ' + e.message); }
+      this.renderOrders(document.getElementById('content'));
+    } catch (e) {
+      alert('Error: ' + e.message);
+    }
   },
 };
 
 document.addEventListener('DOMContentLoaded', () => Admin.init());
 if (typeof window !== 'undefined') window.Admin = Admin;
-console.log('[admin] v4 loaded');
+console.log('[Admin] YS Store v1 loaded');
