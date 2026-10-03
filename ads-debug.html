@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ads Debug — duniamu.my.id</title>
+<style>
+body { font-family: monospace; padding: 15px; background: #1a1a1a; color: #fff; font-size: 13px; }
+h1 { color: #58cc02; font-size: 18px; }
+h2 { color: #1cb0f6; font-size: 14px; margin-top: 20px; }
+.pass { color: #58cc02; }
+.fail { color: #ff4b4b; }
+.warn { color: #ffc800; }
+.info { color: #999; }
+pre { background: #000; padding: 10px; border-radius: 5px; overflow-x: auto; font-size: 11px; }
+button { padding: 10px 20px; background: #58cc02; color: white; border: none; border-radius: 5px; font-weight: 900; cursor: pointer; margin: 5px 0; width: 100%; font-size: 14px; }
+button:active { transform: scale(0.98); }
+</style>
+</head>
+<body>
+<h1>🔍 Ads Debug</h1>
+<div class="info">Domain: duniamu.my.id</div>
+<div id="results" style="margin-top:15px"></div>
+
+<button onclick="testPopunder()">▶️ TEST POPUNDER</button>
+<button onclick="testSmartlink()">▶️ TEST SMARTLINK</button>
+<button onclick="clearSW()">🗑️ CLEAR SERVICE WORKER</button>
+
+<script>
+var results = document.getElementById('results');
+function log(msg, cls) {
+  var el = document.createElement('div');
+  el.className = cls || '';
+  el.innerHTML = msg;
+  results.appendChild(el);
+}
+
+log('=== CHECK ADS MANAGER ===');
+if (window.AdsManager) {
+  log('✅ AdsManager ' + window.AdsManager.VERSION, 'pass');
+  log('   Domain: ' + window.AdsManager.DOMAIN, '');
+  log('   Config: ' + JSON.stringify(window.AdsManager.CONFIG), '');
+} else {
+  log('❌ AdsManager NOT LOADED', 'fail');
+}
+
+log('');
+log('=== CHECK SCRIPTS ===');
+var scripts = document.querySelectorAll('script[id*="adsterra"]');
+if (scripts.length > 0) {
+  log('✅ ' + scripts.length + ' script Adsterra di halaman:', 'pass');
+  scripts.forEach(function(s) {
+    log('   → ' + s.id, '');
+    log('     ' + s.src.substring(0, 90), 'info');
+  });
+} else {
+  log('⏳ Belum ada script Adsterra (menunggu init)', 'warn');
+}
+
+log('');
+log('=== CHECK CSP ===');
+fetch('/_headers').then(function(r) { return r.text(); }).then(function(t) {
+  if (t.includes('profitableratecpmnetwork')) {
+    log('✅ CSP allow Adsterra', 'pass');
+  } else {
+    log('❌ CSP BLOCK Adsterra', 'fail');
+  }
+}).catch(function(e) {
+  log('⚠️  Cannot fetch: ' + e.message, 'warn');
+});
+
+function testPopunder() {
+  log('');
+  log('=== MANUAL TEST POPUNDER ===');
+  if (!window.AdsManager) {
+    log('❌ AdsManager not loaded', 'fail');
+    return;
+  }
+  window.AdsManager.injectScript(
+    window.AdsManager.SCRIPTS.popunder + '?test=' + Date.now(),
+    'adsterra-manual-popunder'
+  ).then(function(ok) {
+    log(ok ? '✅ Popunder injected — cek apakah muncul' : '❌ Popunder FAILED', ok ? 'pass' : 'fail');
+  });
+}
+
+function testSmartlink() {
+  log('');
+  log('=== MANUAL TEST SMARTLINK ===');
+  if (!window.AdsManager) {
+    log('❌ AdsManager not loaded', 'fail');
+    return;
+  }
+  window.AdsManager.openRewarded().then(function(r) {
+    log(r.success ? '✅ Smartlink opened: ' + r.method : '❌ Failed: ' + r.reason, r.success ? 'pass' : 'fail');
+  });
+}
+
+function clearSW() {
+  log('');
+  log('=== CLEAR SERVICE WORKER ===');
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistrations().then(function(regs) {
+      regs.forEach(function(reg) { reg.unregister(); });
+      log('✅ ' + regs.length + ' SW unregistered', 'pass');
+      setTimeout(function() { location.reload(); }, 1500);
+    });
+  }
+}
+
+log('');
+log('=== INFO ===');
+log('• Test Popunder: inject manual, lihat apakah script load', 'info');
+log('• Test Smartlink: buka tab baru Adsterra', 'info');
+log('• Clear SW: hapus cache SW kalau ada masalah', 'info');
+</script>
+</body>
+</html>
