@@ -301,11 +301,11 @@
 
       var btnDisabled = !check.ok;
       var btnText = '🎬 TONTON IKLAN DAPAT KOIN';
-      var btnSub = 'Dapat 1 sampai 10.000 koin (kebanyakan 1-100 koin)';
+      var btnSub = 'Dapat hingga 10.000 koin setiap tonton!';
 
       if (check.reason === 'cooldown') {
         btnText = '⏱️ Tunggu ' + check.remain + 's';
-        btnSub = 'Cooldown antar klik';
+        btnSub = 'Bentar lagi bisa nonton!';
       } else if (check.reason === 'limit_harian') {
         btnText = '✅ Limit Harian Tercapai';
         btnSub = 'Kembali besok untuk nonton lagi';

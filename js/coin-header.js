@@ -174,7 +174,7 @@
             '<div style="font-size:44px;font-weight:900;line-height:1;margin-bottom:4px">🪙 ' + this.fmt(saldo) + '</div>' +
             '<div style="font-size:14px;opacity:0.95;margin-bottom:12px">= Rp ' + this.fmt(Math.floor(rupiah)) + '</div>' +
             '<div style="background:rgba(255,255,255,0.2);border-radius:10px;padding:8px 12px;font-size:11px;display:inline-block">' +
-              '<strong>1 koin = Rp 1</strong> • Hanya untuk top up & beli icon' +
+              '<strong>Kumpulkan koin sebanyak mungkin!</strong> • Hanya untuk top up & beli icon' +
             '</div>' +
           '</div>' +
         '</div>' +
@@ -187,7 +187,7 @@
               '<span style="font-size:32px">🎬</span>' +
               '<div>' +
                 '<div style="font-size:16px;font-weight:900;margin-bottom:2px">Tonton Iklan Dapat Koin</div>' +
-                '<div style="font-size:11px;opacity:0.9">Dapat 1 sampai 10.000 koin</div>' +
+                '<div style="font-size:11px;opacity:0.9">Dapat hingga 10.000 koin</div>' +
               '</div>' +
             '</div>' +
             '<div id="tonton-iklan-container"></div>' +
@@ -217,7 +217,7 @@
           '<div style="display:flex;flex-direction:column;gap:10px">' +
             '<div style="display:flex;align-items:center;gap:12px;padding:10px;background:#f7f8fa;border-radius:10px">' +
               '<span style="font-size:24px">🎬</span>' +
-              '<div style="flex:1"><div style="font-size:13px;font-weight:900">Tonton Iklan</div><div style="font-size:11px;color:#666">10-10.000 koin per tonton</div></div>' +
+              '<div style="flex:1"><div style="font-size:13px;font-weight:900">Tonton Iklan</div><div style="font-size:11px;color:#666">Hingga 10.000 koin per tonton</div></div>' +
             '</div>' +
             '<div style="display:flex;align-items:center;gap:12px;padding:10px;background:#f7f8fa;border-radius:10px">' +
               '<span style="font-size:24px">🛒</span>' +
