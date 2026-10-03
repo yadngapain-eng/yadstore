@@ -5,34 +5,29 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="theme-color" content="#6366f1">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#6366f1">
 <title>YS Store — Top Up Game, Pulsa & Voucher Termurah</title>
 <meta name="description" content="YS Store — Top up game, pulsa, kuota & voucher termurah. Proses instan 1-5 menit. AOV, MLBB, FF, PUBG, Genshin, Valorant & 25+ game lainnya!">
-<meta name="keywords" content="belajar sambil cuan, dapat uang dari hp, penghasilan tambahan online, top up game murah, withdraw dana, belajar online">
-<meta name="author" content="Learn Earn">
+<meta name="keywords" content="top up game murah, top up aov, top up mlbb, top up ff, top up pubg, top up genshin, top up valorant, voucher game, pulsa murah">
+<meta name="author" content="YS Store">
 <meta name="robots" content="index, follow">
 
-<!-- Open Graph (Facebook) -->
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://duniamu.my.id/">
 <meta property="og:title" content="YS Store — Top Up Game Termurah">
 <meta property="og:description" content="Top up AOV, MLBB, FF, PUBG, Genshin, Valorant & lainnya. Harga termurah, proses instan!">
 <meta property="og:image" content="https://duniamu.my.id/icons/icon-512.png">
-<meta property="og:site_name" content="Learn Earn">
+<meta property="og:site_name" content="YS Store">
 <meta property="og:locale" content="id_ID">
 
-<!-- Twitter Card -->
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="YS Store — Top Up Game Termurah">
 <meta name="twitter:description" content="Top up game & pulsa termurah. Proses 1-5 menit!">
 <meta name="twitter:image" content="https://duniamu.my.id/icons/icon-512.png">
 
-<!-- Canonical -->
 <link rel="canonical" href="https://duniamu.my.id/">
 
-<!-- JSON-LD Structured Data -->
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -49,21 +44,13 @@
 }
 </script>
 
-<link rel="stylesheet" href="css/style.css?v=1790781355">
-<link rel="stylesheet" href="css/premium.css?v=1790781355">
-<link rel="stylesheet" href="css/header-menu.css?v=1790781355">
-<link rel="stylesheet" href="css/article-premium.css?v=1790781355">
-<link rel="stylesheet" href="css/fullscreen-ads.css?v=1790781355">
-<link rel="stylesheet" href="css/referral.css?v=1790781355">
-<link rel="stylesheet" href="css/upgrade.css?v=1790781355">
-<link rel="stylesheet" href="css/premium-features.css?v=1790781355">
+<link rel="stylesheet" href="css/style.css?v=1">
+<link rel="stylesheet" href="css/ys-store.css?v=1">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
 <style>
-/* ============================================
-   APP MODE — Sembunyikan browser feel
-   ============================================ */
 html, body {
     -webkit-tap-highlight-color: transparent;
     -webkit-touch-callout: none;
@@ -72,23 +59,14 @@ html, body {
     height: 100%;
     overflow-x: hidden;
 }
-
-/* Safe area untuk notch / gesture bar */
 body {
     padding-top: env(safe-area-inset-top);
     padding-bottom: env(safe-area-inset-bottom);
     padding-left: env(safe-area-inset-left);
     padding-right: env(safe-area-inset-right);
 }
-
-/* Sembunyikan scrollbar tapi tetap scrollable */
-body::-webkit-scrollbar {
-    display: none;
-}
-body {
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-}
+body::-webkit-scrollbar { display: none; }
+body { scrollbar-width: none; -ms-overflow-style: none; }
 
 /* Splash screen */
 #app-splash {
@@ -143,54 +121,21 @@ body {
     border-radius: 50%;
     animation: splashSpin 0.8s linear infinite;
 }
-@keyframes splashSpin {
-    to { transform: rotate(360deg); }
-}
+@keyframes splashSpin { to { transform: rotate(360deg); } }
 @keyframes splashPulse {
     0%, 100% { transform: scale(1); }
     50% { transform: scale(1.05); }
 }
-
-/* Sembunyikan status bar hijau yang tidak match */
-@media all and (display-mode: standalone) {
-    .app-header {
-        padding-top: env(safe-area-inset-top);
-    }
-}
 </style>
 
-<script>
-// Auto-reset achievement yang ter-trigger dengan coin lama
-(function() {
-  if (typeof window === 'undefined') return;
-  try {
-    var version = localStorage.getItem('yadstore_ach_version') || 'v1';
-    if (version !== 'v4') {
-      console.log('[Migration] Reset achievements ke v4');
-      localStorage.removeItem('yadstore_achievements');
-      localStorage.setItem('yadstore_ach_version', 'v4');
-    }
-  } catch (e) {}
-})();
-</script>
 <link rel="manifest" href="/manifest.json">
 <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
 <link rel="icon" type="image/png" sizes="512x512" href="/icons/icon-512.png">
 <link rel="apple-touch-icon" href="/icons/icon-192.png">
-<meta name="apple-mobile-web-app-title" content="Learn Earn">
-<link rel="stylesheet" href="css/landing-promo.css?v=1790781355">
-<!-- Google Analytics 4 -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-R1CHPYR321"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-R1CHPYR321');
-</script>
-<link rel="stylesheet" href="css/voice-jawa.css?v=1790781355">
-<link rel="stylesheet" href="css/ys-store.css?v=1">
+<meta name="apple-mobile-web-app-title" content="YS Store">
 </head>
 <body>
+
 <div id="app-splash">
     <div class="splash-logo">YS</div>
     <div class="splash-title">YS Store</div>
@@ -205,13 +150,7 @@ body {
       <div class="brand-name">YS Store</div>
     </div>
     <div style="display:flex;gap:6px;align-items:center">
-      <select id="lang-selector" onchange="I18n.setLang(this.value)" style="padding:5px 8px;border:2px solid #e5e5e5;border-radius:999px;font-family:inherit;font-weight:800;font-size:11px;background:white;cursor:pointer;outline:none">
-        <option value="id">🇮🇩 ID</option>
-        <option value="en">🇬🇧 EN</option>
-      </select>
       <div class="header-stats">
-        <div class="stat"><span class="stat-icon">🔥</span><span class="stat-val" id="stat-streak">0</span></div>
-        <div class="stat"><span class="stat-icon">💎</span><span class="stat-val" id="stat-gems">0</span></div>
         <div class="stat" onclick="App.switchTab('profile')" style="cursor:pointer">
           <span class="stat-icon" id="header-avatar">👤</span>
           <span class="stat-val" id="header-name">Guest</span>
@@ -219,82 +158,34 @@ body {
       </div>
     </div>
   </div>
-  <div class="level-bar-wrap">
-    <div class="level-bar"><div class="level-progress" id="level-progress"></div></div>
-    <div class="level-info-wrap">
-      <span class="level-badge">Lv <span id="stat-level">1</span></span>
-      <span class="level-info" id="level-info">0 / 100 XP</span>
-    </div>
-  </div>
 </header>
 
 <main class="app-main">
 
-  <!-- ========== PAGE: LEARN ========== -->
-  <section class="tab-page" id="page-learn">
-    <div class="page-header">
-      <h1 data-i18n="learn_title">📚 Belajar</h1>
-      <p data-i18n="learn_subtitle">Selesaikan lesson untuk dapat XP & Gems</p>
-    </div>
-    <div class="category-tabs" id="category-tabs"></div>
-    <div class="lessons-list" id="lessons-list"></div>
+  <!-- HOME -->
+  <section class="tab-page active" id="page-home">
+    <div id="articles-content"></div>
   </section>
 
-  <!-- ========== PAGE: TOP UP ========== -->
-  <section class="tab-page" id="page-topup">
-    <div class="page-header">
-      <h1 data-i18n="topup_title">🛒 Top Up Instan</h1>
-      <p data-i18n="topup_subtitle">Game, Pulsa & Kuota - Proses 1 detik</p>
-    </div>
-    <div class="topup-grid" id="topup-grid"></div>
-  </section>
-
-  <!-- ========== PAGE: ORDERS ========== -->
+  <!-- ORDERS -->
   <section class="tab-page" id="page-orders">
     <div class="page-header">
-      <h1 data-i18n="orders_title">📦 Pesanan</h1>
-      <p data-i18n="orders_subtitle">Riwayat transaksi</p>
+      <h1>📦 Pesanan Saya</h1>
+      <p>Riwayat transaksi kamu</p>
     </div>
     <div id="orders-list"></div>
   </section>
 
-  <!-- ========== PAGE: ACHIEVEMENTS ========== -->
-  <section class="tab-page" id="page-achievements">
-    <div class="page-header">
-      <h1 data-i18n="achievements_title">🏆 Achievements</h1>
-      <p data-i18n="achievements_subtitle">Kumpulkan achievement, dapat koin!</p>
-    </div>
-    <div class="ach-stats-grid" id="ach-stats"></div>
-    <div class="ach-tier-tabs" id="ach-tier-tabs"></div>
-    <div class="achievements-list" id="achievements-list"></div>
-  </section>
-
-  <!-- ========== PAGE: REWARDS ========== -->
-  <section class="tab-page" id="page-rewards">
-    <div class="page-header">
-      <h1 data-i18n="reward_title">💰 Reward</h1>
-      <p data-i18n="reward_subtitle">Kumpulkan koin, tukar jadi uang</p>
-    </div>
-    <div id="rewards-content"></div>
-  </section>
-
-    <!-- ========== PAGE: ARTICLES ========== -->
-  <section class="tab-page active" id="page-articles">
-    <div id="articles-content"></div>
-  </section>
-
-  <!-- ========== PAGE: PROFILE ========== -->
+  <!-- PROFILE -->
   <section class="tab-page" id="page-profile">
     <div class="page-header">
-      <h1 data-i18n="profile_title">👤 Profile</h1>
-      <p data-i18n="profile_subtitle">Statistik & pencapaianmu</p>
+      <h1>👤 Profil Saya</h1>
+      <p>Kelola akun kamu</p>
     </div>
     <div class="profile-card">
       <div class="profile-avatar" id="profile-avatar-emoji">👤</div>
       <div class="profile-name-big" id="profile-name">Guest</div>
-      <div class="profile-status" id="profile-status">👤 Mode Anonim</div>
-      <div class="profile-level-big">Level <span id="profile-level">1</span></div>
-      <div class="profile-level-bar"><div class="profile-level-progress" id="profile-level-progress"></div></div>
+      <div class="profile-status" id="profile-status">👤 Mode Guest</div>
     </div>
     <div class="profile-actions" style="margin-bottom:20px">
       <button class="btn-google btn-full" id="btn-login-google" onclick="Auth.loginGoogle()">
@@ -309,170 +200,127 @@ body {
       <button class="btn-secondary btn-full" id="btn-change-name" onclick="App.changeName()">
         🎲 Ganti Nama Random
       </button>
-      <button class="btn-danger btn-full" id="btn-logout" onclick="Rewards.confirmLogout()" style="display:none">
+      <button class="btn-danger btn-full" id="btn-logout" onclick="Auth.logout()" style="display:none">
         🚪 Logout
       </button>
     </div>
     <div class="stats-grid">
-      <div class="stat-card"><div class="stat-card-icon">⭐</div><div class="stat-card-val" id="profile-xp">0</div><div class="stat-card-label">Total XP</div></div>
-      <div class="stat-card"><div class="stat-card-icon">🔥</div><div class="stat-card-val" id="profile-streak">0</div><div class="stat-card-label">Streak</div></div>
-      <div class="stat-card"><div class="stat-card-icon">💎</div><div class="stat-card-val" id="profile-gems">0</div><div class="stat-card-label">Gems</div></div>
-      <div class="stat-card"><div class="stat-card-icon">📚</div><div class="stat-card-val" id="profile-lessons">0</div><div class="stat-card-label">Lesson</div></div>
-      <div class="stat-card"><div class="stat-card-icon">✅</div><div class="stat-card-val" id="profile-correct">0</div><div class="stat-card-label">Benar</div></div>
-      <div class="stat-card"><div class="stat-card-icon">❌</div><div class="stat-card-val" id="profile-wrong">0</div><div class="stat-card-label">Salah</div></div>
-    </div>
-    <div class="profile-actions">
-      <button class="btn-primary btn-full" onclick="DuoUI.refill()">Isi Hearts (20 💎)</button>
-      <button class="btn-danger btn-full" onclick="App.resetAll()">Reset Data</button>
+      <div class="stat-card">
+        <div class="stat-card-icon">🛒</div>
+        <div class="stat-card-val" id="profile-orders">0</div>
+        <div class="stat-card-label">Total Order</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-icon">💰</div>
+        <div class="stat-card-val" id="profile-spent">0</div>
+        <div class="stat-card-label">Total Belanja</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-icon">⭐</div>
+        <div class="stat-card-val">VIP</div>
+        <div class="stat-card-label">Status</div>
+      </div>
     </div>
   </section>
 
-  <!-- ========== PAGE: HELP ========== -->
+  <!-- HELP -->
   <section class="tab-page" id="page-help">
     <div class="page-header">
-      <h1 data-i18n="help_title">💬 Bantuan</h1>
-      <p data-i18n="help_subtitle">Pertanyaan umum</p>
+      <h1>❓ Bantuan</h1>
+      <p>Pertanyaan umum</p>
     </div>
     <div class="help-content">
-      <div class="help-card"><h3 data-i18n="help_q1">Cara belajar?</h3><p data-i18n="help_a1">Pilih kategori → pilih lesson → jawab soal → dapat XP.</p></div>
-      <div class="help-card"><h3 data-i18n="help_q2">Cara top up?</h3><p data-i18n="help_a2">Pilih game/pulsa → isi data → pilih nominal → bayar → upload bukti.</p></div>
-      <div class="help-card"><h3 data-i18n="help_q3">Metode bayar?</h3><p data-i18n="help_a3">QRIS, DANA, GoPay, OVO, ShopeePay, BCA, BNI, BRI, Mandiri.</p></div>
-      <div class="help-card"><h3 data-i18n="help_q4">Bagaimana cara dapat koin?</h3><p data-i18n="help_a4">Login harian, selesaikan lesson, nonton iklan, atau top up. Setiap aktivitas dapat koin!</p></div>
-      <div class="help-card"><h3 data-i18n="help_q5">Bagaimana cara withdraw?</h3><p data-i18n="help_a5">Kumpulkan koin minimal Rp 10.000, lalu withdraw ke DANA/OVO/GoPay/ShopeePay/SEABANK.</p></div>
-      <div class="help-card"><h3 data-i18n="help_q6">Apakah website ini aman?</h3><p data-i18n="help_a6">Ya. Kami pakai Firebase + server-side validation. Data kamu terenkripsi dan aman.</p></div>
+      <div class="help-card">
+        <h3>Cara top up?</h3>
+        <p>Pilih game → isi data akun → pilih nominal → pilih pembayaran → transfer → upload bukti transfer.</p>
+      </div>
+      <div class="help-card">
+        <h3>Metode pembayaran?</h3>
+        <p>SEABANK, GoPay, DANA, OVO, ShopeePay, dan QRIS. Semua gratis biaya admin.</p>
+      </div>
+      <div class="help-card">
+        <h3>Berapa lama prosesnya?</h3>
+        <p>Rata-rata 1-5 menit setelah bukti transfer di-upload. Jam operasional 24/7.</p>
+      </div>
+      <div class="help-card">
+        <h3>Apakah aman?</h3>
+        <p>100% aman. Kami menggunakan Firebase + enkripsi HTTPS. Garansi uang kembali jika order gagal.</p>
+      </div>
+      <div class="help-card">
+        <h3>Bagaimana jika order gagal?</h3>
+        <p>Hubungi admin via WhatsApp/Telegram. Dana akan direfund 100% dalam 1x24 jam.</p>
+      </div>
+      <div class="help-card">
+        <h3>Kontak admin?</h3>
+        <p>WhatsApp: 08xxxxxxxxxx<br>Telegram: @ysstore</p>
+      </div>
     </div>
   </section>
 
 </main>
 
 <nav class="bottom-nav">
-  <button class="nav-btn" data-tab="learn" onclick="App.switchTab('learn')">
-    <span class="nav-icon">📚</span><span class="nav-label">Learn</span>
-  </button>
-  <button class="nav-btn" data-tab="topup" onclick="App.switchTab('topup')">
-    <span class="nav-icon">🛒</span><span class="nav-label">Top Up</span>
+  <button class="nav-btn active" data-tab="home" onclick="App.switchTab('home')">
+    <span class="nav-icon">🏠</span><span class="nav-label">Home</span>
   </button>
   <button class="nav-btn" data-tab="orders" onclick="App.switchTab('orders')">
     <span class="nav-icon">📦</span><span class="nav-label">Pesanan</span>
   </button>
-  <button class="nav-btn" data-tab="achievements" onclick="App.switchTab('achievements')">
-    <span class="nav-icon">🏆</span><span class="nav-label">Achieve</span>
-  </button>
-  <button class="nav-btn active" data-tab="articles" onclick="App.switchTab('articles')">
-    <span class="nav-icon">🏠</span><span class="nav-label">Home</span>
-  </button>
-  <button class="nav-btn" data-tab="rewards" onclick="App.switchTab('rewards')">
-    <span class="nav-icon">💰</span><span class="nav-label">Reward</span>
-  </button>
   <button class="nav-btn" data-tab="profile" onclick="App.switchTab('profile')">
-    <span class="nav-icon">👤</span><span class="nav-label">Profile</span>
+    <span class="nav-icon">👤</span><span class="nav-label">Profil</span>
   </button>
   <button class="nav-btn" data-tab="help" onclick="App.switchTab('help')">
     <span class="nav-icon">❓</span><span class="nav-label">Bantuan</span>
   </button>
 </nav>
 
-<div class="modal" id="lesson-modal"></div>
 <div class="modal" id="game-modal"></div>
-<div class="modal" id="reward-modal"></div>
 
 <!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
 
-<!-- App Scripts -->
-<script src="js/i18n.js?v=1790781355"></script>
-<script src="js/lessons-data.js?v=1790781355"></script>
-<script src="js/jawa-data.js?v=1790781355"></script>
-<script src="js/voice-jawa.js?v=1790781355"></script>
-<script src="js/duolingo-core.js?v=1790781355"></script>
-<script src="js/games-data.js?v=1790781355"></script>
-<script src="js/animasi.js?v=1790781355"></script>
-<script src="js/duolingo-ui.js?v=1790781355"></script>
-<script src="js/topup-ui.js?v=1790781355"></script>
-<script src="js/telegram-config.js?v=1790781355"></script>
-<script src="js/firebase-config.js?v=1790781355"></script>
-<script src="js/auth.js?v=1790781355"></script>
-<script src="js/rewards.js?v=1790781355"></script>
-<script src="js/ads-manager.js?v=1790781355"></script>
-<script src="js/log-tracker.js?v=1790781355"></script>
-<script src="js/referral.js?v=1790781355"></script>
-<script src="js/referral-ui.js?v=1790781355"></script>
-<script src="js/articles.js?v=1790781355"></script>
-<script src="js/article-premium.js?v=1790781355"></script>
-<script src="js/fullscreen-ads.js?v=1790781355"></script>
+<!-- YS Store Scripts -->
+<script src="js/games-data.js?v=1"></script>
+<script src="js/firebase-config.js?v=1"></script>
+<script src="js/auth.js?v=1"></script>
+<script src="js/telegram-config.js?v=1"></script>
+<script src="js/animasi.js?v=1"></script>
+<script src="js/topup-ui.js?v=1"></script>
 <script src="js/home-store.js?v=1"></script>
-<script src="js/app.js?v=1790781355"></script>
-<script src="js/premium-ui.js?v=1790781355"></script>
-<script src="js/header-menu.js?v=1790781355"></script>
-<script src="js/default-tab.js?v=1790781355"></script>
-<script src="js/onboarding.js?v=1790781355"></script>
-<script src="js/retention.js?v=1790781355"></script>
+<script src="js/premium-ui.js?v=1"></script>
+<script src="js/app.js?v=1"></script>
+<script src="js/log-tracker.js?v=1"></script>
 
 <script>
-// ==========================================
-// FORCE ADS INJECT (fallback v9)
-// ==========================================
+// Splash hide
 (function() {
-  console.log('[ForceAds] Script aktif — versi 1790447068');
-  var retryCount = 0;
-  var maxRetry = 20;
-  var timer = setInterval(function() {
-    retryCount++;
-    if (typeof window.AdsManager !== 'undefined' && window.AdsManager.init) {
-      if (!window.AdsManager.initialized) {
-        console.log('[ForceAds] AdsManager belum init → paksa init');
-        try { window.AdsManager.init(); } catch(e) { console.warn('[ForceAds] err:', e); }
-      } else {
-        console.log('[ForceAds] AdsManager sudah init — OK');
-        clearInterval(timer);
-      }
-    }
-    if (retryCount >= maxRetry) {
-      console.warn('[ForceAds] Max retry, stop.');
-      clearInterval(timer);
-    }
-  }, 500);
-})();
-</script>
-<script>
-(function() {
-    // Sembunyikan splash setelah halaman siap
     function hideSplash() {
         var splash = document.getElementById('app-splash');
         if (!splash) return;
         setTimeout(function() {
             splash.classList.add('hide');
             setTimeout(function() { splash.remove(); }, 600);
-        }, 800); // minimal 800ms biar kelihatan
+        }, 800);
     }
-
-    if (document.readyState === 'complete') {
-        hideSplash();
-    } else {
+    if (document.readyState === 'complete') hideSplash();
+    else {
         window.addEventListener('load', hideSplash);
-        // Fallback: hide setelah 3 detik
         setTimeout(hideSplash, 3000);
     }
-
-    // Cegah zoom gesture
     document.addEventListener('gesturestart', function(e) { e.preventDefault(); });
     document.addEventListener('dblclick', function(e) { e.preventDefault(); }, { passive: false });
 })();
-</script>
-<script>
-// PWA Service Worker registration
+
+// Service Worker
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', function() {
     navigator.serviceWorker.register('/sw.js?v=1')
-      .then(function(reg) { console.log('[SW] Registered:', reg.scope); })
       .catch(function(err) { console.warn('[SW] Register failed:', err); });
   });
 }
 </script>
-<script src="js/premium-features.js?v=1790781355"></script>
-<script src="js/landing-promo.js?v=1790781355"></script>
-<script src="js/analytics.js?v=1790781355"></script>
+
 </body>
 </html>

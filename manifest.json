@@ -47,19 +47,19 @@
   ],
   "shortcuts": [
     {
-      "name": "Game",
-      "short_name": "Game",
+      "name": "Home",
+      "short_name": "Home",
       "url": "/?tab=home"
-    },
-    {
-      "name": "Pulsa",
-      "short_name": "Pulsa",
-      "url": "/?tab=topup"
     },
     {
       "name": "Pesanan",
       "short_name": "Order",
       "url": "/?tab=orders"
+    },
+    {
+      "name": "Profil",
+      "short_name": "Profil",
+      "url": "/?tab=profile"
     }
   ]
 }

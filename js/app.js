@@ -1,83 +1,35 @@
-/* LEARN EARN — APP v4 (fix achievements) */
+/* ============================================
+   YS STORE — APP v1
+   ============================================ */
 
 const App = {
-  currentTab: 'learn',
+  currentTab: 'home',
 
   async init() {
-    this.checkPendingAdReward();
-    console.log('[App] Initializing...');
+    console.log('[YS Store] Initializing...');
 
-    if (typeof I18n !== 'undefined') I18n.init();
     if (typeof Auth !== 'undefined') await Auth.init();
 
     setTimeout(async () => {
-      // Sync ad counter dari Firestore dulu
-      if (typeof Rewards !== 'undefined' && Rewards.syncFromFirestore) {
-        try { await Rewards.syncFromFirestore(); } catch(e) {}
-      }
       this.renderAll();
-      if (typeof Rewards !== 'undefined') {
-        Rewards.checkDailyLogin();
-      }
-      this.switchTab('articles');
-    }, 800);
-  },
-
-  onLangChanged(lang) {
-    console.log('[App] Lang changed:', lang);
-    try {
-      if (typeof I18n !== 'undefined') I18n.applyAll();
-      if (typeof DuoUI !== 'undefined') {
-        DuoUI.renderCategories();
-        DuoUI.renderLessons();
-      }
-      if (typeof TopUpUI !== 'undefined') TopUpUI.render();
-      if (this.currentTab === 'achievements' && typeof DuoUI !== 'undefined') {
-        DuoUI.renderAch();
-      }
-      if (this.currentTab === 'rewards' && typeof Rewards !== 'undefined') {
-        try {
-          const el = document.getElementById('rewards-content');
-          if (el) el.innerHTML = Rewards.renderRewardsPage();
-        } catch (e) { console.warn('[App] lang rewards error:', e); }
-      }
-    } catch (e) { console.error('[App] onLangChanged:', e); }
-  },
-
-  checkPendingAdReward() {
-    try {
-      const pending = localStorage.getItem('learnearn_ad_pending');
-      if (pending) {
-        const elapsed = Date.now() - parseInt(pending);
-        if (elapsed < 5 * 60 * 1000) {
-          console.log('[App] Processing pending ad reward');
-          setTimeout(() => {
-            if (typeof Rewards !== 'undefined') Rewards.giveAdReward();
-          }, 1500);
-        }
-        localStorage.removeItem('learnearn_ad_pending');
-      }
-    } catch (e) {}
+      this.switchTab('home');
+    }, 500);
   },
 
   onUserChanged(user) {
-    console.log('[App] User changed:', user ? user.uid : 'none');
+    console.log('[YS Store] User changed:', user ? user.uid : 'none');
     this.renderAll();
   },
 
   renderAll() {
     try {
       if (typeof Animate !== 'undefined') Animate.init();
-      if (typeof DL !== 'undefined') DL.regenHearts();
-      if (typeof DuoUI !== 'undefined') {
-        DuoUI.renderStats();
-        DuoUI.renderCategories();
-        DuoUI.renderLessons();
-        DuoUI.renderProfile();
-      }
-      if (typeof TopUpUI !== 'undefined') TopUpUI.render();
+      if (typeof YSHome !== 'undefined') YSHome.render();
       if (typeof Auth !== 'undefined') Auth.updateUI();
-    } catch (e) { console.error('[App] renderAll:', e); }
+      if (typeof TopUpUI !== 'undefined') TopUpUI.render(true);
+    } catch (e) {
+      console.error('[YS Store] renderAll:', e);
+    }
   },
 
   switchTab(tab) {
@@ -85,86 +37,51 @@ const App = {
     document.querySelectorAll('.tab-page').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
 
-    const p = document.getElementById('page-' + tab);
+    var p = document.getElementById('page-' + tab);
     if (p) p.classList.add('active');
-    const b = document.querySelector('.nav-btn[data-tab="' + tab + '"]');
+    var b = document.querySelector('.nav-btn[data-tab="' + tab + '"]');
     if (b) b.classList.add('active');
 
     try {
-      if (tab === 'learn' && typeof DuoUI !== 'undefined') {
-        DuoUI.renderStats();
-        DuoUI.renderCategories();
-        DuoUI.renderLessons();
-      } else if (tab === 'topup' && typeof TopUpUI !== 'undefined') {
-        TopUpUI.render();
-      } else if (tab === 'profile' && typeof DuoUI !== 'undefined') {
-        DuoUI.renderProfile();
+      if (tab === 'home') {
+        if (typeof YSHome !== 'undefined') YSHome.render();
+      } else if (tab === 'orders') {
+        if (typeof TopUpUI !== 'undefined') TopUpUI.renderOrders();
+      } else if (tab === 'profile') {
         if (typeof Auth !== 'undefined') Auth.updateUI();
-      } else if (tab === 'orders' && typeof TopUpUI !== 'undefined') {
-        TopUpUI.renderOrders();
-      } else if (tab === 'achievements' && typeof DuoUI !== 'undefined') {
-        DuoUI.renderAch();
-            } else if (tab === 'articles' || tab === 'home') {
-        try {
-          if (typeof YSHome !== 'undefined') {
-            YSHome.render();
-          } else if (typeof Articles !== 'undefined') {
-            Articles.render();
-          }
-        } catch (e) {
-          console.error('[App] home error:', e);
-          var el = document.getElementById('articles-content');
-          if (el) el.innerHTML = '<div style="padding:20px;background:#fff3cd;border-radius:12px"><p style="color:#856404">⚠️ Error: ' + e.message + '</p></div>';
-        }
-      } else if (tab === 'rewards' && typeof Rewards !== 'undefined') {
-        const el = document.getElementById('rewards-content');
-        if (el) {
-          try {
-            el.innerHTML = Rewards.renderRewardsPage();
-            if (Rewards.loadReferralAsync) {
-              try { Rewards.loadReferralAsync(); } catch(e) {}
-            }
-          } catch (err) {
-            console.error('[App] rewards render error:', err);
-            el.innerHTML = '<div style="margin:20px;padding:16px;background:#fff3cd;border:2px solid #ffc800;border-radius:12px">' +
-              '<h3 style="color:#856404;margin:0 0 8px 0">⚠️ Error: ' + (err.message || 'unknown') + '</h3>' +
-              '<button onclick="location.reload()" style="padding:8px 16px;background:#58cc02;color:white;border:none;border-radius:8px;font-weight:900">🔄 Refresh</button>' +
-              '</div>';
-          }
-        }
+        this.renderProfileStats();
       }
-    } catch (e) { console.error('[App] switchTab:', e); }
+    } catch (e) {
+      console.error('[YS Store] switchTab error:', e);
+    }
 
     window.scrollTo({ top: 0, behavior: 'smooth' });
   },
 
+  renderProfileStats() {
+    try {
+      var orders = JSON.parse(localStorage.getItem('learnearn_orders') || '[]');
+      var total = orders.reduce(function(s, o) { return s + (o.total || 0); }, 0);
+      var el1 = document.getElementById('profile-orders');
+      var el2 = document.getElementById('profile-spent');
+      if (el1) el1.textContent = orders.length;
+      if (el2) el2.textContent = 'Rp ' + total.toLocaleString('id-ID');
+    } catch (e) {}
+  },
+
   changeName() {
     if (typeof Auth === 'undefined') return;
-    const newName = Auth.generateRandomName();
-    const newAvatar = Auth.generateAvatar(newName);
+    var newName = Auth.generateRandomName();
+    var newAvatar = Auth.generateAvatar(newName);
     Auth.profile.displayName = newName;
     Auth.profile.avatar = newAvatar;
     Auth.saveProfile({ displayName: newName, avatar: newAvatar });
     Auth.updateUI();
-    if (typeof DuoUI !== 'undefined') DuoUI.renderProfile();
     if (typeof Animate !== 'undefined') Animate.toast('Nama baru: ' + newName, 'success');
-  },
-
-  resetAll() {
-    if (!confirm('Reset SEMUA data?')) return;
-    if (typeof DL !== 'undefined') DL.reset();
-    localStorage.removeItem('learnearn_orders');
-    alert('Data direset!');
-    location.reload();
   },
 };
 
-document.addEventListener('DOMContentLoaded', () => App.init());
-setInterval(() => {
-  if (typeof DL !== 'undefined' && typeof DuoUI !== 'undefined') {
-    DL.regenHearts();
-    DuoUI.renderStats();
-  }
-}, 60000);
+document.addEventListener('DOMContentLoaded', function() { App.init(); });
+
 if (typeof window !== 'undefined') window.App = App;
-console.log('[app] v4 loaded');
+console.log('[YS Store] app.js loaded');

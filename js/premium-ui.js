@@ -155,139 +155,13 @@
   }
 
   /* ========== 5. PROGRESS RING (Profile) ========== */
-  UI.renderProgressRing = function(containerId, percent, label, sublabel) {
-    var el = document.getElementById(containerId);
-    if (!el) return;
-
-    var radius = 70;
-    var circumference = 2 * Math.PI * radius;
-    var offset = circumference - (percent / 100) * circumference;
-
-    el.innerHTML =
-      '<div class="progress-ring-wrap">' +
-        '<svg class="progress-ring" width="160" height="160" viewBox="0 0 160 160">' +
-          '<defs>' +
-            '<linearGradient id="ringGradient" x1="0%" y1="0%" x2="100%" y2="100%">' +
-              '<stop offset="0%" stop-color="#58cc02" />' +
-              '<stop offset="100%" stop-color="#1cb0f6" />' +
-            '</linearGradient>' +
-          '</defs>' +
-          '<circle class="ring-bg" cx="80" cy="80" r="' + radius + '" />' +
-          '<circle class="ring-fill" cx="80" cy="80" r="' + radius + '" ' +
-            'style="stroke-dasharray:' + circumference + ';stroke-dashoffset:' + circumference + '" />' +
-        '</svg>' +
-        '<div class="progress-ring-label">' +
-          '<div class="num">' + percent + '%</div>' +
-          '<div class="txt">' + (label || 'Progress') + '</div>' +
-        '</div>' +
-      '</div>';
-
-    // Animate
-    setTimeout(function() {
-      var ring = el.querySelector('.ring-fill');
-      if (ring) ring.style.strokeDashoffset = offset;
-    }, 100);
-  };
+  
 
   /* ========== 6. LEADERBOARD ========== */
-  UI.renderLeaderboard = async function(containerId) {
-    var el = document.getElementById(containerId);
-    if (!el) return;
-
-    el.innerHTML = '<p style="text-align:center;padding:20px;color:#999">⏳ Memuat leaderboard...</p>';
-
-    try {
-      if (typeof Auth === 'undefined' || !Auth.db) throw new Error('No DB');
-
-      // Ambil top 10 user berdasarkan XP
-      var snap = await Auth.db.collection('users')
-        .orderBy('xp', 'desc')
-        .limit(10)
-        .get();
-
-      if (snap.empty) {
-        el.innerHTML = '<p style="text-align:center;padding:20px;color:#999">Belum ada data leaderboard</p>';
-        return;
-      }
-
-      var users = snap.docs.map(function(d) { return d.data(); });
-      var html = '<div class="leaderboard-list">';
-
-      users.forEach(function(u, i) {
-        var rank = i + 1;
-        var medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : '#' + rank;
-        var topClass = rank <= 3 ? ' top-' + rank : '';
-        var name = u.displayName || 'Guest';
-        var avatar = u.avatar || '👤';
-        var xp = u.xp || 0;
-        var level = u.level || 1;
-
-        html += '<div class="lb-item' + topClass + '">' +
-          '<div class="lb-rank">' + medal + '</div>' +
-          '<div class="lb-avatar">' + avatar + '</div>' +
-          '<div class="lb-info">' +
-            '<div class="lb-name">' + name + '</div>' +
-            '<div class="lb-xp">Lv ' + level + ' • ' + xp.toLocaleString('id-ID') + ' XP</div>' +
-          '</div>' +
-          '<div class="lb-value">' + xp.toLocaleString('id-ID') + '</div>' +
-        '</div>';
-      });
-
-      html += '</div>';
-      el.innerHTML = html;
-    } catch (e) {
-      console.error('[Leaderboard]', e);
-      el.innerHTML = '<p style="text-align:center;padding:20px;color:#999">Belum ada data</p>';
-    }
-  };
+  
 
   /* ========== 7. DAILY REWARDS CALENDAR ========== */
-  UI.renderDailyCalendar = function(containerId) {
-    var el = document.getElementById(containerId);
-    if (!el) return;
-
-    // Ambil data streak dari DL
-    var streak = 0;
-    try {
-      if (typeof DL !== 'undefined') {
-        streak = DL.getState().streak || 0;
-      }
-    } catch (e) {}
-
-    var today = new Date().getDate();
-    var html = '<div class="daily-calendar">';
-
-    for (var i = 1; i <= 30; i++) {
-      var isClaimed = i <= streak;
-      var isToday = i === streak + 1;
-      var isMissed = i < streak && !isClaimed;
-
-      var cls = 'cal-day';
-      if (isClaimed) cls += ' claimed';
-      else if (isToday) cls += ' today';
-      else if (isMissed) cls += ' missed';
-
-      var icon = isClaimed ? '✓' : (isToday ? '🎁' : '•');
-
-      html += '<div class="' + cls + '" title="Hari ' + i + '">' +
-        '<div class="num">' + i + '</div>' +
-        '<div class="icon">' + icon + '</div>' +
-      '</div>';
-    }
-
-    html += '</div>';
-
-    var info = '<div style="text-align:center;font-size:13px;font-weight:700;color:#666;margin-top:12px">' +
-      '🔥 Streak kamu: <strong style="color:#58cc02">' + streak + ' hari</strong>';
-
-    if (streak < 7) info += ' • ' + (7 - streak) + ' hari lagi untuk bonus 150 koin!';
-    else if (streak < 30) info += ' • ' + (30 - streak) + ' hari lagi untuk 1000 koin!';
-    else info += ' • 🏆 LUAR BIASA!';
-
-    info += '</div>';
-
-    el.innerHTML = html + info;
-  };
+  
 
   /* ========== 8. PULL TO REFRESH ========== */
   function initPullToRefresh() {
@@ -351,25 +225,7 @@
   }
 
   /* ========== 9. SEARCH BAR ========== */
-  UI.initSearchBar = function(inputId, targetSelector, itemSelector) {
-    var input = document.getElementById(inputId);
-    if (!input) return;
-
-    input.addEventListener('input', function() {
-      var q = this.value.toLowerCase().trim();
-      var items = document.querySelectorAll(itemSelector);
-
-      items.forEach(function(item) {
-        var text = item.textContent.toLowerCase();
-        if (q === '' || text.includes(q)) {
-          item.style.display = '';
-          item.style.animation = 'cardFadeIn 0.3s ease';
-        } else {
-          item.style.display = 'none';
-        }
-      });
-    });
-  };
+  
 
   /* ========== 10. LOADING SCREEN ========== */
   function initLoadingScreen() {

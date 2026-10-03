@@ -151,10 +151,6 @@ const TopUpUI = {
     var orders = this.getOrders();
     orders.unshift(order);
     this.saveOrders(orders);
-    // Reward top up
-    if (typeof Rewards !== 'undefined') {
-      try { Rewards.onTopUp(); } catch(e) {}
-    }
     this.showPayment(order, pay);
   },
 

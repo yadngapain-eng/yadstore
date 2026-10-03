@@ -82,34 +82,14 @@ const Auth = {
   // CLEAR DATA LAMA saat user ganti
   // ============================================
   clearLocalData() {
-    console.log('[Auth] Clearing all learnearn_* keys...');
-
-    const keysToKeep = [
-      'learnearn_lang',           // bahasa tetap
-      'learnearn_admin_hash',     // admin password
-      'learnearn_admin',          // admin session
+    console.log('[Auth] Clearing local data...');
+    var keysToKeep = ['learnearn_lang', 'yadstore_lang', 'learnearn_orders', 'yadstore_theme', 'yadstore_sound'];
+    var keysToClear = [
+      'learnearn_local_user', 'learnearn_profile'
     ];
-
-    const keysToClear = [
-      'learnearn_xp', 'learnearn_gems', 'learnearn_hearts', 'learnearn_heartsUpdated',
-      'learnearn_streak', 'learnearn_lastStudy', 'learnearn_completedLessons',
-      'learnearn_achievements', 'learnearn_totalCorrect', 'learnearn_totalWrong',
-      'learnearn_dailyXp', 'learnearn_dailyXpDate', 'learnearn_orders',
-      'learnearn_reward_balance', 'learnearn_reward_totalEarned',
-      'learnearn_reward_totalSpent', 'learnearn_reward_totalWithdrawn',
-      'learnearn_reward_lastLogin', 'learnearn_reward_lastAdWatch',
-      'learnearn_reward_lastAdDate', 'learnearn_reward_lastAdTime',
-      'learnearn_reward_unlockedRewards', 'learnearn_reward_history',
-      'learnearn_reward_referralCode', 'learnearn_reward_usedReferral',
-      'learnearn_prices', 'learnearn_config', 'learnearn_cfg',
-      'learnearn_local_user', 'learnearn_ad_pending',
-    ];
-
-    keysToClear.forEach(k => {
+    keysToClear.forEach(function(k) {
       try { localStorage.removeItem(k); } catch (e) {}
     });
-
-    console.log('[Auth] Old data cleared');
   },
 
   // ============================================
@@ -130,15 +110,7 @@ const Auth = {
           email: this.user.email || null,
           // Game stats
           xp: 0, gems: 0, hearts: 5, streak: 0,
-          completedLessons: [], achievements: [],
-          totalCorrect: 0, totalWrong: 0,
-          lastStudy: null,
-          dailyXp: 0, dailyXpDate: null,
-          // Reward
           balance: 0, totalEarned: 0, totalSpent: 0, totalWithdrawn: 0,
-          lastAdWatch: 0, lastAdDate: null, lastAdTime: 0,
-          referralCode: null,
-          usedReferral: null,
           // Meta
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
@@ -253,47 +225,7 @@ const Auth = {
   // ============================================
   syncLocalFromProfile() {
     if (!this.profile) return;
-    const p = this.profile;
-
-    // Game stats
-    const map = {
-      'xp': p.xp || 0,
-      'gems': p.gems || 0,
-      'hearts': p.hearts !== undefined ? p.hearts : 5,
-      'heartsUpdated': p.heartsUpdated || Date.now(),
-      'streak': p.streak || 0,
-      'lastStudy': p.lastStudy || null,
-      'completedLessons': p.completedLessons || [],
-      'achievements': p.achievements || [],
-      'totalCorrect': p.totalCorrect || 0,
-      'totalWrong': p.totalWrong || 0,
-      'dailyXp': p.dailyXp || 0,
-      'dailyXpDate': p.dailyXpDate || null,
-    };
-
-    Object.keys(map).forEach(k => {
-      try { localStorage.setItem('learnearn_' + k, JSON.stringify(map[k])); } catch (e) {}
-    });
-
-    // Reward
-    const rewardMap = {
-      'learnearn_reward_balance': p.balance || 0,
-      'learnearn_reward_totalEarned': p.totalEarned || 0,
-      'learnearn_reward_totalSpent': p.totalSpent || 0,
-      'learnearn_reward_totalWithdrawn': p.totalWithdrawn || 0,
-      'learnearn_reward_lastAdWatch': p.lastAdWatch || 0,
-      'learnearn_reward_lastAdDate': p.lastAdDate || null,
-      'learnearn_reward_lastAdTime': p.lastAdTime || 0,
-      'learnearn_reward_referralCode': p.referralCode || null,
-      'learnearn_reward_usedReferral': p.usedReferral || null,
-      'learnearn_reward_unlockedRewards': p.unlockedRewards || [],
-    };
-
-    Object.keys(rewardMap).forEach(k => {
-      try { localStorage.setItem(k, JSON.stringify(rewardMap[k])); } catch (e) {}
-    });
-
-    console.log('[Auth] Local synced from profile');
+    console.log('[Auth] Local synced');
   },
 
   // ============================================
