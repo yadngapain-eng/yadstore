@@ -2,8 +2,8 @@
    YS STORE — Service Worker
    ============================================ */
 
-const CACHE_VERSION = 'yadstore-v1791001665';
-const CACHE_NAME = CACHE_VERSION + '-' + '1791001665';
+const CACHE_VERSION = 'yadstore-v1791002185';
+const CACHE_NAME = CACHE_VERSION + '-' + '1791002185';
 
 
 
