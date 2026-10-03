@@ -3,8 +3,8 @@
    Monetag Push + PWA Offline Cache
    ============================================ */
 
-const CACHE_VERSION = 'learnearn-v1';
-const CACHE_NAME = CACHE_VERSION + '-' + '1';
+const CACHE_VERSION = 'ys-store-v1790994663';
+const CACHE_NAME = CACHE_VERSION + '-1790994663';
 
 const PRECACHE_ASSETS = [
   '/',

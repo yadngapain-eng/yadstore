@@ -5,11 +5,11 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="theme-color" content="#58cc02">
+<meta name="theme-color" content="#6366f1">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<meta name="theme-color" content="#58cc02">
-<title>Learn Earn</title>
-<meta name="description" content="Belajar sambil cuan! Baca artikel, selesaikan lesson, top up game, dapat koin. Withdraw ke DANA/OVO/GoPay. Gratis, tanpa modal!">
+<meta name="theme-color" content="#6366f1">
+<title>YS Store — Top Up Game, Pulsa & Voucher Termurah</title>
+<meta name="description" content="YS Store — Top up game, pulsa, kuota & voucher termurah. Proses instan 1-5 menit. AOV, MLBB, FF, PUBG, Genshin, Valorant & 25+ game lainnya!">
 <meta name="keywords" content="belajar sambil cuan, dapat uang dari hp, penghasilan tambahan online, top up game murah, withdraw dana, belajar online">
 <meta name="author" content="Learn Earn">
 <meta name="robots" content="index, follow">
@@ -17,16 +17,16 @@
 <!-- Open Graph (Facebook) -->
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://duniamu.my.id/">
-<meta property="og:title" content="Learn Earn — Belajar Sambil Cuan!">
-<meta property="og:description" content="Baca artikel, main kuis, top up game. Dapat koin, withdraw ke DANA/OVO/GoPay. Gratis!">
+<meta property="og:title" content="YS Store — Top Up Game Termurah">
+<meta property="og:description" content="Top up AOV, MLBB, FF, PUBG, Genshin, Valorant & lainnya. Harga termurah, proses instan!">
 <meta property="og:image" content="https://duniamu.my.id/icons/icon-512.png">
 <meta property="og:site_name" content="Learn Earn">
 <meta property="og:locale" content="id_ID">
 
 <!-- Twitter Card -->
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Learn Earn — Belajar Sambil Cuan!">
-<meta name="twitter:description" content="Dapat koin dari baca artikel & main kuis. Withdraw ke DANA/OVO/GoPay!">
+<meta name="twitter:title" content="YS Store — Top Up Game Termurah">
+<meta name="twitter:description" content="Top up game & pulsa termurah. Proses 1-5 menit!">
 <meta name="twitter:image" content="https://duniamu.my.id/icons/icon-512.png">
 
 <!-- Canonical -->
@@ -36,23 +36,16 @@
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
-  "@type": "WebApplication",
-  "name": "Learn Earn",
+  "@type": "Store",
+  "name": "YS Store",
   "url": "https://duniamu.my.id",
-  "description": "Belajar sambil cuan! Baca artikel, main kuis, top up game, dapat koin, withdraw ke DANA/OVO/GoPay",
-  "applicationCategory": "FinanceApplication",
-  "operatingSystem": "Android, iOS, Web",
-  "offers": {
-    "@type": "Offer",
-    "price": "0",
-    "priceCurrency": "IDR"
-  },
+  "description": "Top up game, pulsa, kuota & voucher termurah. Proses instan 1-5 menit.",
+  "image": "https://duniamu.my.id/icons/icon-512.png",
   "aggregateRating": {
     "@type": "AggregateRating",
     "ratingValue": "4.9",
-    "ratingCount": "10000"
-  },
-  "screenshot": "https://duniamu.my.id/icons/icon-512.png"
+    "ratingCount": "50000"
+  }
 }
 </script>
 
@@ -101,7 +94,7 @@ body {
 #app-splash {
     position: fixed;
     inset: 0;
-    background: linear-gradient(135deg, #58cc02, #89e219);
+    background: linear-gradient(135deg, #6366f1, #8b5cf6, #a855f7);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -124,7 +117,7 @@ body {
     justify-content: center;
     font-size: 56px;
     font-weight: 900;
-    color: #58cc02;
+    color: #6366f1;
     box-shadow: 0 20px 60px rgba(0,0,0,0.2);
     animation: splashPulse 1.5s ease-in-out infinite;
     margin-bottom: 24px;
@@ -195,20 +188,21 @@ body {
   gtag('config', 'G-R1CHPYR321');
 </script>
 <link rel="stylesheet" href="css/voice-jawa.css?v=1790781355">
+<link rel="stylesheet" href="css/ys-store.css?v=1">
 </head>
 <body>
 <div id="app-splash">
-    <div class="splash-logo">LE</div>
-    <div class="splash-title">Learn Earn</div>
-    <div class="splash-subtitle">Belajar, Main, Cuan</div>
+    <div class="splash-logo">YS</div>
+    <div class="splash-title">YS Store</div>
+    <div class="splash-subtitle">Top Up Cepat & Murah</div>
     <div class="splash-loader"></div>
 </div>
 
 <header class="app-header">
   <div class="header-inner">
     <div class="brand">
-      <div class="brand-logo">LE</div>
-      <div class="brand-name">Learn Earn</div>
+      <div class="brand-logo">YS</div>
+      <div class="brand-name">YS Store</div>
     </div>
     <div style="display:flex;gap:6px;align-items:center">
       <select id="lang-selector" onchange="I18n.setLang(this.value)" style="padding:5px 8px;border:2px solid #e5e5e5;border-radius:999px;font-family:inherit;font-weight:800;font-size:11px;background:white;cursor:pointer;outline:none">
@@ -286,10 +280,6 @@ body {
 
     <!-- ========== PAGE: ARTICLES ========== -->
   <section class="tab-page active" id="page-articles">
-    <div class="page-header">
-      <h1>📖 Artikel</h1>
-      <p>Baca artikel, dapat koin per 1 menit</p>
-    </div>
     <div id="articles-content"></div>
   </section>
 
@@ -369,7 +359,7 @@ body {
     <span class="nav-icon">🏆</span><span class="nav-label">Achieve</span>
   </button>
   <button class="nav-btn active" data-tab="articles" onclick="App.switchTab('articles')">
-    <span class="nav-icon">📖</span><span class="nav-label">Artikel</span>
+    <span class="nav-icon">🏠</span><span class="nav-label">Home</span>
   </button>
   <button class="nav-btn" data-tab="rewards" onclick="App.switchTab('rewards')">
     <span class="nav-icon">💰</span><span class="nav-label">Reward</span>
@@ -412,6 +402,7 @@ body {
 <script src="js/articles.js?v=1790781355"></script>
 <script src="js/article-premium.js?v=1790781355"></script>
 <script src="js/fullscreen-ads.js?v=1790781355"></script>
+<script src="js/home-store.js?v=1"></script>
 <script src="js/app.js?v=1790781355"></script>
 <script src="js/premium-ui.js?v=1790781355"></script>
 <script src="js/header-menu.js?v=1790781355"></script>

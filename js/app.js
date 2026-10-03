@@ -19,7 +19,7 @@ const App = {
       if (typeof Rewards !== 'undefined') {
         Rewards.checkDailyLogin();
       }
-      this.switchTab('learn');
+      this.switchTab('articles');
     }, 800);
   },
 
@@ -104,12 +104,15 @@ const App = {
         TopUpUI.renderOrders();
       } else if (tab === 'achievements' && typeof DuoUI !== 'undefined') {
         DuoUI.renderAch();
-            } else if (tab === 'articles' && typeof Articles !== 'undefined') {
+            } else if (tab === 'articles' || tab === 'home') {
         try {
-          Articles.render();
-          if (Articles.checkPending) Articles.checkPending();
+          if (typeof YSHome !== 'undefined') {
+            YSHome.render();
+          } else if (typeof Articles !== 'undefined') {
+            Articles.render();
+          }
         } catch (e) {
-          console.error('[App] articles error:', e);
+          console.error('[App] home error:', e);
           var el = document.getElementById('articles-content');
           if (el) el.innerHTML = '<div style="padding:20px;background:#fff3cd;border-radius:12px"><p style="color:#856404">⚠️ Error: ' + e.message + '</p></div>';
         }

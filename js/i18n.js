@@ -7,7 +7,7 @@ const I18n = {
   TRANSLATIONS: {
     id: {
       // Header
-      brand: 'Learn Earn',
+      brand: 'YS Store',
 
       // Tabs
       tab_learn: 'Learn',
@@ -176,7 +176,7 @@ const I18n = {
 
     en: {
       // Header
-      brand: 'Learn Earn',
+      brand: 'YS Store',
 
       // Tabs
       tab_learn: 'Learn',

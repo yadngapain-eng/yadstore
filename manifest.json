@@ -1,18 +1,24 @@
 {
-  "name": "Learn Earn",
-  "short_name": "LearnEarn",
-  "description": "Belajar, Main, Cuan — Top up game & pulsa, sambil belajar dapat koin",
+  "name": "YS Store",
+  "short_name": "YS Store",
+  "description": "Top up game, pulsa, kuota & voucher termurah. Proses instan!",
   "start_url": "/",
   "scope": "/",
   "id": "/",
   "display": "standalone",
-  "display_override": ["standalone", "minimal-ui"],
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
   "orientation": "portrait",
-  "background_color": "#58cc02",
-  "theme_color": "#58cc02",
+  "background_color": "#6366f1",
+  "theme_color": "#6366f1",
   "lang": "id",
   "dir": "ltr",
-  "categories": ["education", "games", "shopping"],
+  "categories": [
+    "shopping",
+    "games"
+  ],
   "icons": [
     {
       "src": "/icons/icon-192.png",
@@ -41,22 +47,19 @@
   ],
   "shortcuts": [
     {
-      "name": "Belajar",
-      "short_name": "Learn",
-      "url": "/?tab=learn",
-      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+      "name": "Game",
+      "short_name": "Game",
+      "url": "/?tab=home"
     },
     {
-      "name": "Top Up",
-      "short_name": "TopUp",
-      "url": "/?tab=topup",
-      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+      "name": "Pulsa",
+      "short_name": "Pulsa",
+      "url": "/?tab=topup"
     },
     {
-      "name": "Reward",
-      "short_name": "Reward",
-      "url": "/?tab=rewards",
-      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+      "name": "Pesanan",
+      "short_name": "Order",
+      "url": "/?tab=orders"
     }
   ]
 }
