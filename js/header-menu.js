@@ -6,6 +6,8 @@
   'use strict';
 
   var MENU_ITEMS = [
+    { tab: 'reward',       icon: '💰', text: 'Reward',     badge: 'Tonton iklan, dapat koin' },
+    { tab: 'iconshop',     icon: '🖼️', text: 'Icon Shop',  badge: 'Beli icon dengan koin' },
     { tab: 'articles',     icon: '📖', text: 'Artikel',    badge: 'Baca & dapat koin' },
     { tab: 'learn',        icon: '📚', text: 'Belajar',    badge: 'XP & Gems' },
     { tab: 'iconshop',     icon: '🖼️', text: 'Icon Shop',  badge: 'Beli icon' },
