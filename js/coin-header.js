@@ -158,7 +158,7 @@
       if (!content) return;
 
       var saldo = this.getSaldo();
-      var rupiah = saldo / 100;
+      var rupiah = saldo / 1;
 
       var html = '' +
         '<div class="page-header">' +
@@ -174,7 +174,7 @@
             '<div style="font-size:44px;font-weight:900;line-height:1;margin-bottom:4px">🪙 ' + this.fmt(saldo) + '</div>' +
             '<div style="font-size:14px;opacity:0.95;margin-bottom:12px">= Rp ' + this.fmt(Math.floor(rupiah)) + '</div>' +
             '<div style="background:rgba(255,255,255,0.2);border-radius:10px;padding:8px 12px;font-size:11px;display:inline-block">' +
-              '<strong>100 koin = Rp 1</strong> • Hanya untuk top up & beli icon' +
+              '<strong>1 koin = Rp 1</strong> • Hanya untuk top up & beli icon' +
             '</div>' +
           '</div>' +
         '</div>' +

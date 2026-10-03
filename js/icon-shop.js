@@ -1,7 +1,7 @@
 /* ============================================
    ICON SHOP — Beli Icon dengan Koin
    Koin hanya bisa dipakai untuk top up & beli icon
-   100 koin = Rp 1
+   1 koin = Rp 1
    ============================================ */
 
 (function() {
@@ -13,7 +13,7 @@
     VERSION: 'v1',
 
     CONFIG: {
-      KOIN_PER_RUPIAH: 100,
+      KOIN_PER_RUPIAH: 1,
       DISCOUNT_KOIN: 0.2,  // 20% lebih murah pakai koin
     },
 

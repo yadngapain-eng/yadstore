@@ -1,7 +1,7 @@
 /* ============================================
    TONTON IKLAN DAPAT KOIN
    Pakai Adsterra Smartlink
-   100 koin = Rp 1, koin hanya untuk top up
+   1 koin = Rp 1, koin hanya untuk top up
    ============================================ */
 
 (function() {
@@ -19,7 +19,7 @@
       KOIN_MAX: 100,
       COOLDOWN_SEC: 60,
       MAX_PER_DAY: 20,
-      KOIN_PER_RUPIAH: 100,
+      KOIN_PER_RUPIAH: 1,
     },
 
     // Storage keys
@@ -209,7 +209,7 @@
     // POPUP REWARD
     // ============================================
     showPopup: function(koin) {
-      var rupiah = (koin / 100).toFixed(2);
+      var rupiah = (koin / 1).toFixed(2);
       var emoji = koin >= 90 ? '🎉' : (koin >= 50 ? '💰' : '🪙');
       var title = koin >= 90 ? 'JACKPOT!' : 'SELAMAT!';
 
@@ -228,7 +228,7 @@
           '<div style="font-size:14px;font-weight:700;opacity:0.95;margin-bottom:20px">Koin (Rp ' + rupiah + ')</div>' +
           '<div style="background:rgba(255,255,255,0.2);border-radius:12px;padding:12px;margin-bottom:20px;font-size:12px">' +
             'Koin bisa dipakai untuk bayar top up<br>' +
-            '<strong>100 koin = Rp 1</strong>' +
+            '<strong>1 koin = Rp 1</strong>' +
           '</div>' +
           '<button onclick="this.closest('#tonton-popup').remove()" style="padding:14px 40px;background:white;color:#b45309;border:none;border-radius:999px;font-family:inherit;font-size:15px;font-weight:900;cursor:pointer">Lanjut 🎉</button>' +
         '</div>';
@@ -294,7 +294,7 @@
               '<span style="font-size:32px">🎬</span>' +
               '<div style="flex:1">' +
                 '<div style="font-size:18px;font-weight:900;margin-bottom:2px">Tonton Iklan, Dapat Koin!</div>' +
-                '<div style="font-size:11px;opacity:0.9">100 koin = Rp 1 • Koin untuk top up</div>' +
+                '<div style="font-size:11px;opacity:0.9">1 koin = Rp 1 • Koin untuk top up</div>' +
               '</div>' +
             '</div>' +
 
