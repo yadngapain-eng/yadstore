@@ -3,8 +3,8 @@
    NO CACHE untuk ads & API
    ============================================ */
 
-const CACHE_VERSION = 'yadstore-v1791052230';
-const CACHE_NAME = CACHE_VERSION + '-' + '1791052230';
+const CACHE_VERSION = 'yadstore-v1791052527';
+const CACHE_NAME = CACHE_VERSION + '-' + '1791052527';
 
 const PRECACHE_ASSETS = [
   '/',

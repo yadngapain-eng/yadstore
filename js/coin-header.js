@@ -187,7 +187,7 @@
               '<span style="font-size:32px">🎬</span>' +
               '<div>' +
                 '<div style="font-size:16px;font-weight:900;margin-bottom:2px">Tonton Iklan Dapat Koin</div>' +
-                '<div style="font-size:11px;opacity:0.9">Dapat 25-100 koin per tonton</div>' +
+                '<div style="font-size:11px;opacity:0.9">Dapat 10-10.000 koin (semakin tinggi, semakin langka)</div>' +
               '</div>' +
             '</div>' +
             '<div id="tonton-iklan-container"></div>' +
@@ -217,7 +217,7 @@
           '<div style="display:flex;flex-direction:column;gap:10px">' +
             '<div style="display:flex;align-items:center;gap:12px;padding:10px;background:#f7f8fa;border-radius:10px">' +
               '<span style="font-size:24px">🎬</span>' +
-              '<div style="flex:1"><div style="font-size:13px;font-weight:900">Tonton Iklan</div><div style="font-size:11px;color:#666">25-100 koin per tonton</div></div>' +
+              '<div style="flex:1"><div style="font-size:13px;font-weight:900">Tonton Iklan</div><div style="font-size:11px;color:#666">10-10.000 koin per tonton</div></div>' +
             '</div>' +
             '<div style="display:flex;align-items:center;gap:12px;padding:10px;background:#f7f8fa;border-radius:10px">' +
               '<span style="font-size:24px">🛒</span>' +
