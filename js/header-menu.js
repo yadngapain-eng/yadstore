@@ -8,6 +8,7 @@
   var MENU_ITEMS = [
     { tab: 'articles',     icon: '📖', text: 'Artikel',    badge: 'Baca & dapat koin' },
     { tab: 'learn',        icon: '📚', text: 'Belajar',    badge: 'XP & Gems' },
+    { tab: 'iconshop',     icon: '🖼️', text: 'Icon Shop',  badge: 'Beli icon' },
     { tab: 'topup',        icon: '🛒', text: 'Top Up',     badge: 'Game & Pulsa' },
     { tab: 'orders',       icon: '📦', text: 'Pesanan',    badge: 'Riwayat' },
     { tab: 'achievements', icon: '🏆', text: 'Achievement',badge: 'Kumpulkan' },
