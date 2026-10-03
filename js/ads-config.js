@@ -1,5 +1,5 @@
 /* ============================================
-   ADS CONFIG — Adsterra (duniamu.my.id)
+   ADS CONFIG — Adsterra for duniamu.my.id
    Zone IDs: 31533043, 31533051, 31533052
    ============================================ */
 
@@ -22,25 +22,4 @@ window.ADS_CONFIG = {
   },
 };
 
-(function() {
-  if (typeof window === 'undefined') return;
-
-  function registerSW() {
-    if ('serviceWorker' in navigator) {
-      var swUrl = '/sw.js?v=' + Date.now();
-      navigator.serviceWorker.register(swUrl)
-        .then(function() { console.log('[SW] registered'); })
-        .catch(function(e) { console.warn('[SW] fail:', e.message); });
-    }
-  }
-
-  if (document.readyState === 'complete') {
-    setTimeout(registerSW, 2000);
-  } else {
-    window.addEventListener('load', function() {
-      setTimeout(registerSW, 2000);
-    });
-  }
-})();
-
-console.log('[ads-config] Adsterra for duniamu.my.id');
+console.log('[ads-config] Adsterra for duniamu.my.id loaded');

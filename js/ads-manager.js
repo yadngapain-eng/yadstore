@@ -1,15 +1,17 @@
 /* ============================================
-   YADSTORE — ADS MANAGER v17
+   YADSTORE — ADS MANAGER v20
+   FORCE RESTORE Adsterra
    Script untuk domain: duniamu.my.id
-   Zone ID: 31533043, 31533051, 31533052
-   Updated: 2026-10-03 04:18:47
+   Generated: 2026-10-03 05:11:38
    ============================================ */
 
 (function() {
   'use strict';
+  
+  console.log('[AdsManager] Script loaded, initializing...');
 
   window.AdsManager = {
-    VERSION: 'v17',
+    VERSION: 'v20',
     DOMAIN: 'duniamu.my.id',
     NETWORK: 'adsterra',
 
@@ -29,9 +31,7 @@
       smartlink: 'https://www.profitableratecpmnetwork.com/rnve2ckg?key=f15341dc4ed341cc62411d69d314d518',
     },
 
-    // ============================================
-    // STATE
-    // ============================================
+    // State
     loadedScripts: {},
     injected: {},
     initialized: false,
@@ -43,41 +43,51 @@
     // ============================================
     init() {
       if (this.initialized) {
-        console.log('[AdsManager] Already init');
+        console.log('[AdsManager] Already initialized');
         return;
       }
       this.initialized = true;
-      console.log('[AdsManager] ' + this.VERSION + ' INIT');
+      console.log('[AdsManager] === INIT ===');
       console.log('[AdsManager] Domain: ' + this.DOMAIN);
       console.log('[AdsManager] Config:', this.CONFIG);
 
-      this.loadAds();
+      this.loadAds(false);
+
+      // Retry setelah 5 detik
+      var self = this;
+      setTimeout(function() {
+        console.log('[AdsManager] Retry load setelah 5s...');
+        self.loadAds(true);
+      }, 5000);
+
+      // Retry lagi setelah 15 detik
+      setTimeout(function() {
+        console.log('[AdsManager] Retry load setelah 15s...');
+        self.loadAds(true);
+      }, 15000);
+
+      console.log('[AdsManager] Ready');
     },
 
+    // ============================================
+    // LOAD ADS
+    // ============================================
     loadAds(force) {
       var self = this;
       var cb = Date.now();
 
-      // POPUNDER (Zone 31533043)
       if (this.CONFIG.POPUNDER_ENABLED) {
         setTimeout(function() {
-          if (force || !self.injected['adsterra-popunder']) {
-            console.log('[AdsManager] Inject popunder (zone 31533043)...');
-            self.injectScript(self.SCRIPTS.popunder + '?cb=' + cb, 'adsterra-popunder');
-            self.injected['adsterra-popunder'] = true;
-          }
-        }, 500);
+          console.log('[AdsManager] Injecting popunder...');
+          self.injectScript(self.SCRIPTS.popunder + '?cb=' + cb, 'adsterra-popunder');
+        }, 200);
       }
 
-      // SOCIALBAR (Zone 31533051)
       if (this.CONFIG.SOCIALBAR_ENABLED) {
         setTimeout(function() {
-          if (force || !self.injected['adsterra-socialbar']) {
-            console.log('[AdsManager] Inject socialbar (zone 31533051)...');
-            self.injectScript(self.SCRIPTS.socialbar + '?cb=' + cb, 'adsterra-socialbar');
-            self.injected['adsterra-socialbar'] = true;
-          }
-        }, 1500);
+          console.log('[AdsManager] Injecting socialbar...');
+          self.injectScript(self.SCRIPTS.socialbar + '?cb=' + cb, 'adsterra-socialbar');
+        }, 1000);
       }
     },
 
@@ -106,13 +116,17 @@
             resolve(ok);
           };
 
-          s.onload = function() { done(true); };
-          s.onerror = function(e) {
-            console.error('[AdsManager] ✗ Error ' + id, e);
-            done(false);
+          s.onload = function() { 
+            console.log('[AdsManager] Script loaded: ' + id);
+            done(true); 
+          };
+          s.onerror = function(e) { 
+            console.error('[AdsManager] Script failed: ' + id, e);
+            done(false); 
           };
           setTimeout(function() { done(true); }, 8000);
           document.head.appendChild(s);
+          console.log('[AdsManager] Injected: ' + src.substring(0, 80));
         } catch (e) {
           console.error('[AdsManager] Inject error:', e);
           resolve(false);
@@ -121,8 +135,7 @@
     },
 
     // ============================================
-    // OPEN REWARDED AD (Smartlink)
-    // Zone 31533052
+    // REWARDED AD
     // ============================================
     async openRewarded() {
       if (!this.CONFIG.SMARTLINK_ENABLED) {
@@ -135,8 +148,10 @@
         return { success: false, reason: 'cooldown', remain: remain };
       }
 
+      console.log('[AdsManager] Opening smartlink...');
       var smartlink = this.SCRIPTS.smartlink;
       var popup = null;
+
       try {
         popup = window.open(smartlink, '_blank', 'width=800,height=600');
       } catch (e) {}
@@ -159,10 +174,14 @@
   };
 
   // ============================================
-  // AUTO INIT
+  // AUTO INIT — Multiple triggers
   // ============================================
   function startAds() {
-    console.log('[AdsManager] Starting...');
+    console.log('[AdsManager] === START ADS ===');
+    if (!window.AdsManager) {
+      console.error('[AdsManager] Not defined!');
+      return;
+    }
     try {
       window.AdsManager.init();
     } catch (e) {
@@ -170,19 +189,26 @@
     }
   }
 
+  // Trigger 1: DOM ready
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', startAds);
   } else {
     setTimeout(startAds, 100);
   }
 
-  // Force restart setelah 3 detik
+  // Trigger 2: window load
+  window.addEventListener('load', function() {
+    console.log('[AdsManager] Window loaded, force init...');
+    setTimeout(startAds, 500);
+  });
+
+  // Trigger 3: Force after 3s
   setTimeout(function() {
-    if (window.AdsManager && window.AdsManager.initialized) {
-      console.log('[AdsManager] Force reload scripts');
-      window.AdsManager.loadAds(true);
+    if (window.AdsManager && !window.AdsManager.initialized) {
+      console.log('[AdsManager] Force init (3s timeout)');
+      startAds();
     }
   }, 3000);
 
-  console.log('[ads-manager] ' + window.AdsManager.VERSION + ' loaded for ' + window.AdsManager.DOMAIN);
+  console.log('[AdsManager] Script setup complete');
 })();
