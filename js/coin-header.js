@@ -187,7 +187,7 @@
               '<span style="font-size:32px">🎬</span>' +
               '<div>' +
                 '<div style="font-size:16px;font-weight:900;margin-bottom:2px">Tonton Iklan Dapat Koin</div>' +
-                '<div style="font-size:11px;opacity:0.9">Dapat 10-10.000 koin (semakin tinggi, semakin langka)</div>' +
+                '<div style="font-size:11px;opacity:0.9">Dapat 1 sampai 10.000 koin</div>' +
               '</div>' +
             '</div>' +
             '<div id="tonton-iklan-container"></div>' +
