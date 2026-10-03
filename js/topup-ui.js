@@ -1,3 +1,7 @@
+
+// Icon version untuk cache busting
+window.ICON_VERSION = 'v1791002787';
+
 const TopUpUI = {
   // ===== Helper: format tanggal Indonesia =====
   formatDate: function(isoString) {
@@ -82,7 +86,7 @@ const TopUpUI = {
       var initial = item.name.charAt(0);
       return '<div class="game-card" onclick="TopUpUI.open(\'' + item.id + '\')" style="--game-color: ' + item.color + '">' +
         '<div class="game-icon-wrap" style="background: ' + item.color + '15">' +
-          '<img src="' + item.icon + '" class="game-icon-img" alt="' + self.esc(item.name) + '" ' +
+          '<img src="' + item.icon + '?cb=' + (window.ICON_VERSION || 'v1') + '" class="game-icon-img" alt="' + self.esc(item.name) + '" ' +
                'onload="this.style.opacity=1" ' +
                'style="opacity:0;transition:opacity 0.3s" ' +
                'onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">' +
@@ -110,7 +114,7 @@ const TopUpUI = {
       '<div class="modal-header" style="background: ' + item.color + '">' +
       '<button class="modal-close" onclick="TopUpUI.close()">X</button>' +
       '<div class="modal-icon-wrap">' +
-        '<img src="' + item.icon + '" class="modal-icon-img" alt="' + self.esc(item.name) + '" ' +
+        '<img src="' + item.icon + '?cb=' + (window.ICON_VERSION || 'v1') + '" class="modal-icon-img" alt="' + self.esc(item.name) + '" ' +
              'onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">' +
         '<div class="modal-icon-fallback" style="display:none;background:rgba(0,0,0,0.2)">' + item.name.charAt(0) + '</div>' +
       '</div>' +

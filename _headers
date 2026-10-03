@@ -1,6 +1,5 @@
 # ============================================
 # CLOUDFLARE PAGES HEADERS
-# CSP: allow Adsterra untuk duniamu.my.id
 # ============================================
 
 /sw.js
@@ -21,6 +20,27 @@
 /icons/*.png
   Content-Type: image/png
   Cache-Control: public, max-age=604800, immutable
+  Access-Control-Allow-Origin: *
+
+/icons/*.svg
+  Content-Type: image/svg+xml
+  Cache-Control: public, max-age=604800, immutable
+  Access-Control-Allow-Origin: *
+
+/icons/*.jpg
+  Content-Type: image/jpeg
+  Cache-Control: public, max-age=604800, immutable
+  Access-Control-Allow-Origin: *
+
+/icons/*.jpeg
+  Content-Type: image/jpeg
+  Cache-Control: public, max-age=604800, immutable
+  Access-Control-Allow-Origin: *
+
+/icons/*.webp
+  Content-Type: image/webp
+  Cache-Control: public, max-age=604800, immutable
+  Access-Control-Allow-Origin: *
 
 /css/*.css
   Content-Type: text/css
