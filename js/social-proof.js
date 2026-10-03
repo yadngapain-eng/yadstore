@@ -1,34 +1,28 @@
 /* ============================================
-   SOCIAL PROOF — LIVE NOTIFICATION
-   Notifikasi palsu: user lain dapat koin, beli, dll
-   Membuat website terlihat ramai
+   LIVE NOTIFICATION — REAL-TIME
+   Notif bergerak terus, berganti setiap saat
+   Seperti Facebook/TikTok Live
    ============================================ */
 
 (function() {
   'use strict';
 
-  console.log('[SocialProof] Loading...');
+  console.log('[LiveNotif] Loading...');
 
   window.SocialProof = {
-    VERSION: 'v1',
+    VERSION: 'v2-live',
 
     CONFIG: {
-      // Interval notif baru (detik)
-      MIN_INTERVAL: 15,
-      MAX_INTERVAL: 35,
-
-      // Durasi tampil notif (detik)
-      DISPLAY_DURATION: 6,
-
-      // Max notif per halaman
-      MAX_PER_SESSION: 30,
-
-      // Delay sebelum notif pertama (detik)
-      INITIAL_DELAY: 8,
+      MIN_INTERVAL: 5,
+      MAX_INTERVAL: 15,
+      DISPLAY_DURATION: 5,
+      MAX_PER_SESSION: 999,  // Terus jalan
+      INITIAL_DELAY: 2,
+      SHOW_COUNTER: true,
     },
 
     // ============================================
-    // DATA NAMA USER (terlihat natural)
+    // NAMA USER (60 nama Indonesia)
     // ============================================
     NAMES: [
       'Reyhan', 'Amel', 'Budi', 'Sari', 'Andi', 'Dewi', 'Fajar', 'Gita',
@@ -39,78 +33,94 @@
       'Pandu', 'Qori', 'Rizki', 'Siska', 'Tari', 'Udin', 'Vera', 'Wulan',
       'Yoga', 'Zahra', 'Ayu', 'Bagus', 'Cahyo', 'Dian', 'Eko', 'Fitri',
       'Gilang', 'Hesti', 'Ilham', 'Jasmine', 'Krisna', 'Lisa', 'Miko',
+      'Nadia', 'Oki', 'Putra', 'Qila', 'Rio', 'Sinta', 'Taufik', 'Ulfa',
+      'Vino', 'Winda', 'Yudi', 'Zaki', 'Ahmad', 'Bayu', 'Cindy', 'Dimas',
     ],
 
     // ============================================
-    // TEMPLATE NOTIFIKASI
+    // TEMPLATE NOTIFIKASI (LEBIH VARIATIF)
     // ============================================
     TEMPLATES: [
-      // Tipe: dapat koin dari tonton iklan
+      // 1. Tonton iklan dapat koin
       {
         type: 'earn',
         icon: '🎬',
         color: '#fbbf24',
+        weight: 35,
         build: function(name, data) {
           return '<strong>' + name + '</strong> baru dapat <strong>' + data.koin + ' koin</strong> dari tonton iklan!';
         },
         dataPool: {
           koin: [50, 100, 150, 250, 500, 750, 1000, 1500, 2500, 5000, 10000],
-          weight: [30, 25, 15, 10, 8, 5, 3, 2, 1, 0.8, 0.2], // 10000 = 0.2% (langka)
+          weight: [25, 25, 15, 12, 10, 6, 4, 1.5, 0.7, 0.5, 0.3],
         },
       },
-      // Tipe: beli top up dengan koin
+      // 2. Beli top up dengan koin
       {
         type: 'buy',
         icon: '🛒',
         color: '#58cc02',
+        weight: 25,
         build: function(name, data) {
-          return '<strong>' + name + '</strong> baru beli <strong>' + data.item + '</strong> pakai koin!';
+          return '<strong>' + name + '</strong> baru beli <strong>' + data.item + '</strong>!';
         },
         dataPool: {
           item: [
-            '5 Diamond MLBB',
-            '12 Diamond FF',
-            '28 Diamond MLBB',
-            '60 UC PUBG',
-            '80 CP COD',
-            '100 Genesis Genshin',
-            '5 Voucher AOV',
-            '400 Robux',
-            'Pulsa 10.000',
-            'Kuota 5GB',
+            '5 Diamond MLBB', '12 Diamond FF', '28 Diamond MLBB',
+            '60 UC PUBG', '80 CP COD', '100 Genesis Genshin',
+            '5 Voucher AOV', '400 Robux', 'Pulsa 10.000',
+            'Kuota 5GB', '12 Diamond MLBB', '86 Diamond MLBB',
+            '170 Gems BS', '50 Genesis HSR',
           ],
         },
       },
-      // Tipe: beli icon
+      // 3. Beli icon
       {
         type: 'icon',
         icon: '🎮',
         color: '#a855f7',
+        weight: 10,
         build: function(name, data) {
           return '<strong>' + name + '</strong> baru beli icon <strong>' + data.icon + '</strong>!';
         },
         dataPool: {
-          icon: ['MLBB', 'Free Fire', 'PUBG', 'Genshin', 'Roblox', 'Valorant', 'Minecraft', 'COC'],
+          icon: ['MLBB', 'Free Fire', 'PUBG', 'Genshin', 'Roblox', 'Valorant', 'Minecraft', 'COC', 'COD'],
         },
       },
-      // Tipe: referral bonus
+      // 4. Referral bonus
       {
         type: 'referral',
         icon: '🎁',
         color: '#1cb0f6',
+        weight: 8,
         build: function(name, data) {
           return '<strong>' + name + '</strong> dapat <strong>' + data.koin + ' koin</strong> dari referral!';
         },
         dataPool: {
-          koin: [500, 1000, 1500, 2000, 2500],
-          weight: [40, 25, 20, 10, 5],
+          koin: [500, 1000, 1500, 2000, 2500, 5000],
+          weight: [35, 25, 15, 12, 8, 5],
         },
       },
-      // Tipe: jackpot
+      // 5. Milestone koin
+      {
+        type: 'milestone',
+        icon: '🔥',
+        color: '#ff9600',
+        weight: 7,
+        build: function(name, data) {
+          return '<strong>' + name + '</strong> udah kumpulin <strong>' + data.total + ' koin</strong>!';
+        },
+        dataPool: {
+          total: [1000, 2500, 5000, 10000, 25000, 50000, 100000, 250000],
+          weight: [30, 25, 18, 12, 8, 4, 2, 1],
+        },
+      },
+      // 6. JACKPOT
       {
         type: 'jackpot',
         icon: '🎉',
         color: '#ef4444',
+        weight: 3,
         build: function(name, data) {
           return '🎉 <strong>' + name + '</strong> JACKPOT dapat <strong>' + data.koin + ' koin</strong>!';
         },
@@ -119,26 +129,51 @@
           weight: [70, 30],
         },
       },
-      // Tipe: milestone
+      // 7. Streak / aktivitas
       {
-        type: 'milestone',
-        icon: '🔥',
-        color: '#ff9600',
+        type: 'streak',
+        icon: '⚡',
+        color: '#8b5cf6',
+        weight: 5,
         build: function(name, data) {
-          return '<strong>' + name + '</strong> udah kumpulin <strong>' + data.total + ' koin</strong>!';
+          return '<strong>' + name + '</strong> udah nonton <strong>' + data.total + ' iklan</strong> hari ini!';
         },
         dataPool: {
-          total: [5000, 10000, 25000, 50000, 100000, 250000],
-          weight: [30, 25, 20, 15, 7, 3],
+          total: [5, 10, 15, 20, 25, 30, 50, 100],
+          weight: [30, 25, 18, 12, 8, 4, 2, 1],
+        },
+      },
+      // 8. Baru join
+      {
+        type: 'join',
+        icon: '✨',
+        color: '#10b981',
+        weight: 4,
+        build: function(name, data) {
+          return '<strong>' + name + '</strong> baru gabung dan siap cuan!';
+        },
+      },
+      // 9. Bukti withdraw (WAJIB sosial proof paling kuat!)
+      {
+        type: 'withdraw',
+        icon: '💸',
+        color: '#06b6d4',
+        weight: 3,
+        build: function(name, data) {
+          return '<strong>' + name + '</strong> baru withdraw <strong>Rp ' + data.rupiah + '</strong>!';
+        },
+        dataPool: {
+          rupiah: [10000, 15000, 25000, 50000, 75000, 100000, 250000],
+          weight: [30, 25, 20, 12, 8, 4, 1],
         },
       },
     ],
 
-    // ============================================
-    // STATE
-    // ============================================
+    // State
     shownCount: 0,
     _started: false,
+    _queue: [],
+    _timer: null,
 
     // ============================================
     // HELPERS
@@ -147,7 +182,6 @@
       return arr[Math.floor(Math.random() * arr.length)];
     },
 
-    // Weighted random untuk data
     weightedRandom: function(items, weights) {
       var total = weights.reduce(function(a, b) { return a + b; }, 0);
       var random = Math.random() * total;
@@ -159,39 +193,63 @@
       return items[0];
     },
 
-    formatNumber: function(n) {
+    fmt: function(n) {
       try { return n.toLocaleString('id-ID'); } catch (e) { return '' + n; }
+    },
+
+    // Weighted template picker
+    pickTemplate: function() {
+      var self = this;
+      var totalWeight = 0;
+      this.TEMPLATES.forEach(function(t) {
+        totalWeight += (t.weight || 1);
+      });
+
+      var random = Math.random() * totalWeight;
+      var cumulative = 0;
+
+      for (var i = 0; i < this.TEMPLATES.length; i++) {
+        cumulative += (this.TEMPLATES[i].weight || 1);
+        if (random <= cumulative) {
+          return this.TEMPLATES[i];
+        }
+      }
+      return this.TEMPLATES[0];
     },
 
     // ============================================
     // GENERATE NOTIFIKASI
     // ============================================
     generateNotif: function() {
-      // Pilih tipe notif
-      var template = this.randomItem(this.TEMPLATES);
-
-      // Pilih nama
+      var template = this.pickTemplate();
       var name = this.randomItem(this.NAMES);
-
-      // Siapkan data
       var data = {};
-      if (template.dataPool.koin) {
-        var koin = template.dataPool.weight
-          ? this.weightedRandom(template.dataPool.koin, template.dataPool.weight)
-          : this.randomItem(template.dataPool.koin);
-        data.koin = this.formatNumber(koin);
-      }
-      if (template.dataPool.item) {
-        data.item = this.randomItem(template.dataPool.item);
-      }
-      if (template.dataPool.icon) {
-        data.icon = this.randomItem(template.dataPool.icon);
-      }
-      if (template.dataPool.total) {
-        var total = template.dataPool.weight
-          ? this.weightedRandom(template.dataPool.total, template.dataPool.weight)
-          : this.randomItem(template.dataPool.total);
-        data.total = this.formatNumber(total);
+
+      if (template.dataPool) {
+        if (template.dataPool.koin) {
+          var koin = template.dataPool.weight
+            ? this.weightedRandom(template.dataPool.koin, template.dataPool.weight)
+            : this.randomItem(template.dataPool.koin);
+          data.koin = this.fmt(koin);
+        }
+        if (template.dataPool.item) {
+          data.item = this.randomItem(template.dataPool.item);
+        }
+        if (template.dataPool.icon) {
+          data.icon = this.randomItem(template.dataPool.icon);
+        }
+        if (template.dataPool.total) {
+          var total = template.dataPool.weight
+            ? this.weightedRandom(template.dataPool.total, template.dataPool.weight)
+            : this.randomItem(template.dataPool.total);
+          data.total = this.fmt(total);
+        }
+        if (template.dataPool.rupiah) {
+          var rupiah = template.dataPool.weight
+            ? this.weightedRandom(template.dataPool.rupiah, template.dataPool.weight)
+            : this.randomItem(template.dataPool.rupiah);
+          data.rupiah = this.fmt(rupiah);
+        }
       }
 
       return {
@@ -199,140 +257,203 @@
         color: template.color,
         type: template.type,
         html: template.build(name, data),
+        avatar: name.charAt(0).toUpperCase(),
       };
     },
 
     // ============================================
-    // SHOW NOTIFIKASI
+    // CREATE CONTAINER + COUNTER LIVE
+    // ============================================
+    createContainer: function() {
+      if (document.getElementById('social-proof-container')) return;
+
+      var wrapper = document.createElement('div');
+      wrapper.id = 'social-proof-container';
+      wrapper.style.cssText =
+        'position:fixed;' +
+        'bottom:80px;' +
+        'left:12px;' +
+        'right:12px;' +
+        'z-index:9990;' +
+        'pointer-events:none;' +
+        'display:flex;' +
+        'flex-direction:column;' +
+        'gap:8px;' +
+        'max-width:380px;' +
+        'margin:0 auto;';
+
+      document.body.appendChild(wrapper);
+
+      // LIVE COUNTER (di pojok kanan atas notif)
+      if (this.CONFIG.SHOW_COUNTER) {
+        var counter = document.createElement('div');
+        counter.id = 'live-counter';
+        counter.style.cssText =
+          'position:fixed;' +
+          'top:70px;' +
+          'right:12px;' +
+          'z-index:9989;' +
+          'background:linear-gradient(135deg,#ef4444,#dc2626);' +
+          'color:white;' +
+          'padding:6px 12px;' +
+          'border-radius:999px;' +
+          'font-family:inherit;' +
+          'font-size:11px;' +
+          'font-weight:900;' +
+          'box-shadow:0 4px 16px rgba(239,68,68,0.4);' +
+          'display:flex;' +
+          'align-items:center;' +
+          'gap:6px;' +
+          'animation:livePulse 2s infinite;';
+
+        var randomOnline = 200 + Math.floor(Math.random() * 800);
+        counter.innerHTML =
+          '<span style="width:8px;height:8px;border-radius:50%;background:#fff;animation:blink 1s infinite"></span>' +
+          '<span>🔴 LIVE</span>' +
+          '<span id="live-online-count" style="background:rgba(255,255,255,0.25);padding:1px 6px;border-radius:999px">' +
+            randomOnline +
+          '</span>' +
+          '<span style="font-size:9px;opacity:0.9">online</span>';
+
+        document.body.appendChild(counter);
+
+        // Update counter setiap 3-8 detik
+        var self = this;
+        setInterval(function() {
+          var el = document.getElementById('live-online-count');
+          if (!el) return;
+          var current = parseInt(el.textContent) || 500;
+          // Fluktuasi ±50 user
+          var change = Math.floor(Math.random() * 40) - 20;
+          var newVal = Math.max(150, Math.min(1500, current + change));
+          el.textContent = newVal;
+        }, 3000 + Math.random() * 5000);
+      }
+    },
+
+    // ============================================
+    // SHOW NOTIF
     // ============================================
     show: function(notif) {
-      // Cek limit
-      if (this.shownCount >= this.CONFIG.MAX_PER_SESSION) {
-        console.log('[SocialProof] Max session reached');
-        return;
-      }
-
-      // Cek element exist, kalau belum buat
       var container = document.getElementById('social-proof-container');
       if (!container) {
-        container = document.createElement('div');
-        container.id = 'social-proof-container';
-        container.style.cssText = 
-          'position:fixed;' +
-          'bottom:80px;' +
-          'left:12px;' +
-          'right:12px;' +
-          'z-index:9990;' +
-          'pointer-events:none;' +
-          'display:flex;' +
-          'flex-direction:column;' +
-          'gap:8px;' +
-          'max-width:400px;' +
-          'margin:0 auto;';
-        document.body.appendChild(container);
+        this.createContainer();
+        container = document.getElementById('social-proof-container');
       }
 
-      // Buat notif card
+      // Limit tampil: max 3 notif sekaligus
+      while (container.children.length >= 3) {
+        container.removeChild(container.firstChild);
+      }
+
       var card = document.createElement('div');
-      card.style.cssText = 
+      var isSpecial = (notif.type === 'jackpot' || notif.type === 'withdraw');
+
+      card.style.cssText =
         'background:white;' +
         'border-radius:14px;' +
-        'padding:12px 14px;' +
+        'padding:10px 12px;' +
         'box-shadow:0 8px 24px rgba(0,0,0,0.15);' +
         'display:flex;' +
         'align-items:center;' +
         'gap:10px;' +
         'opacity:0;' +
-        'transform:translateY(20px);' +
-        'transition:all 0.4s cubic-bezier(0.68,-0.55,0.265,1.55);' +
+        'transform:translateX(-30px) scale(0.9);' +
+        'transition:all 0.5s cubic-bezier(0.68,-0.55,0.265,1.55);' +
         'border-left:4px solid ' + notif.color + ';' +
-        'pointer-events:auto;';
+        'pointer-events:auto;' +
+        (isSpecial ? 'box-shadow:0 8px 32px ' + notif.color + '66, 0 0 0 2px ' + notif.color + '33;' : '');
 
-      card.innerHTML = 
-        '<div style="width:36px;height:36px;border-radius:50%;background:' + notif.color + '20;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">' + notif.icon + '</div>' +
+      card.innerHTML =
+        '<div style="width:38px;height:38px;border-radius:50%;background:' + notif.color + ';display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:white;flex-shrink:0;position:relative">' +
+          notif.avatar +
+          '<span style="position:absolute;bottom:-2px;right:-2px;font-size:12px">' + notif.icon + '</span>' +
+        '</div>' +
         '<div style="flex:1;min-width:0;font-size:12px;line-height:1.4;color:#333">' +
           notif.html +
-          '<div style="font-size:10px;color:#999;margin-top:2px">🕐 barusan</div>' +
+          '<div style="font-size:10px;color:#999;margin-top:2px">🕐 baru saja</div>' +
         '</div>' +
-        '<div style="width:8px;height:8px;border-radius:50%;background:' + notif.color + ';flex-shrink:0;animation:pulse 1.5s infinite"></div>';
+        '<div style="width:6px;height:6px;border-radius:50%;background:' + notif.color + ';flex-shrink:0;animation:livePulse 1.5s infinite"></div>';
 
       container.appendChild(card);
 
       // Animate in
       setTimeout(function() {
         card.style.opacity = '1';
-        card.style.transform = 'translateY(0)';
-      }, 50);
+        card.style.transform = 'translateX(0) scale(1)';
+      }, 30);
 
       // Auto remove
       var self = this;
       setTimeout(function() {
         card.style.opacity = '0';
-        card.style.transform = 'translateY(20px)';
+        card.style.transform = 'translateX(-30px) scale(0.9)';
         setTimeout(function() {
           if (card.parentNode) card.parentNode.removeChild(card);
-        }, 400);
+        }, 500);
       }, self.CONFIG.DISPLAY_DURATION * 1000);
 
       this.shownCount++;
-      console.log('[SocialProof] Shown: ' + this.shownCount + ' — ' + notif.type);
+      console.log('[LiveNotif] #' + this.shownCount + ' — ' + notif.type);
     },
 
     // ============================================
-    // START LOOP
+    // LOOP TERUS MENERUS
     // ============================================
-    start: function() {
-      if (this._started) return;
-      this._started = true;
-
-      console.log('[SocialProof] Started');
-
+    startLoop: function() {
       var self = this;
 
-      // Delay awal
-      setTimeout(function() {
-        // Notif pertama
+      function next() {
+        // Cek dokumen masih aktif
+        if (document.hidden) {
+          // HP lock/layar mati, tunggu 30 detik
+          self._timer = setTimeout(next, 30000);
+          return;
+        }
+
         self.show(self.generateNotif());
 
-        // Loop berikutnya
-        function scheduleNext() {
-          var delay = self.CONFIG.MIN_INTERVAL + Math.random() * (self.CONFIG.MAX_INTERVAL - self.CONFIG.MIN_INTERVAL);
-          setTimeout(function() {
-            if (self.shownCount >= self.CONFIG.MAX_PER_SESSION) return;
-            self.show(self.generateNotif());
-            scheduleNext();
-          }, delay * 1000);
-        }
-        scheduleNext();
-      }, self.CONFIG.INITIAL_DELAY * 1000);
+        // Delay berikutnya (random 5-15 detik)
+        var delay = self.CONFIG.MIN_INTERVAL + Math.random() * (self.CONFIG.MAX_INTERVAL - self.CONFIG.MIN_INTERVAL);
+        self._timer = setTimeout(next, delay * 1000);
+      }
+
+      // Start setelah delay awal
+      self._timer = setTimeout(next, self.CONFIG.INITIAL_DELAY * 1000);
     },
 
     // ============================================
     // INIT
     // ============================================
     init: function() {
-      console.log('[SocialProof] Init');
+      if (this._started) return;
+      this._started = true;
 
-      // Inject CSS animation
-      if (!document.getElementById('socialproof-style')) {
+      console.log('[LiveNotif] Init — Live mode active');
+
+      // Inject CSS animations
+      if (!document.getElementById('livenotif-style')) {
         var style = document.createElement('style');
-        style.id = 'socialproof-style';
-        style.textContent = '@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.5;transform:scale(1.3)}}';
+        style.id = 'livenotif-style';
+        style.textContent = 
+          '@keyframes livePulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.7;transform:scale(1.15)}}' +
+          '@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}';
         document.head.appendChild(style);
       }
 
-      this.start();
+      this.createContainer();
+      this.startLoop();
     },
   };
 
   // Auto-init
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function() {
-      setTimeout(function() { window.SocialProof.init(); }, 1000);
+      setTimeout(function() { window.SocialProof.init(); }, 800);
     });
   } else {
-    setTimeout(function() { window.SocialProof.init(); }, 1000);
+    setTimeout(function() { window.SocialProof.init(); }, 800);
   }
 
-  console.log('[SocialProof] Loaded');
+  console.log('[LiveNotif] Loaded');
 })();
